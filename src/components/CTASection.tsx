@@ -1,0 +1,46 @@
+import { Button } from '@/components/ui/button';
+
+export function CTASection() {
+  return (
+    <section className="py-20 lg:py-28 gradient-bg relative overflow-hidden">
+      {/* Background pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full translate-x-1/3 translate-y-1/3" />
+      </div>
+
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+          Deja de perder deducciones.<br />
+          <span className="text-blue-200">Empieza hoy.</span>
+        </h2>
+
+        <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+          Tus empleados solo envían el ticket. Nosotros nos encargamos del resto.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Button
+            size="lg"
+            className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"
+          >
+            Comenzar ahora
+            <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6 h-auto bg-transparent"
+          >
+            <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Hablar con un asesor
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}

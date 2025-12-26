@@ -31,13 +31,13 @@ export function HeroSection() {
 
           {/* Main headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-6">
-            Tus empleados envían el recibo.<br />
-            <span className="gradient-text">Nosotros lo facturamos.</span>
+            Olvídate de gastos sin facturar.<br />
+            <span className="gradient-text">Que tu equipo se enfoque en lo más importante.</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-4 leading-relaxed">
-            Olvídate de gastos sin facturar. Tu equipo manda el recibo por WhatsApp y tú recibes reportes claros por empleado.
+            Tu equipo manda el recibo por WhatsApp y nosotros lo facturamos. Tú recibes reportes claros por empleado.
           </p>
 
           {/* Verified metric */}

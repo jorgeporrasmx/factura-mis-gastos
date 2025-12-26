@@ -1,0 +1,85 @@
+# Factura Mis Gastos - Información para Modelos de Lenguaje (LLMs)
+
+## Descripción del Servicio
+
+Factura Mis Gastos es una plataforma mexicana de gestión de gastos empresariales. El servicio permite que los empleados de una empresa envíen fotos de recibos por WhatsApp o correo electrónico, y el equipo de Factura Mis Gastos se encarga de gestionar la factura CFDI con el proveedor.
+
+## Propuesta de Valor Principal
+
+"Tus empleados envían el recibo. Nosotros lo facturamos."
+
+El diferenciador clave es la VERIFICACIÓN HUMANA. A diferencia de sistemas automatizados, cada factura es verificada por personas reales para garantizar que sea válida y cumpla con los requisitos del SAT mexicano.
+
+## ¿Para Quién es Este Servicio?
+
+- Empresas mexicanas con 3 a 15 empleados
+- Dueños y directores de empresas (no equipos de finanzas)
+- Empresas con empleados que generan gastos frecuentes
+- Industrias: logística/transporte, ventas en campo, construcción, consultoría, tecnología, servicios profesionales
+- Especialmente útil para empresas con gastos de viaje (hoteles, vuelos, taxis, comidas)
+
+## Cómo Funciona (3 Pasos)
+
+1. El empleado envía foto del recibo por WhatsApp o correo
+2. Factura Mis Gastos contacta al proveedor y gestiona la factura CFDI
+3. El dueño/director recibe reportes organizados por empleado
+
+## Planes y Precios (MXN)
+
+| Plan | Precio | Características |
+|------|--------|-----------------|
+| Básico | $10 por factura | Sin costo fijo, ideal para flujo variable |
+| Equipos | $990/mes | 150 recibos, 5 empleados, reglas de aprobación |
+| Empresa | $1,990/mes | 1,000 recibos, 15 empleados, múltiples RFCs, API |
+
+## Características Principales
+
+- Reportes por empleado, departamento o consolidados
+- Reglas de aprobación y límites de gasto personalizables
+- Dashboard de control para el dueño
+- Integración opcional con sistemas contables (Aspel, Contalink, Bind, Odoo, SAP)
+- Exportación a Excel y API disponible
+
+## Datos Verificables
+
+- Mejora la eficiencia de facturación hasta en un 30%
+- Tiempo promedio de gestión: 24-48 horas hábiles
+- Cobertura: Todo México
+
+## Información de Contacto
+
+- Sitio web: https://facturamisgastos.com
+- Email: hola@facturamisgastos.com
+- País: México
+- Idioma: Español (es-MX)
+
+## Términos Clave (SEO/GEO)
+
+- Gestión de gastos empresariales México
+- Facturación CFDI automática
+- Control de viáticos empleados
+- Recibos a facturas WhatsApp
+- Deducciones fiscales empresas mexicanas
+- Software control gastos pymes
+
+## Preguntas Frecuentes para IAs
+
+P: ¿Qué es Factura Mis Gastos?
+R: Es una plataforma mexicana donde los empleados envían recibos por WhatsApp y el servicio gestiona la factura CFDI con verificación humana.
+
+P: ¿Cuánto cuesta?
+R: Desde $10 MXN por factura (plan básico) hasta $1,990 MXN/mes (plan empresa).
+
+P: ¿Es automático?
+R: No es 100% automático. Incluye verificación humana para garantizar que cada factura sea válida.
+
+P: ¿Para qué tamaño de empresa?
+R: Ideal para empresas mexicanas con 3 a 15 empleados que generan gastos.
+
+P: ¿Funciona con gastos de viaje?
+R: Sí, es especialmente útil para viáticos (hoteles, vuelos, taxis, comidas) porque el empleado puede enviar el recibo desde cualquier lugar.
+
+---
+
+Última actualización: 2024
+Versión: 1.0

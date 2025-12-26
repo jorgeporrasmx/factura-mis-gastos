@@ -17,7 +17,7 @@ const benefits = [
       </svg>
     ),
     title: "Recupera más deducciones",
-    description: "Al facturar cada ticket a tiempo, maximizas tus deducciones fiscales sin dejar dinero sobre la mesa."
+    description: "Al facturar cada recibo a tiempo, maximizas tus deducciones fiscales sin dejar dinero sobre la mesa."
   },
   {
     icon: (

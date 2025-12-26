@@ -1,6 +1,12 @@
+'use client';
+
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+
+// URL de Calendly - cambiar por la URL real cuando esté configurada
+const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
 
 const plans = [
   {
@@ -16,16 +22,17 @@ const plans = [
       "Soporte por correo"
     ],
     cta: "Comenzar ahora",
-    popular: false
+    popular: false,
+    calendly: false
   },
   {
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
     price: "$990",
     unit: "MXN/mes",
-    description: "Hasta 150 tickets y 5 empleados.",
+    description: "Hasta 150 recibos y 5 empleados.",
     features: [
-      "150 tickets mensuales",
+      "150 recibos mensuales",
       "Hasta 5 empleados",
       "Reportes por empleado",
       "Reglas de aprobación",
@@ -33,16 +40,17 @@ const plans = [
       "Soporte prioritario"
     ],
     cta: "Comenzar ahora",
-    popular: true
+    popular: true,
+    calendly: false
   },
   {
     name: "Empresa",
     tagline: "Control total para operaciones más grandes.",
     price: "$1,990",
     unit: "MXN/mes",
-    description: "1,000 tickets, 15 empleados, múltiples RFCs.",
+    description: "1,000 recibos, 15 empleados, múltiples RFCs.",
     features: [
-      "1,000 tickets mensuales",
+      "1,000 recibos mensuales",
       "Hasta 15 empleados",
       "3 RFCs incluidos",
       "Integración contable opcional",
@@ -51,13 +59,18 @@ const plans = [
       "Soporte dedicado"
     ],
     cta: "Hablar con un asesor",
-    popular: false
+    popular: false,
+    calendly: true
   }
 ];
 
 export function PricingSection() {
   return (
-    <section id="precios" className="py-20 lg:py-28 bg-white">
+    <section
+      id="precios"
+      aria-label="Planes y precios de Factura Mis Gastos"
+      className="py-20 lg:py-28 bg-white"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
@@ -117,15 +130,43 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                <Button
-                  className={`w-full ${
-                    plan.popular
-                      ? 'gradient-bg hover:opacity-90'
-                      : 'bg-foreground hover:bg-foreground/90'
-                  }`}
-                >
-                  {plan.cta}
-                </Button>
+                {plan.calendly ? (
+                  <>
+                    <Button
+                      className="w-full bg-foreground hover:bg-foreground/90"
+                      onClick={() => window.open(CALENDLY_URL, '_blank')}
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      {plan.cta}
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      O habla ahora con nuestro{' '}
+                      <button
+                        className="text-primary hover:underline font-medium"
+                        onClick={() => {
+                          const popup = document.querySelector('[aria-label="Abrir chat de ayuda"]') as HTMLButtonElement;
+                          if (popup) popup.click();
+                        }}
+                      >
+                        asesor virtual
+                      </button>
+                    </p>
+                  </>
+                ) : (
+                  <Link href="/comenzar">
+                    <Button
+                      className={`w-full ${
+                        plan.popular
+                          ? 'gradient-bg hover:opacity-90'
+                          : 'bg-foreground hover:bg-foreground/90'
+                      }`}
+                    >
+                      {plan.cta}
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -134,7 +175,12 @@ export function PricingSection() {
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
             ¿Necesitas algo diferente?{' '}
-            <a href="#" className="text-primary font-medium hover:underline">
+            <a
+              href={CALENDLY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-medium hover:underline"
+            >
               Platiquemos sobre tu caso.
             </a>
           </p>

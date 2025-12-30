@@ -11,12 +11,13 @@ const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
 const plans = [
   {
     name: "Básico",
-    tagline: "Paga solo lo que facturas.",
-    price: "$10",
-    unit: "MXN por factura",
-    description: "Ideal para equipos pequeños o flujo variable.",
+    tagline: "Ideal para equipos pequeños.",
+    price: "$1,199",
+    unit: "MXN/mes",
+    description: "Hasta 100 recibos y 3 empleados.",
     features: [
-      "Sin costo mensual fijo",
+      "100 recibos mensuales",
+      "Hasta 3 empleados",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",
       "Soporte por correo"
@@ -46,7 +47,7 @@ const plans = [
   {
     name: "Empresa",
     tagline: "Control total para operaciones más grandes.",
-    price: "$1,990",
+    price: "$2,099",
     unit: "MXN/mes",
     description: "1,000 recibos, 15 empleados, múltiples RFCs.",
     features: [

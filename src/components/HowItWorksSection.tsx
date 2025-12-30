@@ -1,7 +1,7 @@
 const steps = [
   {
     number: "01",
-    title: "Tu empleado envía el ticket",
+    title: "Tu empleado envía el recibo",
     description: "Por WhatsApp, correo o nuestra app. Lo más fácil para él.",
     icon: (
       <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -33,7 +33,11 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section id="como-funciona" className="py-20 lg:py-28 bg-white">
+    <section
+      id="como-funciona"
+      aria-label="Cómo funciona Factura Mis Gastos en 3 pasos simples"
+      className="py-20 lg:py-28 bg-white"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
@@ -41,7 +45,7 @@ export function HowItWorksSection() {
             <span className="gradient-text">simple funciona.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Sin complicaciones. Sin capacitaciones largas. Tu equipo solo envía el ticket y nosotros hacemos el resto.
+            Sin complicaciones. Sin capacitaciones largas. Tu equipo solo envía el recibo y nosotros hacemos el resto.
           </p>
         </div>
 

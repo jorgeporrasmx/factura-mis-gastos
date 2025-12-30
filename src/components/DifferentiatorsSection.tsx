@@ -36,7 +36,7 @@ const features = [
       </svg>
     ),
     title: "Dashboard para empleados",
-    description: "Opcional: cada empleado puede ver el estatus de sus tickets (pendiente, aprobado, facturado)."
+    description: "Opcional: cada empleado puede ver el estatus de sus recibos (pendiente, aprobado, facturado)."
   }
 ];
 
@@ -48,7 +48,11 @@ const optionalFeatures = [
 
 export function DifferentiatorsSection() {
   return (
-    <section className="py-20 lg:py-28 bg-slate-50">
+    <section
+      id="caracteristicas"
+      aria-label="Características y diferenciadores de Factura Mis Gastos"
+      className="py-20 lg:py-28 bg-slate-50"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">

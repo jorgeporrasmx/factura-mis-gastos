@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { SchemaOrg } from "@/components/SchemaOrg";
 import "./globals.css";
 
 const inter = Inter({
@@ -15,21 +16,34 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Factura Mis Gastos | Automatización de Gastos Empresariales en México",
-  description: "Plataforma líder para automatizar gastos por empleado, generar CFDIs y conectar con contabilidad. Control total de gastos empresariales.",
+  metadataBase: new URL("https://facturamisgastos.com"),
+  title: {
+    default: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
+    template: "%s | Factura Mis Gastos",
+  },
+  description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Plataforma de control de gastos empresariales en México con verificación humana. Desde $10 MXN por factura.",
   keywords: [
-    "automatización de gastos empresariales",
-    "control de gastos México",
-    "facturación automática",
-    "CFDI automático",
-    "gestión de gastos por empleado",
-    "software contable México",
-    "deducciones fiscales",
-    "tickets a facturas",
+    "gestión de gastos empresariales México",
+    "control de gastos por empleado",
+    "facturación CFDI",
+    "recibos a facturas México",
+    "gastos de viaje empresariales",
+    "viáticos empleados México",
+    "deducciones fiscales empresas",
+    "software gastos empresariales",
+    "facturar gastos WhatsApp",
+    "control gastos pymes México",
+    "reportes gastos empleados",
+    "sistema control viáticos",
   ],
-  authors: [{ name: "Factura Mis Gastos" }],
+  authors: [{ name: "Factura Mis Gastos", url: "https://facturamisgastos.com" }],
   creator: "Factura Mis Gastos",
   publisher: "Factura Mis Gastos",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   robots: {
     index: true,
     follow: true,
@@ -45,26 +59,34 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_MX",
     siteName: "Factura Mis Gastos",
-    title: "Factura Mis Gastos | Automatización de Gastos Empresariales en México",
-    description: "Plataforma líder para automatizar gastos por empleado, generar CFDIs y conectar con contabilidad.",
+    title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
+    description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Control total de gastos con verificación humana.",
+    url: "https://facturamisgastos.com",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Factura Mis Gastos - Control total de gastos empresariales",
+        alt: "Factura Mis Gastos - Tus empleados envían el recibo, nosotros lo facturamos",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Factura Mis Gastos | Automatización de Gastos Empresariales",
-    description: "Plataforma líder para automatizar gastos por empleado y generar CFDIs automáticamente.",
+    title: "Factura Mis Gastos | Gestión de Gastos Empresariales",
+    description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI.",
     images: ["/og-image.png"],
+    creator: "@facturamisgastos",
   },
   alternates: {
     canonical: "https://facturamisgastos.com",
+    languages: {
+      "es-MX": "https://facturamisgastos.com",
+      "es": "https://facturamisgastos.com",
+    },
   },
+  category: "business",
+  classification: "Business Software",
 };
 
 export default function RootLayout({
@@ -76,7 +98,24 @@ export default function RootLayout({
     <html lang="es-MX">
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.json" />
+
+        {/* Preconnect to external domains */}
+        <link rel="preconnect" href="https://calendly.com" />
+        <link rel="preconnect" href="https://cal.com" />
+        <link rel="dns-prefetch" href="https://calendly.com" />
+        <link rel="dns-prefetch" href="https://cal.com" />
+
+        {/* Additional SEO meta tags */}
+        <meta name="geo.region" content="MX" />
+        <meta name="geo.placename" content="México" />
+        <meta name="language" content="Spanish" />
+        <meta name="revisit-after" content="7 days" />
+        <meta name="rating" content="general" />
+
+        <SchemaOrg />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}

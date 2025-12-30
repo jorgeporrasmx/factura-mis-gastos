@@ -3,77 +3,171 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { LoginModal } from '@/components/LoginModal';
+
+interface User {
+  name: string;
+  email: string;
+  avatar: string;
+}
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleLogin = (loggedInUser: User) => {
+    setUser(loggedInUser);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+      setMobileMenuOpen(false);
+    }
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+    <>
+      <header
+        role="banner"
+        className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border"
+      >
+        <nav
+          role="navigation"
+          aria-label="Navegación principal"
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        >
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold text-foreground">Factura Mis Gastos</span>
             </div>
-            <span className="text-xl font-bold text-foreground">Factura Mis Gastos</span>
-          </div>
 
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              Cómo Funciona
-            </Link>
-            <Link href="#precios" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              Precios
-            </Link>
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" className="text-sm">
-              Iniciar Sesión
-            </Button>
-            <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
-              Comenzar ahora
-            </Button>
-          </div>
-
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
-            <div className="flex flex-col gap-4">
-              <Link href="#como-funciona" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <div className="hidden md:flex items-center gap-8">
+              <button
+                onClick={() => scrollToSection('como-funciona')}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 Cómo Funciona
-              </Link>
-              <Link href="#precios" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              </button>
+              <button
+                onClick={() => scrollToSection('precios')}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
                 Precios
-              </Link>
-              <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                <Button variant="ghost" className="w-full justify-center">
-                  Iniciar Sesión
-                </Button>
-                <Button className="w-full gradient-bg">
-                  Comenzar ahora
-                </Button>
+              </button>
+            </div>
+
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                    <div className="hidden lg:block">
+                      <p className="text-sm font-medium text-foreground">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" className="text-sm" onClick={handleLogout}>
+                    Cerrar Sesión
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button variant="ghost" className="text-sm" onClick={() => setIsLoginModalOpen(true)}>
+                    Iniciar Sesión
+                  </Button>
+                  <Link href="/comenzar">
+                    <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
+                      Comenzar ahora
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-border">
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => scrollToSection('como-funciona')}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+                >
+                  Cómo Funciona
+                </button>
+                <button
+                  onClick={() => scrollToSection('precios')}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+                >
+                  Precios
+                </button>
+                <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 py-2">
+                        <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" className="w-full justify-center" onClick={handleLogout}>
+                        Cerrar Sesión
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button variant="ghost" className="w-full justify-center" onClick={() => setIsLoginModalOpen(true)}>
+                        Iniciar Sesión
+                      </Button>
+                      <Link href="/comenzar" className="w-full">
+                        <Button className="w-full gradient-bg">
+                          Comenzar ahora
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </nav>
-    </header>
+          )}
+        </nav>
+      </header>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleLogin}
+      />
+    </>
   );
 }

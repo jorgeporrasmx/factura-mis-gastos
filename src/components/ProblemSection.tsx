@@ -8,7 +8,7 @@ const problems = [
       </svg>
     ),
     title: "Gastos que nunca se facturan",
-    description: "Tickets que se pierden o llegan tarde y ya no se pueden deducir."
+    description: "Recibos que se pierden o llegan tarde y ya no se pueden deducir."
   },
   {
     icon: (
@@ -32,7 +32,11 @@ const problems = [
 
 export function ProblemSection() {
   return (
-    <section id="problema" className="py-20 lg:py-28 bg-slate-50">
+    <section
+      id="problema"
+      aria-label="Problemas comunes de gastos empresariales que resolvemos"
+      className="py-20 lg:py-28 bg-slate-50"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">

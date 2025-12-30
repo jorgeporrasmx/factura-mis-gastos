@@ -28,7 +28,11 @@ const footerLinks = {
 
 export function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-300">
+    <footer
+      role="contentinfo"
+      aria-label="Pie de página de Factura Mis Gastos"
+      className="bg-slate-900 text-slate-300"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand */}

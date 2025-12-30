@@ -1,5 +1,45 @@
 # https://www.robotstxt.org/robotstxt.html
+# Factura Mis Gastos - Gestión de Gastos Empresariales en México
+
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /_next/
 
+# Sitemap
 Sitemap: https://facturamisgastos.com/sitemap.xml
+
+# LLM/AI Information
+# For AI models and language models, see /llm.txt for structured information about this service
+# URL: https://facturamisgastos.com/llm.txt
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
+
+# OpenAI GPTBot
+User-agent: GPTBot
+Allow: /
+
+# Google Bard
+User-agent: Google-Extended
+Allow: /
+
+# Anthropic Claude
+User-agent: anthropic-ai
+Allow: /
+
+# Common Crawl
+User-agent: CCBot
+Allow: /
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /

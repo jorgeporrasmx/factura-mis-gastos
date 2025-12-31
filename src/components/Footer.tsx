@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 
 const footerLinks = {
   producto: [
@@ -37,16 +38,11 @@ export function Footer() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-white">Factura Mis Gastos</span>
+            <div className="mb-4">
+              <Logo size="sm" className="[&_span]:text-white" />
             </div>
             <p className="text-sm text-slate-400 mb-4 max-w-xs">
-              La plataforma líder en México para automatizar gastos empresariales y maximizar deducciones fiscales.
+              Automatiza los gastos de tu empresa. Tu equipo envía el recibo, nosotros lo facturamos.
             </p>
             <div className="flex gap-4">
               <a href="#" className="text-slate-400 hover:text-white transition-colors" aria-label="LinkedIn">

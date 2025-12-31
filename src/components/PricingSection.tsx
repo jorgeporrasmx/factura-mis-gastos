@@ -83,17 +83,19 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative bg-white border shadow-sm hover:shadow-lg transition-shadow ${
-                plan.popular ? 'ring-2 ring-primary shadow-lg border-0' : 'border-border'
+              className={`relative transition-all duration-300 ${
+                plan.popular
+                  ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50 ring-2 ring-primary shadow-2xl shadow-blue-500/20 border-0 md:scale-105 md:-my-4 z-10'
+                  : 'bg-white border border-border shadow-sm hover:shadow-lg hover:-translate-y-1'
               }`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-bg">
-                  Recomendado
+                <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 gradient-bg px-4 py-1 text-sm shadow-lg">
+                  Más popular
                 </Badge>
               )}
 
@@ -134,7 +136,7 @@ export function PricingSection() {
                 {plan.calendly ? (
                   <>
                     <Button
-                      className="w-full bg-foreground hover:bg-foreground/90"
+                      className="w-full bg-slate-800 hover:bg-slate-700 transition-all"
                       onClick={() => window.open(CALENDLY_URL, '_blank')}
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,13 +160,18 @@ export function PricingSection() {
                 ) : (
                   <Link href="/comenzar">
                     <Button
-                      className={`w-full ${
+                      className={`w-full transition-all ${
                         plan.popular
-                          ? 'gradient-bg hover:opacity-90'
-                          : 'bg-foreground hover:bg-foreground/90'
+                          ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                          : 'bg-slate-800 hover:bg-slate-700'
                       }`}
                     >
                       {plan.cta}
+                      {plan.popular && (
+                        <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      )}
                     </Button>
                   </Link>
                 )}

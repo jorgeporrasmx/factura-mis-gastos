@@ -31,9 +31,8 @@ export function HeroSection() {
 
           {/* Main headline */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-            <span className="text-foreground">Tu equipo gasta.</span><br />
-            <span className="text-blue-600">Nosotros facturamos.</span><br />
-            <span className="text-primary">Tú controlas.</span>
+            <span className="text-foreground">Tus empleados envían el recibo.</span><br />
+            <span className="text-blue-600">Nosotros lo facturamos.</span>
           </h1>
 
           {/* Subtitle */}

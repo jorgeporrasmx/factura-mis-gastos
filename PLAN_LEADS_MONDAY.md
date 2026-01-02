@@ -1,15 +1,29 @@
 # Plan de Implementación: Sistema de Captación de Leads con Monday.com
 
-## Objetivo
-Crear un sistema de captación de leads optimizado para conversión que:
-1. Capture información de prospectos directamente en Monday.com
-2. Minimice la fricción del usuario
-3. Permita respuesta inmediata del equipo de ventas
-4. Automatice el seguimiento con n8n
+## Estado: Fase 1-3 COMPLETADAS
 
 ---
 
-## Arquitectura General
+## Resumen de lo Implementado
+
+### Archivos Creados:
+- `src/lib/monday.ts` - Cliente API de Monday.com con configuración del tablero
+- `src/app/api/leads/route.ts` - Endpoint POST /api/leads
+- `src/components/LeadFormModal.tsx` - Modal con 4 tipos de formulario
+- `src/components/WhatsAppWidget.tsx` - Widget flotante con WhatsApp + "Te llamamos"
+- `.env.example` - Template de variables de entorno
+
+### Archivos Modificados:
+- `src/components/Header.tsx` - CTA abre formulario express
+- `src/components/HeroSection.tsx` - CTAs abren formularios express/standard
+- `src/components/PricingSection.tsx` - CTAs abren formularios express/corporate
+- `src/components/CTASection.tsx` - CTAs abren formularios express/standard
+- `src/components/FAQSection.tsx` - Link abre formulario standard
+- `src/app/page.tsx` - Usa WhatsAppWidget en lugar de CallPopup
+
+---
+
+## Arquitectura Implementada
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -22,22 +36,35 @@ Crear un sistema de captación de leads optimizado para conversión que:
 │   ┌─────────┐        ┌─────────┐        ┌─────────┐                 │
 │   │  Modal  │        │  Modal  │        │  Modal  │                 │
 │   │ Express │        │Estándar │        │Corporat.│                 │
+│   │3 campos │        │5 campos │        │9 campos │                 │
 │   └────┬────┘        └────┬────┘        └────┬────┘                 │
 │        │                  │                  │                       │
 │        └──────────────────┼──────────────────┘                       │
 │                           ▼                                          │
 │                    ┌─────────────┐                                   │
-│                    │ Monday.com  │                                   │
-│                    │   (API)     │                                   │
+│                    │ POST        │                                   │
+│                    │ /api/leads  │                                   │
 │                    └──────┬──────┘                                   │
 │                           │                                          │
-│              ┌────────────┼────────────┐                             │
-│              ▼            ▼            ▼                             │
-│        Notificación   Webhook a    Confirmación                      │
-│         a Ventas        n8n        + WhatsApp                        │
+│                           ▼                                          │
+│                    ┌─────────────┐                                   │
+│                    │ Monday.com  │                                   │
+│                    │ Board: 18393740781                              │
+│                    │ Grupo: "Nuevos"                                 │
+│                    └──────┬──────┘                                   │
+│                           │                                          │
+│                           ▼                                          │
+│              ┌───────────────────────┐                               │
+│              │   Thank You Modal     │                               │
+│              │  • WhatsApp directo   │                               │
+│              │  • Link a Calendly    │                               │
+│              │  • Redirect /comenzar │                               │
+│              └───────────────────────┘                               │
 │                                                                      │
 │   ┌──────────────────────────────────────────────────────────────┐  │
-│   │  Widget Flotante (WhatsApp + "Te llamamos")                  │  │
+│   │  WhatsAppWidget (Flotante)                                    │  │
+│   │  💬 WhatsApp → wa.me/5216143977690                           │  │
+│   │  📞 "Te llamamos" → Formulario callback                      │  │
 │   └──────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
@@ -45,7 +72,7 @@ Crear un sistema de captación de leads optimizado para conversión que:
 
 ---
 
-## Datos de Contacto
+## Datos de Contacto Configurados
 
 - **WhatsApp Ventas:** +52 614 397 7690
 - **Email:** hola@facturamisgastos.com
@@ -53,342 +80,109 @@ Crear un sistema de captación de leads optimizado para conversión que:
 
 ---
 
-## Paso 1: Crear Formularios en Monday.com
+## Configuración del Tablero Monday.com
 
-### 1.1 Formulario Express (Para "Comenzar ahora")
-**Campos:**
-| Campo | Tipo | Obligatorio |
-|-------|------|-------------|
-| Nombre completo | Texto | ✅ |
-| WhatsApp | Teléfono | ✅ |
-| Email | Email | ✅ |
-| Origen | Hidden (valor: "CTA Comenzar") | Auto |
+**Board ID:** `18393740781`
 
-**Configuración Monday:**
-- Crear en tablero de Leads
-- Habilitar "Form" en la vista
-- Configurar mensaje de éxito personalizado
-- Obtener URL de embed
+**Columnas configuradas:**
+| Campo | Column ID |
+|-------|-----------|
+| Estado | color_mkz79aj8 |
+| WhatsApp | phone_mkz742fw |
+| Email | email_mkz7ydhm |
+| Empresa | text_mkz75aj8 |
+| Cargo | text_mkz7hm0p |
+| Recibos/mes | dropdown_mkz7a2wd |
+| Empleados | dropdown_mkz7x7bs |
+| Integraciones | dropdown_mkz7d3mf |
+| Origen | dropdown_mkz77f67 |
+| Plan interés | dropdown_mkz77fz1 |
+| Asignado | multiple_person_mkz7e7y4 |
+| Fecha entrada | date_mkz7qq3d |
+| Próximo contacto | date_mkz73bkw |
+| Valor estimado | numeric_mkz72ecg |
+| Notas | long_text_mkz7v1b1 |
 
-### 1.2 Formulario Estándar (Para "Hablar con asesor")
-**Campos:**
-| Campo | Tipo | Obligatorio |
-|-------|------|-------------|
-| Nombre completo | Texto | ✅ |
-| WhatsApp | Teléfono | ✅ |
-| Email corporativo | Email | ✅ |
-| Empresa | Texto | ❌ |
-| Recibos mensuales | Dropdown | ❌ |
-| Origen | Hidden (valor: "CTA Asesor") | Auto |
-
-**Opciones Dropdown "Recibos mensuales":**
-- 1-50 recibos
-- 51-150 recibos
-- 151-300 recibos
-- Más de 300 recibos
-
-### 1.3 Formulario Corporativo (Para plan Enterprise)
-**Campos:**
-| Campo | Tipo | Obligatorio |
-|-------|------|-------------|
-| Nombre completo | Texto | ✅ |
-| Cargo | Texto | ✅ |
-| Email corporativo | Email | ✅ |
-| WhatsApp | Teléfono | ✅ |
-| Empresa | Texto | ✅ |
-| Número de empleados | Dropdown | ✅ |
-| Recibos mensuales | Dropdown | ✅ |
-| Integraciones requeridas | Multi-select | ❌ |
-| Comentarios | Texto largo | ❌ |
-| Origen | Hidden (valor: "Plan Corporativo") | Auto |
-
-**Opciones Dropdown "Empleados":**
-- 1-10
-- 11-50
-- 51-200
-- 201-500
-- Más de 500
-
-**Opciones Multi-select "Integraciones":**
-- SAP Business One
-- Aspel
-- Contalink
-- Odoo
-- Bind ERP
-- Google Sheets
-- Otra
+**Grupos:**
+- Nuevos: group_mkz7pm5x
+- En proceso: group_mkz7q58a
+- Demos: group_mkz7jsgz
+- Cerrados: group_mkz7y3yy
 
 ---
 
-## Paso 2: Implementación Frontend
+## PENDIENTE: Configuración Final
 
-### 2.1 Crear Componente LeadFormModal
+### 1. Agregar API Key de Monday (REQUERIDO)
 
-**Archivo:** `src/components/LeadFormModal.tsx`
+Crear archivo `.env.local` en la raíz del proyecto:
 
-**Funcionalidad:**
-- Modal con diseño consistente al sitio
-- Formulario nativo (no iframe) para mejor UX
-- Validación en tiempo real
-- Envío a API route de Next.js
-- Estados: loading, success, error
-- Página de confirmación con:
-  - Mensaje de éxito
-  - Botón de WhatsApp prominente
-  - Link secundario a Calendly
-
-**Variantes:**
-- `type="express"` - 3 campos
-- `type="standard"` - 5 campos
-- `type="corporate"` - 9 campos
-
-### 2.2 Crear API Route para Monday
-
-**Archivo:** `src/app/api/leads/route.ts`
-
-**Funcionalidad:**
-- Recibe datos del formulario
-- Valida campos requeridos
-- Envía a Monday.com via API
-- Retorna confirmación o error
-
-**Endpoint:** `POST /api/leads`
-
-**Payload:**
-```json
-{
-  "type": "express|standard|corporate",
-  "data": {
-    "nombre": "...",
-    "whatsapp": "...",
-    "email": "...",
-    // ... campos según tipo
-  }
-}
+```bash
+MONDAY_API_KEY=tu_api_key_de_monday_aqui
 ```
 
-### 2.3 Actualizar Componentes Existentes
+**Cómo obtener el API Key:**
+1. Ve a monday.com → Tu avatar → Developers
+2. Click en "My Access Tokens"
+3. Genera un nuevo token con permisos de lectura/escritura
 
-#### Header.tsx
-- Botón "Comenzar ahora" → Abre LeadFormModal type="express"
-- Después del formulario → Redirect a /comenzar
+### 2. Automatizaciones n8n (FASE 2 - Opcional)
 
-#### HeroSection.tsx
-- "Comenzar ahora" → LeadFormModal type="express" → /comenzar
-- "Hablar con un asesor" → LeadFormModal type="standard" → Confirmación
+Cuando tengas la URL de n8n, configurar:
 
-#### PricingSection.tsx
-- Planes 1-3 "Comenzar ahora" → LeadFormModal type="express" → /comenzar
-- Plan Corporativo "Cotizar" → LeadFormModal type="corporate" → Confirmación
+1. **Webhook en Monday:**
+   - Monday → Tablero de Leads → Integraciones
+   - Agregar "When item is created" → Webhook
 
-#### CTASection.tsx
-- "Comenzar ahora" → LeadFormModal type="express" → /comenzar
-- "Hablar con un asesor" → LeadFormModal type="standard" → Confirmación
+2. **Workflow en n8n:**
+   - Trigger: Webhook desde Monday
+   - Acciones según origen del lead:
+     - Express → Notificación + nurturing
+     - Standard → Notificación prioritaria + tarea
+     - Corporate → Notificación gerente + proyecto
 
-#### FAQSection.tsx
-- Link "Agenda una llamada" → LeadFormModal type="standard"
+### 3. Notificaciones en Monday (Recomendado)
 
-### 2.4 Rediseñar CallPopup (Widget Flotante)
-
-**Nuevo diseño:**
-
-```
-Estado minimizado:
-┌─────────────────┐
-│  💬 WhatsApp    │  ← Botón verde prominente
-└─────────────────┘
-
-Estado expandido (hover/click):
-┌─────────────────────────────┐
-│  ¿Tienes dudas?             │
-│                             │
-│  ┌───────────────────────┐  │
-│  │ 💬 Escríbenos ahora   │  │  ← WhatsApp directo
-│  └───────────────────────┘  │
-│                             │
-│  ┌───────────────────────┐  │
-│  │ 📞 Te llamamos        │  │  ← Abre mini-form
-│  └───────────────────────┘  │
-│                             │
-│         ✕ Cerrar            │
-└─────────────────────────────┘
-```
-
-**Mini-formulario "Te llamamos":**
-- Nombre
-- WhatsApp
-- Dropdown: "Ahora" / "En 1 hora" / "Mañana"
-- Botón: "Solicitar llamada"
+Configurar en Monday directamente:
+- Cuando estado = "Nuevo" por más de 1 hora → Notificar
+- Cuando se crea item → Notificar al equipo de ventas
 
 ---
 
-## Paso 3: Integración con Monday.com API
+## Tipos de Formulario
 
-### 3.1 Configuración
+### Express (3 campos)
+- Nombre, WhatsApp, Email
+- Uso: "Comenzar ahora" en Header, Hero, Pricing, CTA
+- Post-envío: Redirect a /comenzar
 
-**Variables de entorno (.env.local):**
-```
-MONDAY_API_KEY=tu_api_key_aqui
-MONDAY_BOARD_ID=id_del_tablero_leads
-```
+### Standard (5 campos)
+- Nombre, WhatsApp, Email, Empresa (opcional), Recibos/mes (opcional)
+- Uso: "Hablar con asesor" en Hero, CTA, FAQ
+- Post-envío: WhatsApp + Calendly
 
-### 3.2 API Route Implementation
+### Corporate (9 campos)
+- Nombre, Cargo, WhatsApp, Email, Empresa, Empleados, Recibos/mes, Integraciones, Notas
+- Uso: Plan Corporativo "Solicitar cotización"
+- Post-envío: Mensaje de equipo enterprise + WhatsApp
 
-**Endpoint:** `/api/leads`
-
-**Flujo:**
-1. Recibir POST con datos del formulario
-2. Validar campos según tipo de formulario
-3. Mapear campos a columnas de Monday
-4. Crear item via Monday API (GraphQL)
-5. Retornar success/error
-
-**Monday API (GraphQL):**
-```graphql
-mutation {
-  create_item (
-    board_id: BOARD_ID,
-    item_name: "Nombre del Lead",
-    column_values: "{...}"
-  ) {
-    id
-  }
-}
-```
+### Callback (3 campos)
+- Nombre, WhatsApp, ¿Cuándo te llamamos?
+- Uso: Widget flotante "Te llamamos"
+- Post-envío: Confirmación de llamada
 
 ---
 
-## Paso 4: Página de Confirmación (Thank You)
+## Testing
 
-### 4.1 Diseño UX
+Para probar el sistema:
 
-```
-┌─────────────────────────────────────────┐
-│                                         │
-│            ✅                           │
-│                                         │
-│   ¡Gracias, [Nombre]!                   │
-│                                         │
-│   Te contactamos en menos de            │
-│   5 minutos en horario laboral.         │
-│                                         │
-│   ┌─────────────────────────────────┐   │
-│   │  💬 Escríbenos por WhatsApp     │   │  ← Botón verde grande
-│   │     para respuesta inmediata    │   │
-│   └─────────────────────────────────┘   │
-│                                         │
-│   ¿Prefieres agendar una llamada?       │
-│   → Agenda aquí                         │  ← Link a Calendly
-│                                         │
-│            [Cerrar]                     │
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-### 4.2 Variantes por Tipo
-
-**Express (Comenzar):**
-- Mensaje de confirmación
-- Botón "Continuar al registro" → /comenzar
-- Botón secundario WhatsApp
-
-**Standard (Asesor):**
-- Mensaje de confirmación
-- Botón WhatsApp prominente
-- Link a Calendly
-
-**Corporate (Cotizar):**
-- Mensaje: "Nuestro equipo enterprise te contactará en las próximas 24 horas"
-- Botón WhatsApp
-- Link a Calendly
-
----
-
-## Paso 5: Automatizaciones n8n (Fase 2)
-
-### 5.1 Webhook Trigger
-- Monday notifica a n8n cuando se crea un lead
-- n8n procesa según el tipo/origen
-
-### 5.2 Automatizaciones Sugeridas
-
-**Lead Express:**
-1. Notificar por Slack/Email al equipo
-2. Enviar WhatsApp de bienvenida automático
-3. Agregar a secuencia de nurturing
-
-**Lead Standard:**
-1. Notificación inmediata a vendedor asignado
-2. Crear tarea de seguimiento en Monday
-3. Enviar email de confirmación con recursos
-
-**Lead Corporate:**
-1. Notificación prioritaria a gerente de ventas
-2. Crear proyecto en Monday para seguimiento
-3. Agendar reunión automática si hay calendario disponible
-
----
-
-## Paso 6: Archivos a Crear/Modificar
-
-### Archivos Nuevos:
-1. `src/components/LeadFormModal.tsx` - Modal principal de formularios
-2. `src/components/LeadForm.tsx` - Componente de formulario reutilizable
-3. `src/components/ThankYouModal.tsx` - Página de confirmación
-4. `src/components/WhatsAppWidget.tsx` - Nuevo widget flotante
-5. `src/app/api/leads/route.ts` - API route para Monday
-6. `src/lib/monday.ts` - Cliente de Monday API
-
-### Archivos a Modificar:
-1. `src/components/Header.tsx` - Integrar modal en CTA
-2. `src/components/HeroSection.tsx` - Integrar modales en CTAs
-3. `src/components/PricingSection.tsx` - Integrar modales en botones
-4. `src/components/CTASection.tsx` - Integrar modales en CTAs
-5. `src/components/FAQSection.tsx` - Cambiar link por modal
-6. `src/components/CallPopup.tsx` - Rediseñar como WhatsApp widget
-7. `src/app/layout.tsx` - Agregar WhatsAppWidget global
-
-### Variables de Entorno:
-```
-MONDAY_API_KEY=
-MONDAY_BOARD_ID=
-NEXT_PUBLIC_WHATSAPP_NUMBER=5216143977690
-```
-
----
-
-## Orden de Implementación
-
-### Fase 1: Infraestructura (Prioridad Alta)
-1. [ ] Configurar variables de entorno
-2. [ ] Crear cliente Monday API (`src/lib/monday.ts`)
-3. [ ] Crear API route (`/api/leads`)
-4. [ ] Crear componente LeadForm base
-5. [ ] Crear componente LeadFormModal
-6. [ ] Crear componente ThankYouModal
-
-### Fase 2: Integración CTAs (Prioridad Alta)
-7. [ ] Actualizar HeroSection con modales
-8. [ ] Actualizar Header con modal
-9. [ ] Actualizar PricingSection con modales
-10. [ ] Actualizar CTASection con modales
-11. [ ] Actualizar FAQSection con modal
-
-### Fase 3: Widget WhatsApp (Prioridad Media)
-12. [ ] Crear WhatsAppWidget
-13. [ ] Reemplazar CallPopup
-14. [ ] Agregar a layout global
-
-### Fase 4: Automatizaciones n8n (Prioridad Media)
-15. [ ] Configurar webhook en Monday
-16. [ ] Crear workflow en n8n
-17. [ ] Configurar notificaciones
-
-### Fase 5: Testing y Optimización (Prioridad Alta)
-18. [ ] Probar flujo completo de cada formulario
-19. [ ] Verificar creación de leads en Monday
-20. [ ] Probar en móvil
-21. [ ] Optimizar tiempos de carga
+1. Asegúrate de tener `MONDAY_API_KEY` en `.env.local`
+2. Ejecuta `npm run dev`
+3. Navega a http://localhost:3000
+4. Haz click en cualquier CTA
+5. Llena el formulario
+6. Verifica que el lead aparezca en Monday.com
 
 ---
 
@@ -403,8 +197,9 @@ NEXT_PUBLIC_WHATSAPP_NUMBER=5216143977690
 
 ## Notas Técnicas
 
-- Los formularios son nativos (no iframe) para mejor UX y control
-- La API route maneja la comunicación con Monday para ocultar API keys
-- El widget de WhatsApp usa `wa.me` para máxima compatibilidad
-- Los formularios incluyen honeypot y rate limiting básico para spam
-- Se implementa loading states y error handling robusto
+- Los formularios son nativos (no iframe) para mejor UX
+- La API route oculta el API key de Monday del cliente
+- El widget de WhatsApp usa `wa.me` para máxima compatibilidad móvil
+- Los formularios incluyen validación en tiempo real
+- Estados de loading y error handling robusto
+- TypeScript para type safety en toda la implementación

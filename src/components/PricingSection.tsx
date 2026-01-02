@@ -10,13 +10,14 @@ const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
 
 const plans = [
   {
-    name: "Básico",
-    tagline: "Paga solo lo que facturas.",
+    name: "Personal",
+    tagline: "Ideal para freelancers y negocios pequeños.",
     price: "$10",
-    unit: "MXN por factura",
-    description: "Ideal para equipos pequeños o flujo variable.",
+    unit: "MXN/recibo",
+    description: "Hasta 50 recibos al mes.",
     features: [
-      "Sin costo mensual fijo",
+      "Hasta 50 recibos mensuales",
+      "1 usuario",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",
       "Soporte por correo"
@@ -28,35 +29,51 @@ const plans = [
   {
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
-    price: "$990",
+    price: "$1,299",
     unit: "MXN/mes",
-    description: "Hasta 150 recibos y 5 empleados.",
+    description: "Hasta 150 recibos y 3 usuarios.",
     features: [
       "150 recibos mensuales",
-      "Hasta 5 empleados",
-      "Reportes por empleado",
+      "Hasta 3 usuarios",
+      "Reportes por persona",
       "Reglas de aprobación",
       "Dashboard de control",
       "Soporte prioritario"
+    ],
+    cta: "Comenzar ahora",
+    popular: false,
+    calendly: false
+  },
+  {
+    name: "Empresa",
+    tagline: "Control total para operaciones continuas.",
+    price: "$2,499",
+    unit: "MXN/mes",
+    description: "Hasta 300 recibos y 8 usuarios.",
+    features: [
+      "300 recibos mensuales",
+      "Hasta 8 usuarios",
+      "Reportes por departamento",
+      "Reportes de impuestos",
+      "Integración contable",
+      "Soporte dedicado"
     ],
     cta: "Comenzar ahora",
     popular: true,
     calendly: false
   },
   {
-    name: "Empresa",
-    tagline: "Control total para operaciones más grandes.",
-    price: "$1,990",
-    unit: "MXN/mes",
-    description: "1,000 recibos, 15 empleados, múltiples RFCs.",
+    name: "Corporativo",
+    tagline: "Solución a la medida de tu operación.",
+    price: "A tu medida",
+    unit: "",
+    description: "Para grandes operaciones.",
     features: [
-      "1,000 recibos mensuales",
-      "Hasta 15 empleados",
-      "3 RFCs incluidos",
-      "Integración contable opcional",
-      "Reportes por departamento",
+      "Usuarios ilimitados",
+      "Facturas ilimitadas",
       "API disponible",
-      "Soporte dedicado"
+      "Soporte dedicado",
+      "Configuración a la medida"
     ],
     cta: "Hablar con un asesor",
     popular: false,
@@ -82,16 +99,18 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-start">
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative bg-white border shadow-sm hover:shadow-lg transition-shadow ${
-                plan.popular ? 'ring-2 ring-primary shadow-lg border-0' : 'border-border'
+              className={`relative transition-all duration-300 ${
+                plan.popular
+                  ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50 ring-2 ring-primary shadow-2xl shadow-blue-500/20 border-0 z-10'
+                  : 'bg-white border border-border shadow-sm hover:shadow-lg hover:-translate-y-1'
               }`}
             >
               {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 gradient-bg">
+                <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 gradient-bg px-4 py-1 text-sm shadow-lg">
                   Recomendado
                 </Badge>
               )}
@@ -133,7 +152,7 @@ export function PricingSection() {
                 {plan.calendly ? (
                   <>
                     <Button
-                      className="w-full bg-foreground hover:bg-foreground/90"
+                      className="w-full bg-slate-800 hover:bg-slate-700 transition-all"
                       onClick={() => window.open(CALENDLY_URL, '_blank')}
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -157,13 +176,18 @@ export function PricingSection() {
                 ) : (
                   <Link href="/comenzar">
                     <Button
-                      className={`w-full ${
+                      className={`w-full transition-all ${
                         plan.popular
-                          ? 'gradient-bg hover:opacity-90'
-                          : 'bg-foreground hover:bg-foreground/90'
+                          ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                          : 'bg-slate-800 hover:bg-slate-700'
                       }`}
                     >
                       {plan.cta}
+                      {plan.popular && (
+                        <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      )}
                     </Button>
                   </Link>
                 )}

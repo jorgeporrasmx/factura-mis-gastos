@@ -1,8 +1,8 @@
 const steps = [
   {
     number: "01",
-    title: "Tu empleado envía el recibo",
-    description: "Por WhatsApp, correo o nuestra app. Lo más fácil para él.",
+    title: "Tu equipo envía el recibo",
+    description: "Por WhatsApp, correo o nuestra app. Lo más fácil para todos.",
     icon: (
       <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -22,7 +22,7 @@ const steps = [
   {
     number: "03",
     title: "Tú recibes los reportes",
-    description: "Por empleado, por departamento o consolidados. Tú decides.",
+    description: "Por persona, por departamento o consolidados. Tú decides.",
     icon: (
       <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />

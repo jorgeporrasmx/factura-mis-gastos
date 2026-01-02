@@ -6,59 +6,82 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+
 const plans = [
   {
-    id: 'basico',
-    name: "Básico",
-    tagline: "Paga solo lo que facturas.",
+    id: 'personal',
+    name: "Personal",
+    tagline: "Ideal para freelancers y negocios pequeños.",
     price: "$10",
     priceValue: 10,
     unit: "MXN por factura",
-    description: "Ideal para equipos pequeños o flujo variable.",
+    description: "Hasta 50 recibos al mes.",
     features: [
-      "Sin costo mensual fijo",
+      "Hasta 50 recibos mensuales",
+      "1 usuario",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",
       "Soporte por correo"
     ],
-    popular: false
+    popular: false,
+    calendly: false
   },
   {
     id: 'equipos',
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
-    price: "$990",
-    priceValue: 990,
+    price: "$1,299",
+    priceValue: 1299,
     unit: "MXN/mes",
-    description: "Hasta 150 recibos y 5 empleados.",
+    description: "Hasta 150 recibos y 3 usuarios.",
     features: [
       "150 recibos mensuales",
-      "Hasta 5 empleados",
-      "Reportes por empleado",
+      "Hasta 3 usuarios",
+      "Reportes por persona",
       "Reglas de aprobación",
       "Dashboard de control",
       "Soporte prioritario"
     ],
-    popular: true
+    popular: false,
+    calendly: false
   },
   {
     id: 'empresa',
     name: "Empresa",
-    tagline: "Control total para operaciones más grandes.",
-    price: "$1,990",
-    priceValue: 1990,
+    tagline: "Control total para operaciones continuas.",
+    price: "$2,499",
+    priceValue: 2499,
     unit: "MXN/mes",
-    description: "1,000 recibos, 15 empleados, múltiples RFCs.",
+    description: "Hasta 300 recibos y 8 usuarios.",
     features: [
-      "1,000 recibos mensuales",
-      "Hasta 15 empleados",
-      "3 RFCs incluidos",
-      "Integración contable opcional",
+      "300 recibos mensuales",
+      "Hasta 8 usuarios",
       "Reportes por departamento",
-      "API disponible",
+      "Reportes de impuestos",
+      "Integración contable",
       "Soporte dedicado"
     ],
-    popular: false
+    popular: true,
+    calendly: false
+  },
+  {
+    id: 'corporativo',
+    name: "Corporativo",
+    tagline: "Solución a la medida de tu operación.",
+    price: "A tu medida",
+    priceValue: 0,
+    unit: "",
+    description: "Para grandes operaciones.",
+    features: [
+      "Usuarios ilimitados",
+      "Facturas ilimitadas",
+      "API disponible",
+      "Soporte dedicado",
+      "Configuración a la medida"
+    ],
+    popular: false,
+    calendly: true
   }
 ];
 
@@ -101,6 +124,11 @@ export default function ComenzarPage() {
   const [step, setStep] = useState(1);
 
   const handlePlanSelect = (planId: string) => {
+    const plan = plans.find(p => p.id === planId);
+    if (plan?.calendly) {
+      window.open(CALENDLY_URL, '_blank');
+      return;
+    }
     setSelectedPlan(planId);
     setStep(2);
     // Scroll suave a la sección de pago
@@ -184,7 +212,7 @@ export default function ComenzarPage() {
           <h2 className="text-2xl font-bold text-foreground mb-6 text-center">
             1. Selecciona tu plan
           </h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {plans.map((plan) => (
               <Card
                 key={plan.id}

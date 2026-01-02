@@ -26,7 +26,7 @@ export function CTASection() {
         </h2>
 
         <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          Tus empleados solo envían el recibo. Nosotros nos encargamos del resto.
+          Tu equipo solo envía el recibo. Nosotros nos encargamos del resto.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

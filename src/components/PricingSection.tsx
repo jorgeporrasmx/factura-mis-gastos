@@ -10,23 +10,6 @@ const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
 
 const plans = [
   {
-    name: "Personal",
-    tagline: "Ideal para freelancers y negocios pequeños.",
-    price: "$10",
-    unit: "MXN/recibo",
-    description: "Hasta 50 recibos al mes.",
-    features: [
-      "Hasta 50 recibos mensuales",
-      "1 usuario",
-      "Reporte mensual incluido",
-      "Envío por WhatsApp o correo",
-      "Soporte por correo"
-    ],
-    cta: "Comenzar ahora",
-    popular: false,
-    calendly: false
-  },
-  {
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
     price: "$1,299",
@@ -99,7 +82,7 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-start">
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
           {plans.map((plan, index) => (
             <Card
               key={index}

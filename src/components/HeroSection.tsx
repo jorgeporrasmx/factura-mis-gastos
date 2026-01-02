@@ -30,9 +30,10 @@ export function HeroSection() {
           </div>
 
           {/* Main headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-6">
-            Tus empleados envían el recibo.<br />
-            <span className="gradient-text">Nosotros lo facturamos.</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            <span className="text-foreground">Tu equipo gasta.</span><br />
+            <span className="text-blue-600">Nosotros facturamos.</span><br />
+            <span className="text-primary">Tú controlas.</span>
           </h1>
 
           {/* Subtitle */}

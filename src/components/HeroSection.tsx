@@ -63,15 +63,15 @@ export function HeroSection() {
             </div>
 
             {/* Main headline */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground tracking-tight mb-6 animate-fade-in-up leading-tight">
-              Tu equipo envía el recibo, nosotros lo facturamos,{' '}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up leading-tight">
+              <span className="text-foreground">Tu equipo envía el recibo,</span>{' '}
+              <span className="text-primary">nosotros lo facturamos,</span>{' '}
               <span className="gradient-text">tú tienes un reporte completo.</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in-up delay-100">
-              Olvídate de gastos sin facturar. Tu equipo manda el recibo por WhatsApp y tú recibes reportes claros por empleado.
-            </p>
+              Olvídate de gastos sin facturar. Tu equipo manda el recibo por WhatsApp y tú recibes reportes claros.</p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">

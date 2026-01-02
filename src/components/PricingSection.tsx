@@ -12,11 +12,11 @@ const plans = [
   {
     name: "Básico",
     tagline: "Ideal para equipos pequeños.",
-    price: "$1,199",
-    unit: "MXN/mes",
-    description: "Hasta 100 recibos y 3 usuarios.",
+    price: "$10",
+    unit: "MXN/recibo",
+    description: "Hasta 50 recibos al mes.",
     features: [
-      "100 recibos mensuales",
+      "Hasta 50 recibos mensuales",
       "Hasta 3 usuarios",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",

@@ -56,8 +56,8 @@ export function DifferentiatorsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Tú defines las{' '}
-            <span className="gradient-text">reglas del juego.</span>
+            Tú pones las reglas{' '}
+            <span className="gradient-text">para los gastos de tu equipo.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             No solo facturamos. Te damos el control que necesitas sobre los gastos de tu empresa.

@@ -10,14 +10,14 @@ const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
 
 const plans = [
   {
-    name: "Básico",
-    tagline: "Ideal para equipos pequeños.",
+    name: "Personal",
+    tagline: "Ideal para freelancers y negocios pequeños.",
     price: "$10",
     unit: "MXN/recibo",
     description: "Hasta 50 recibos al mes.",
     features: [
       "Hasta 50 recibos mensuales",
-      "Hasta 3 usuarios",
+      "1 usuario",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",
       "Soporte por correo"
@@ -29,35 +29,51 @@ const plans = [
   {
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
-    price: "$990",
+    price: "$1,299",
     unit: "MXN/mes",
-    description: "Hasta 150 recibos y 5 usuarios.",
+    description: "Hasta 150 recibos y 3 usuarios.",
     features: [
       "150 recibos mensuales",
-      "Hasta 5 usuarios",
+      "Hasta 3 usuarios",
       "Reportes por persona",
       "Reglas de aprobación",
       "Dashboard de control",
       "Soporte prioritario"
     ],
     cta: "Comenzar ahora",
-    popular: true,
+    popular: false,
     calendly: false
   },
   {
     name: "Empresa",
-    tagline: "Control total para operaciones más grandes.",
-    price: "$2,099",
+    tagline: "Control total para operaciones continuas.",
+    price: "$2,499",
     unit: "MXN/mes",
-    description: "1,000 recibos, 15 usuarios, múltiples RFCs.",
+    description: "Hasta 300 recibos y 8 usuarios.",
     features: [
-      "1,000 recibos mensuales",
-      "Hasta 15 usuarios",
-      "3 RFCs incluidos",
-      "Integración contable opcional",
+      "300 recibos mensuales",
+      "Hasta 8 usuarios",
       "Reportes por departamento",
-      "API disponible",
+      "Reportes de impuestos",
+      "Integración contable",
       "Soporte dedicado"
+    ],
+    cta: "Comenzar ahora",
+    popular: true,
+    calendly: false
+  },
+  {
+    name: "Corporativo",
+    tagline: "Solución a la medida de tu operación.",
+    price: "A tu medida",
+    unit: "",
+    description: "Para grandes operaciones.",
+    features: [
+      "Usuarios ilimitados",
+      "Facturas ilimitadas",
+      "API disponible",
+      "Soporte dedicado",
+      "Configuración a la medida"
     ],
     cta: "Hablar con un asesor",
     popular: false,
@@ -83,19 +99,19 @@ export function PricingSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto items-start">
           {plans.map((plan, index) => (
             <Card
               key={index}
               className={`relative transition-all duration-300 ${
                 plan.popular
-                  ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50 ring-2 ring-primary shadow-2xl shadow-blue-500/20 border-0 md:scale-105 md:-my-4 z-10'
+                  ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50 ring-2 ring-primary shadow-2xl shadow-blue-500/20 border-0 z-10'
                   : 'bg-white border border-border shadow-sm hover:shadow-lg hover:-translate-y-1'
               }`}
             >
               {plan.popular && (
                 <Badge className="absolute -top-4 left-1/2 -translate-x-1/2 gradient-bg px-4 py-1 text-sm shadow-lg">
-                  Más popular
+                  Recomendado
                 </Badge>
               )}
 

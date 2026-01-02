@@ -14,10 +14,10 @@ const plans = [
     tagline: "Ideal para equipos pequeños.",
     price: "$1,199",
     unit: "MXN/mes",
-    description: "Hasta 100 recibos y 3 empleados.",
+    description: "Hasta 100 recibos y 3 usuarios.",
     features: [
       "100 recibos mensuales",
-      "Hasta 3 empleados",
+      "Hasta 3 usuarios",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",
       "Soporte por correo"
@@ -31,11 +31,11 @@ const plans = [
     tagline: "Para empresas con gastos recurrentes.",
     price: "$990",
     unit: "MXN/mes",
-    description: "Hasta 150 recibos y 5 empleados.",
+    description: "Hasta 150 recibos y 5 usuarios.",
     features: [
       "150 recibos mensuales",
-      "Hasta 5 empleados",
-      "Reportes por empleado",
+      "Hasta 5 usuarios",
+      "Reportes por persona",
       "Reglas de aprobación",
       "Dashboard de control",
       "Soporte prioritario"
@@ -49,10 +49,10 @@ const plans = [
     tagline: "Control total para operaciones más grandes.",
     price: "$2,099",
     unit: "MXN/mes",
-    description: "1,000 recibos, 15 empleados, múltiples RFCs.",
+    description: "1,000 recibos, 15 usuarios, múltiples RFCs.",
     features: [
       "1,000 recibos mensuales",
-      "Hasta 15 empleados",
+      "Hasta 15 usuarios",
       "3 RFCs incluidos",
       "Integración contable opcional",
       "Reportes por departamento",

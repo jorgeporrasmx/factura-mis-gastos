@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     question: "¿Cuánto cuesta el servicio?",
-    answer: "Ofrecemos cuatro planes: Plan Personal a $10 MXN por factura (1 usuario, hasta 50 recibos), Plan Equipos a $1,299 MXN/mes (hasta 150 recibos y 3 usuarios), Plan Empresa a $2,499 MXN/mes (hasta 300 recibos, 8 usuarios, integración contable y reportes de impuestos), y Plan Corporativo para grandes operaciones con soluciones a la medida."
+    answer: "Ofrecemos tres planes: Plan Equipos a $1,299 MXN/mes (hasta 150 recibos y 3 usuarios), Plan Empresa a $2,499 MXN/mes (hasta 300 recibos, 8 usuarios, integración contable y reportes de impuestos), y Plan Corporativo para grandes operaciones con soluciones a la medida."
   },
   {
     question: "¿Para qué tipo de empresas es ideal?",

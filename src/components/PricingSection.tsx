@@ -14,8 +14,9 @@ const plans = [
     tagline: "Paga solo lo que facturas.",
     price: "$10",
     unit: "MXN por factura",
-    description: "Ideal para equipos pequeños o flujo variable.",
+    description: "Hasta 50 recibos al mes. Ideal para equipos pequeños.",
     features: [
+      "Hasta 50 recibos mensuales",
       "Sin costo mensual fijo",
       "Reporte mensual incluido",
       "Envío por WhatsApp o correo",

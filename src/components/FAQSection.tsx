@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { LeadFormModal } from '@/components/LeadFormModal';
+import Link from 'next/link';
+
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 const faqs = [
   {
@@ -48,83 +50,75 @@ const faqs = [
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [showStandardForm, setShowStandardForm] = useState(false);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
   return (
-    <>
-      <section id="preguntas-frecuentes" aria-label="Preguntas frecuentes sobre Factura Mis Gastos" className="py-20 lg:py-28 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <header className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              Preguntas{' '}
-              <span className="gradient-text">frecuentes</span>
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Resolvemos tus dudas sobre cómo funciona Factura Mis Gastos y cómo puede ayudar a tu empresa.
-            </p>
-          </header>
+    <section id="preguntas-frecuentes" aria-label="Preguntas frecuentes sobre Factura Mis Gastos" className="py-20 lg:py-28 bg-white">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+            Preguntas{' '}
+            <span className="gradient-text">frecuentes</span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Resolvemos tus dudas sobre cómo funciona Factura Mis Gastos y cómo puede ayudar a tu empresa.
+          </p>
+        </header>
 
-          <div className="space-y-4" role="list" aria-label="Lista de preguntas frecuentes">
-            {faqs.map((faq, index) => (
-              <article
-                key={index}
-                className="border border-border rounded-xl overflow-hidden bg-slate-50 hover:bg-slate-100 transition-colors"
-                role="listitem"
-              >
-                <button
-                  className="w-full px-6 py-5 text-left flex items-center justify-between gap-4"
-                  onClick={() => toggleFAQ(index)}
-                  aria-expanded={openIndex === index}
-                  aria-controls={`faq-answer-${index}`}
-                >
-                  <h3 className="text-lg font-semibold text-foreground pr-4">
-                    {faq.question}
-                  </h3>
-                  <span className={`flex-shrink-0 w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white transition-transform ${openIndex === index ? 'rotate-180' : ''}`}>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </button>
-                <div
-                  id={`faq-answer-${index}`}
-                  className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'}`}
-                  aria-hidden={openIndex !== index}
-                >
-                  <p className="px-6 pb-5 text-muted-foreground leading-relaxed">
-                    {faq.answer}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              ¿Tienes más preguntas?
-            </p>
-            <button
-              onClick={() => setShowStandardForm(true)}
-              className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+        <div className="space-y-4" role="list" aria-label="Lista de preguntas frecuentes">
+          {faqs.map((faq, index) => (
+            <article
+              key={index}
+              className="border border-border rounded-xl overflow-hidden bg-slate-50 hover:bg-slate-100 transition-colors"
+              role="listitem"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Agenda una llamada con nuestro equipo
-            </button>
-          </div>
+              <button
+                className="w-full px-6 py-5 text-left flex items-center justify-between gap-4"
+                onClick={() => toggleFAQ(index)}
+                aria-expanded={openIndex === index}
+                aria-controls={`faq-answer-${index}`}
+              >
+                <h3 className="text-lg font-semibold text-foreground pr-4">
+                  {faq.question}
+                </h3>
+                <span className={`flex-shrink-0 w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white transition-transform ${openIndex === index ? 'rotate-180' : ''}`}>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </span>
+              </button>
+              <div
+                id={`faq-answer-${index}`}
+                className={`overflow-hidden transition-all duration-300 ${openIndex === index ? 'max-h-96' : 'max-h-0'}`}
+                aria-hidden={openIndex !== index}
+              >
+                <p className="px-6 pb-5 text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
+            </article>
+          ))}
         </div>
-      </section>
 
-      <LeadFormModal
-        isOpen={showStandardForm}
-        onClose={() => setShowStandardForm(false)}
-        formType="standard"
-      />
-    </>
+        <div className="mt-12 text-center">
+          <p className="text-muted-foreground mb-4">
+            ¿Tienes más preguntas?
+          </p>
+          <Link
+            href={MONDAY_FORM_URL}
+            target="_blank"
+            className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Agenda una llamada con nuestro equipo
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }

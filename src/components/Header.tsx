@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
+import { LeadFormModal } from '@/components/LeadFormModal';
 import { Logo } from '@/components/Logo';
 
 interface User {
@@ -15,6 +16,7 @@ interface User {
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showExpressForm, setShowExpressForm] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   const handleLogin = (loggedInUser: User) => {
@@ -85,11 +87,12 @@ export function Header() {
                   <Button variant="ghost" className="text-sm" onClick={() => setIsLoginModalOpen(true)}>
                     Iniciar Sesión
                   </Button>
-                  <Link href="/comenzar">
-                    <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
-                      Comenzar ahora
-                    </Button>
-                  </Link>
+                  <Button
+                    className="text-sm gradient-bg hover:opacity-90 transition-opacity"
+                    onClick={() => setShowExpressForm(true)}
+                  >
+                    Comenzar ahora
+                  </Button>
                 </>
               )}
             </div>
@@ -145,11 +148,15 @@ export function Header() {
                       <Button variant="ghost" className="w-full justify-center" onClick={() => setIsLoginModalOpen(true)}>
                         Iniciar Sesión
                       </Button>
-                      <Link href="/comenzar" className="w-full">
-                        <Button className="w-full gradient-bg">
-                          Comenzar ahora
-                        </Button>
-                      </Link>
+                      <Button
+                        className="w-full gradient-bg"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowExpressForm(true);
+                        }}
+                      >
+                        Comenzar ahora
+                      </Button>
                     </>
                   )}
                 </div>
@@ -163,6 +170,13 @@ export function Header() {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
+      />
+
+      <LeadFormModal
+        isOpen={showExpressForm}
+        onClose={() => setShowExpressForm(false)}
+        formType="express"
+        redirectTo="/comenzar"
       />
     </>
   );

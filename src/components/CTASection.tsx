@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-// URL de Calendly - cambiar por la URL real cuando esté configurada
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+// URL del formulario de Monday para captar leads
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 export function CTASection() {
   return (
@@ -30,7 +30,7 @@ export function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/comenzar">
+          <Link href={MONDAY_FORM_URL} target="_blank">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"
@@ -41,17 +41,18 @@ export function CTASection() {
               </svg>
             </Button>
           </Link>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6 h-auto bg-transparent"
-            onClick={() => window.open(CALENDLY_URL, '_blank')}
-          >
-            <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Hablar con un asesor
-          </Button>
+          <Link href={MONDAY_FORM_URL} target="_blank">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6 h-auto bg-transparent"
+            >
+              <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Hablar con un asesor
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { Logo } from '@/components/Logo';
 
+// URL del formulario de Monday para captar leads
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+
 interface User {
   name: string;
   email: string;
@@ -85,7 +88,7 @@ export function Header() {
                   <Button variant="ghost" className="text-sm" onClick={() => setIsLoginModalOpen(true)}>
                     Iniciar Sesión
                   </Button>
-                  <Link href="/comenzar">
+                  <Link href={MONDAY_FORM_URL} target="_blank">
                     <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
                       Comenzar ahora
                     </Button>
@@ -145,7 +148,7 @@ export function Header() {
                       <Button variant="ghost" className="w-full justify-center" onClick={() => setIsLoginModalOpen(true)}>
                         Iniciar Sesión
                       </Button>
-                      <Link href="/comenzar" className="w-full">
+                      <Link href={MONDAY_FORM_URL} target="_blank" className="w-full">
                         <Button className="w-full gradient-bg">
                           Comenzar ahora
                         </Button>

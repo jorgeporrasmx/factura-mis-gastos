@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-// URL de Calendly - cambiar por la URL real cuando esté configurada
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+// URL del formulario de Monday para captar leads
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 const plans = [
   {
@@ -132,48 +132,29 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                {plan.calendly ? (
-                  <>
-                    <Button
-                      className="w-full bg-slate-800 hover:bg-slate-700 transition-all"
-                      onClick={() => window.open(CALENDLY_URL, '_blank')}
-                    >
+                <Link href={MONDAY_FORM_URL} target="_blank">
+                  <Button
+                    className={`w-full transition-all ${
+                      plan.popular
+                        ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                        : plan.calendly
+                        ? 'bg-slate-800 hover:bg-slate-700'
+                        : 'bg-slate-800 hover:bg-slate-700'
+                    }`}
+                  >
+                    {plan.calendly && (
                       <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      {plan.cta}
-                    </Button>
-                    <p className="text-xs text-center text-muted-foreground mt-3">
-                      O habla ahora con nuestro{' '}
-                      <button
-                        className="text-primary hover:underline font-medium"
-                        onClick={() => {
-                          const popup = document.querySelector('[aria-label="Abrir chat de ayuda"]') as HTMLButtonElement;
-                          if (popup) popup.click();
-                        }}
-                      >
-                        asesor virtual
-                      </button>
-                    </p>
-                  </>
-                ) : (
-                  <Link href="/comenzar">
-                    <Button
-                      className={`w-full transition-all ${
-                        plan.popular
-                          ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
-                          : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
-                    >
-                      {plan.cta}
-                      {plan.popular && (
-                        <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      )}
-                    </Button>
-                  </Link>
-                )}
+                    )}
+                    {plan.cta}
+                    {plan.popular && (
+                      <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    )}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
@@ -182,14 +163,13 @@ export function PricingSection() {
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
             ¿Necesitas algo diferente?{' '}
-            <a
-              href={CALENDLY_URL}
+            <Link
+              href={MONDAY_FORM_URL}
               target="_blank"
-              rel="noopener noreferrer"
               className="text-primary font-medium hover:underline"
             >
               Platiquemos sobre tu caso.
-            </a>
+            </Link>
           </p>
         </div>
       </div>

@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-// URL de Calendly - cambiar por la URL real cuando esté configurada
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+// URL del formulario de Monday para captar leads
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 const trustBadges = [
   {
@@ -34,10 +34,6 @@ const trustBadges = [
 ];
 
 export function HeroSection() {
-  const handleCalendlyClick = () => {
-    window.open(CALENDLY_URL, '_blank');
-  };
-
   return (
     <section
       id="inicio"
@@ -75,7 +71,7 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
-              <Link href="/comenzar">
+              <Link href={MONDAY_FORM_URL} target="_blank">
                 <Button size="lg" className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5">
                   Comenzar ahora
                   <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,17 +79,18 @@ export function HeroSection() {
                   </svg>
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                size="lg"
-                className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
-                onClick={handleCalendlyClick}
-              >
-                <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Hablar con un asesor
-              </Button>
+              <Link href={MONDAY_FORM_URL} target="_blank">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
+                >
+                  <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Solicitar demo
+                </Button>
+              </Link>
             </div>
 
             {/* Trust badges */}

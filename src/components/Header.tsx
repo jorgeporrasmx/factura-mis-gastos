@@ -2,30 +2,24 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { Logo } from '@/components/Logo';
+import { useAuth } from '@/context/AuthContext';
 
 // URL del formulario de Monday para captar leads
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
-interface User {
-  name: string;
-  email: string;
-  avatar: string;
-}
-
 export function Header() {
+  const router = useRouter();
+  const { user, logout, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
 
-  const handleLogin = (loggedInUser: User) => {
-    setUser(loggedInUser);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -34,6 +28,16 @@ export function Header() {
       element.scrollIntoView({ behavior: 'smooth' });
       setMobileMenuOpen(false);
     }
+  };
+
+  const getUserInitials = () => {
+    if (user?.displayName) {
+      return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return '?';
   };
 
   return (
@@ -68,17 +72,25 @@ export function Header() {
             </div>
 
             <div className="hidden md:flex items-center gap-3">
-              {user ? (
+              {!loading && user ? (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
-                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                    </div>
+                  <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName || 'Avatar'}
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {getUserInitials()}
+                      </div>
+                    )}
                     <div className="hidden lg:block">
-                      <p className="text-sm font-medium text-foreground">{user.name}</p>
+                      <p className="text-sm font-medium text-foreground">{user.displayName || 'Usuario'}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
-                  </div>
+                  </Link>
                   <Button variant="ghost" className="text-sm" onClick={handleLogout}>
                     Cerrar Sesión
                   </Button>
@@ -128,17 +140,25 @@ export function Header() {
                   Precios
                 </button>
                 <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                  {user ? (
+                  {!loading && user ? (
                     <>
-                      <div className="flex items-center gap-2 py-2">
-                        <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
-                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </div>
+                      <Link href="/dashboard" className="flex items-center gap-2 py-2">
+                        {user.photoURL ? (
+                          <img
+                            src={user.photoURL}
+                            alt={user.displayName || 'Avatar'}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
+                            {getUserInitials()}
+                          </div>
+                        )}
                         <div>
-                          <p className="text-sm font-medium text-foreground">{user.name}</p>
+                          <p className="text-sm font-medium text-foreground">{user.displayName || 'Usuario'}</p>
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
-                      </div>
+                      </Link>
                       <Button variant="ghost" className="w-full justify-center" onClick={handleLogout}>
                         Cerrar Sesión
                       </Button>
@@ -165,7 +185,6 @@ export function Header() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
-        onLogin={handleLogin}
       />
     </>
   );

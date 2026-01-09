@@ -1,13 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import { SchemaOrg } from "@/components/SchemaOrg";
 import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -117,7 +110,7 @@ export default function RootLayout({
 
         <SchemaOrg />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

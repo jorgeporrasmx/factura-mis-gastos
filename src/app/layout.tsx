@@ -55,20 +55,13 @@ export const metadata: Metadata = {
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
     description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Control total de gastos con verificación humana.",
     url: "https://facturamisgastos.com",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Factura Mis Gastos - Tus empleados envían el recibo, nosotros lo facturamos",
-      },
-    ],
+    // La imagen OG se genera automáticamente desde opengraph-image.tsx
   },
   twitter: {
     card: "summary_large_image",
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales",
     description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI.",
-    images: ["/og-image.png"],
+    // La imagen se genera automáticamente desde twitter-image.tsx
     creator: "@facturamisgastos",
   },
   alternates: {

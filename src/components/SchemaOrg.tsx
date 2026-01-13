@@ -69,20 +69,6 @@ export function SchemaOrg() {
     "offers": [
       {
         "@type": "Offer",
-        "name": "Plan Personal",
-        "description": "Ideal para freelancers y negocios pequeños. Hasta 50 recibos y 1 usuario.",
-        "price": "10",
-        "priceCurrency": "MXN",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
-          "price": "10",
-          "priceCurrency": "MXN",
-          "unitText": "por factura"
-        },
-        "availability": "https://schema.org/InStock"
-      },
-      {
-        "@type": "Offer",
         "name": "Plan Equipos",
         "description": "Hasta 150 recibos y 3 usuarios. Para empresas con gastos recurrentes.",
         "price": "1299",
@@ -150,7 +136,7 @@ export function SchemaOrg() {
         "name": "¿Cuánto cuesta el servicio?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Ofrecemos cuatro planes: Personal a $10 MXN por factura (1 usuario, hasta 50 recibos), Equipos a $1,299 MXN/mes (150 recibos, 3 usuarios), Empresa a $2,499 MXN/mes (300 recibos, 8 usuarios, integración contable), y Corporativo para grandes operaciones a la medida."
+          "text": "Ofrecemos tres planes: Equipos a $1,299 MXN/mes (150 recibos, 3 usuarios), Empresa a $2,499 MXN/mes (300 recibos, 8 usuarios, integración contable), y Corporativo para grandes operaciones a la medida."
         }
       },
       {

@@ -9,6 +9,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/auth/UserMenu';
 
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+// URL del formulario de Monday para captar leads
+const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+
+interface User {
+  name: string;
+  email: string;
+  avatar: string;
+}
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -137,6 +145,72 @@ export function Header() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
+            </div>
+
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </div>
+                    <div className="hidden lg:block">
+                      <p className="text-sm font-medium text-foreground">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" className="text-sm" onClick={handleLogout}>
+                    Cerrar Sesión
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button variant="ghost" className="text-sm" onClick={() => setIsLoginModalOpen(true)}>
+                    Iniciar Sesión
+                  </Button>
+                  <Link href={MONDAY_FORM_URL} target="_blank">
+                    <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
+                      Comenzar ahora
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-border">
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => scrollToSection('como-funciona')}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+                >
+                  Cómo Funciona
+                </button>
+                <button
+                  onClick={() => scrollToSection('precios')}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+                >
+                  Precios
+                </button>
+                <div className="flex flex-col gap-2 pt-4 border-t border-border">
+                  {user ? (
+                    <>
+                      <div className="flex items-center gap-2 py-2">
                         <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">
                           {user.displayName
                             ? user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -173,6 +247,14 @@ export function Header() {
                     </Link>
                   </>
                 )}
+                      <Link href={MONDAY_FORM_URL} target="_blank" className="w-full">
+                        <Button className="w-full gradient-bg">
+                          Comenzar ahora
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>

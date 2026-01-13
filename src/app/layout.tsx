@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SchemaOrg } from "@/components/SchemaOrg";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -111,7 +112,7 @@ export default function RootLayout({
         <SchemaOrg />
       </head>
       <body className="font-sans antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

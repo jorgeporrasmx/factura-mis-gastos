@@ -8,8 +8,42 @@ import { Badge } from '@/components/ui/badge';
 // URL del formulario de Monday para captar leads
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
-const plans = [
+type PlanId = 'personal' | 'equipos' | 'empresa' | 'corporativo';
+
+interface PlanConfig {
+  id: PlanId;
+  name: string;
+  tagline: string;
+  price: string;
+  unit: string;
+  description: string;
+  features: string[];
+  cta: string;
+  popular: boolean;
+  isCustom: boolean;
+}
+
+const plans: PlanConfig[] = [
   {
+    id: 'personal',
+    name: "Personal",
+    tagline: "Ideal para freelancers y negocios pequenos.",
+    price: "$10",
+    unit: "MXN/recibo",
+    description: "Hasta 50 recibos al mes.",
+    features: [
+      "Hasta 50 recibos mensuales",
+      "1 usuario",
+      "Reporte mensual incluido",
+      "Envio por WhatsApp o correo",
+      "Soporte por correo"
+    ],
+    cta: "Comenzar ahora",
+    popular: false,
+    isCustom: false
+  },
+  {
+    id: 'equipos',
     name: "Equipos",
     tagline: "Para empresas con gastos recurrentes.",
     price: "$1,299",
@@ -19,15 +53,16 @@ const plans = [
       "150 recibos mensuales",
       "Hasta 3 usuarios",
       "Reportes por persona",
-      "Reglas de aprobación",
+      "Reglas de aprobacion",
       "Dashboard de control",
       "Soporte prioritario"
     ],
     cta: "Comenzar ahora",
     popular: false,
-    calendly: false
+    isCustom: false
   },
   {
+    id: 'empresa',
     name: "Empresa",
     tagline: "Control total para operaciones continuas.",
     price: "$2,499",
@@ -38,16 +73,17 @@ const plans = [
       "Hasta 8 usuarios",
       "Reportes por departamento",
       "Reportes de impuestos",
-      "Integración contable",
+      "Integracion contable",
       "Soporte dedicado"
     ],
     cta: "Comenzar ahora",
     popular: true,
-    calendly: false
+    isCustom: false
   },
   {
+    id: 'corporativo',
     name: "Corporativo",
-    tagline: "Solución a la medida de tu operación.",
+    tagline: "Solucion a la medida de tu operacion.",
     price: "A tu medida",
     unit: "",
     description: "Para grandes operaciones.",
@@ -56,11 +92,11 @@ const plans = [
       "Facturas ilimitadas",
       "API disponible",
       "Soporte dedicado",
-      "Configuración a la medida"
+      "Configuracion a la medida"
     ],
-    cta: "Hablar con un asesor",
+    cta: "Solicitar cotizacion",
     popular: false,
-    calendly: true
+    isCustom: true
   }
 ];
 
@@ -132,21 +168,17 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                <Link href={MONDAY_FORM_URL} target="_blank">
+                <Link
+                  href={plan.isCustom ? MONDAY_FORM_URL : `/checkout/${plan.id}`}
+                  target={plan.isCustom ? "_blank" : undefined}
+                >
                   <Button
                     className={`w-full transition-all ${
                       plan.popular
                         ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
-                        : plan.calendly
-                        ? 'bg-slate-800 hover:bg-slate-700'
                         : 'bg-slate-800 hover:bg-slate-700'
                     }`}
                   >
-                    {plan.calendly && (
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    )}
                     {plan.cta}
                     {plan.popular && (
                       <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

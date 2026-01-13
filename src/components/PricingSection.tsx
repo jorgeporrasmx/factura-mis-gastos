@@ -172,7 +172,6 @@ export function PricingSection() {
                   href={plan.isCustom ? MONDAY_FORM_URL : `/checkout/${plan.id}`}
                   target={plan.isCustom ? "_blank" : undefined}
                 >
-                <Link href={MONDAY_FORM_URL} target="_blank">
                   <Button
                     className={`w-full transition-all ${
                       plan.popular
@@ -180,22 +179,6 @@ export function PricingSection() {
                         : 'bg-slate-800 hover:bg-slate-700'
                     }`}
                   >
-                    {plan.cta}
-                    {plan.popular && (
-                      <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    )}
-                        : plan.calendly
-                        ? 'bg-slate-800 hover:bg-slate-700'
-                        : 'bg-slate-800 hover:bg-slate-700'
-                    }`}
-                  >
-                    {plan.calendly && (
-                      <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    )}
                     {plan.cta}
                     {plan.popular && (
                       <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

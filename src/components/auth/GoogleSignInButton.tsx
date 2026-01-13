@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { signInWithGoogleRedirect } from '@/lib/firebase/auth';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -17,21 +17,13 @@ export function GoogleSignInButton({
   className,
   disabled,
 }: GoogleSignInButtonProps) {
-  const { signInWithGoogle, isLoading } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   const handleClick = async () => {
     setIsSigningIn(true);
-
-    const result = await signInWithGoogle();
-
-    setIsSigningIn(false);
-
-    if (result.success) {
-      onSuccess?.();
-    } else {
-      onError?.(result.error?.message || 'Error al iniciar sesión');
-    }
+    // Use redirect instead of popup to avoid COOP issues
+    await signInWithGoogleRedirect();
+    // The page will redirect, so we don't need to handle the result here
   };
 
   return (

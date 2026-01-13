@@ -6,23 +6,25 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PLANS, PlanId } from '@/types/payments';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   CheckCircle,
   ArrowRight,
   Mail,
   MessageCircle,
-  Download,
   Calendar,
-  Users,
-  FileText,
+  UserPlus,
+  LogIn,
 } from 'lucide-react';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
+  const { isAuthenticated, user, isLoading } = useAuth();
 
   const transactionId = searchParams.get('transactionId');
   const subscriptionId = searchParams.get('subscriptionId');
   const planId = searchParams.get('plan') as PlanId;
+  const email = searchParams.get('email') || '';
 
   const plan = planId ? PLANS[planId] : null;
 
@@ -38,11 +40,11 @@ function SuccessContent() {
             ¡Pago exitoso!
           </h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Bienvenido a Factura Mis Gastos. Tu suscripcion al plan{' '}
+            Bienvenido a Factura Mis Gastos. Tu suscripción al plan{' '}
             <span className="font-semibold text-foreground">
               {plan?.name || 'seleccionado'}
             </span>{' '}
-            esta activa.
+            está activa.
           </p>
         </div>
 
@@ -50,7 +52,7 @@ function SuccessContent() {
         <Card className="mb-8">
           <CardContent className="p-6">
             <h2 className="font-semibold text-lg mb-4">
-              Detalles de tu suscripcion
+              Detalles de tu suscripción
             </h2>
 
             <div className="space-y-3">
@@ -72,14 +74,14 @@ function SuccessContent() {
 
               {transactionId && (
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-muted-foreground">ID de transaccion</span>
+                  <span className="text-muted-foreground">ID de transacción</span>
                   <span className="font-mono text-sm">{transactionId}</span>
                 </div>
               )}
 
               {subscriptionId && (
                 <div className="flex justify-between py-2">
-                  <span className="text-muted-foreground">ID de suscripcion</span>
+                  <span className="text-muted-foreground">ID de suscripción</span>
                   <span className="font-mono text-sm">{subscriptionId}</span>
                 </div>
               )}
@@ -88,62 +90,126 @@ function SuccessContent() {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
                 <Mail className="w-4 h-4 inline mr-2" />
-                Hemos enviado un correo de confirmacion con todos los detalles
-                de tu compra y proximos pasos.
+                Hemos enviado un correo de confirmación con todos los detalles
+                de tu compra y próximos pasos.
               </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Proximos pasos */}
-        <Card className="mb-8">
+        {/* Acceso a cuenta - Prominente */}
+        <Card className="mb-8 border-2 border-blue-200 bg-blue-50/50">
           <CardContent className="p-6">
-            <h2 className="font-semibold text-lg mb-6">
-              ¿Que sigue?
+            <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              {isAuthenticated ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  ¡Ya tienes acceso a tu portal!
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5 text-blue-600" />
+                  Configura tu cuenta
+                </>
+              )}
             </h2>
 
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-primary">1</span>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">Configura tu cuenta</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Recibiras un correo con instrucciones para configurar tu
-                    cuenta y agregar a tu equipo.
-                  </p>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              </div>
+            ) : isAuthenticated && user ? (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Estás conectado como <strong>{user.email}</strong>.
+                  Ahora puedes subir tu Constancia de Situación Fiscal y comenzar a cargar tus recibos.
+                </p>
+                <Link href="/portal">
+                  <Button className="w-full gradient-bg hover:opacity-90">
+                    Ir a mi portal
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Crea tu cuenta para acceder a tu portal y comenzar a subir tus recibos.
+                  Solo toma unos segundos con Google o tu email.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link
+                    href={`/auth/registro?email=${encodeURIComponent(email)}&txn=${transactionId || ''}`}
+                    className="flex-1"
+                  >
+                    <Button className="w-full gradient-bg hover:opacity-90">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Crear mi cuenta
+                    </Button>
+                  </Link>
+                  <Link href="/auth/login" className="flex-1">
+                    <Button variant="outline" className="w-full">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Ya tengo cuenta
+                    </Button>
+                  </Link>
                 </div>
               </div>
-
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-primary">2</span>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">Descarga la app</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Disponible para iOS y Android. Comienza a capturar tus
-                    recibos desde tu telefono.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="font-bold text-primary">3</span>
-                </div>
-                <div>
-                  <h3 className="font-medium mb-1">Agenda una sesion de onboarding</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Nuestro equipo te ayudara a configurar todo para que
-                    aproveches al maximo la plataforma.
-                  </p>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Proximos pasos - Solo si ya está autenticado */}
+        {isAuthenticated && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <h2 className="font-semibold text-lg mb-6">
+                ¿Qué sigue?
+              </h2>
+
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="font-bold text-primary">1</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Sube tu Constancia Fiscal</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Necesitamos tu CSF del SAT (máximo 3 meses de antigüedad)
+                      para poder generar tus facturas correctamente.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="font-bold text-primary">2</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Captura tus recibos</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Toma fotos de tus recibos directamente desde tu celular
+                      o súbelos desde tu galería.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="font-bold text-primary">3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-1">Nosotros nos encargamos</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Nuestro equipo gestionará las facturas CFDI correspondientes
+                      a tus recibos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Acciones rapidas */}
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
@@ -188,64 +254,23 @@ function SuccessContent() {
           </Link>
         </div>
 
-        {/* Recursos utiles */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="font-semibold text-lg mb-4">
-              Recursos utiles
-            </h2>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <Download className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <span className="text-sm font-medium block">App iOS</span>
-                  <span className="text-xs text-muted-foreground">
-                    App Store
-                  </span>
-                </div>
-              </a>
-
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <Download className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <span className="text-sm font-medium block">App Android</span>
-                  <span className="text-xs text-muted-foreground">
-                    Play Store
-                  </span>
-                </div>
-              </a>
-
-              <a
-                href="#"
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <FileText className="w-5 h-5 text-muted-foreground" />
-                <div>
-                  <span className="text-sm font-medium block">Guia de inicio</span>
-                  <span className="text-xs text-muted-foreground">
-                    PDF descargable
-                  </span>
-                </div>
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* CTA final */}
         <div className="text-center">
-          <Link href="/comenzar">
-            <Button className="gradient-bg hover:opacity-90">
-              Ir a mi cuenta
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          {isAuthenticated ? (
+            <Link href="/portal">
+              <Button className="gradient-bg hover:opacity-90">
+                Ir a mi portal
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          ) : (
+            <Link href={`/auth/registro?email=${encodeURIComponent(email)}&txn=${transactionId || ''}`}>
+              <Button className="gradient-bg hover:opacity-90">
+                Crear mi cuenta
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          )}
 
           <p className="text-sm text-muted-foreground mt-4">
             ¿Tienes preguntas?{' '}

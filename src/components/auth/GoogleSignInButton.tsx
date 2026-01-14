@@ -31,7 +31,7 @@ export function GoogleSignInButton({
       type="button"
       variant="outline"
       onClick={handleClick}
-      disabled={disabled || isLoading || isSigningIn}
+      disabled={disabled || isSigningIn}
       className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
     >
       {/* Google Icon */}

@@ -34,23 +34,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Listen to auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged((user) => {
-      setState({
-        user,
-        isLoading: false,
-        isAuthenticated: !!user,
-        error: null,
-      });
-    });
+    let mounted = true;
+    let hasResolved = false;
 
-    // Check for redirect result (mobile Google sign-in)
-    getGoogleRedirectResult().then((result) => {
-      if (result.error) {
-        setState((prev) => ({ ...prev, error: result.error?.message || null }));
+    // Safety timeout - ensure loading state resolves after 5 seconds max
+    const timeout = setTimeout(() => {
+      if (mounted && !hasResolved) {
+        console.warn('Auth state timeout - forcing loading to false');
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
+        hasResolved = true;
+      }
+    }, 5000);
+
+    const unsubscribe = onAuthStateChanged((user) => {
+      if (mounted) {
+        hasResolved = true;
+        setState({
+          user,
+          isLoading: false,
+          isAuthenticated: !!user,
+          error: null,
+        });
       }
     });
 
-    return () => unsubscribe();
+    // Check for redirect result (after Google sign-in redirect)
+    getGoogleRedirectResult()
+      .then((result) => {
+        if (mounted && result.error) {
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: result.error?.message || null
+          }));
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting redirect result:', err);
+        if (mounted) {
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: 'Error al procesar inicio de sesión'
+          }));
+        }
+      });
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
 
   // Sign in with Google

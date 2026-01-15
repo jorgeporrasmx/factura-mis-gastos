@@ -47,7 +47,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           </p>
           <div className="space-y-3">
             <Link
-              href="https://wa.me/526143977690?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo"
+              href="https://wa.me/5216144273301?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo"
               target="_blank"
               className="block w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 font-medium transition-colors"
             >

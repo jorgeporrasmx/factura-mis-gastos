@@ -2,18 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserMenu } from '@/components/auth/UserMenu';
 
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, isLoading, signOut } = useAuth();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
@@ -62,13 +59,23 @@ export function Header() {
             {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
             ) : isAuthenticated && user ? (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Link href="/portal">
-                  <Button variant="ghost" className="text-sm">
+                  <Button className="text-sm gradient-bg hover:opacity-90">
                     Mi Portal
                   </Button>
                 </Link>
-                <UserMenu />
+                <Link href="/portal/recibos">
+                  <Button variant="outline" className="text-sm">
+                    Subir Recibos
+                  </Button>
+                </Link>
+                <button
+                  onClick={() => signOut()}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Cerrar Sesión
+                </button>
               </div>
             ) : (
               <>

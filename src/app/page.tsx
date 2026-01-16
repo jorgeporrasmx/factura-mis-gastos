@@ -8,6 +8,7 @@ import { PricingSection } from '@/components/PricingSection';
 import { FAQSection } from '@/components/FAQSection';
 import { CTASection } from '@/components/CTASection';
 import { Footer } from '@/components/Footer';
+import { CallPopup } from '@/components/CallPopup';
 import { WhatsAppWidget } from '@/components/WhatsAppWidget';
 
 export default function Home() {
@@ -25,6 +26,7 @@ export default function Home() {
         <BlogSection />
       </main>
       <Footer />
+      <CallPopup />
       <WhatsAppWidget />
     </>
   );

@@ -234,7 +234,7 @@ function SuccessContent() {
           </Link>
 
           <Link
-            href="https://wa.me/526143977690?text=Hola%2C%20acabo%20de%20suscribirme%20y%20tengo%20dudas"
+            href="https://wa.me/5216144273301?text=Hola%2C%20acabo%20de%20suscribirme%20y%20tengo%20dudas"
             target="_blank"
             className="block"
           >

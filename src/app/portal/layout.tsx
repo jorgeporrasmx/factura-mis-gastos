@@ -3,7 +3,50 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { CompanyProvider, useCompany } from '@/contexts/CompanyContext';
 import { PortalNav } from '@/components/portal/PortalNav';
+
+// Componente interno que verifica onboarding
+function PortalContent({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { userProfile, isLoading: companyLoading } = useCompany();
+
+  // Redirigir a onboarding si no está completo
+  useEffect(() => {
+    if (!companyLoading && userProfile && !userProfile.onboardingCompleted) {
+      router.push('/auth/onboarding');
+    }
+  }, [companyLoading, userProfile, router]);
+
+  // Mostrar loading mientras verifica
+  if (companyLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Cargando datos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No renderizar si onboarding no completado
+  if (userProfile && !userProfile.onboardingCompleted) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <PortalNav />
+
+      {/* Main content area */}
+      <div className="md:pl-64">
+        <main className="pb-20 md:pb-0">{children}</main>
+      </div>
+    </div>
+  );
+}
 
 export default function PortalLayout({
   children,
@@ -38,14 +81,8 @@ export default function PortalLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
-      <PortalNav />
-
-      {/* Main content area */}
-      <div className="md:pl-64">
-        <main className="pb-20 md:pb-0">{children}</main>
-      </div>
-    </div>
+    <CompanyProvider>
+      <PortalContent>{children}</PortalContent>
+    </CompanyProvider>
   );
 }

@@ -1,0 +1,153 @@
+// API para crear empresas
+// POST /api/companies - Crear una nueva empresa
+
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  createCompany,
+  getCompanyByDomain,
+  updateCompanyDriveFolders,
+  getUserProfile,
+  linkUserToCompany,
+} from '@/lib/firebase/firestore';
+import {
+  createCompanyFolderStructure,
+  shareFolderWithUser,
+  isDriveConfigured,
+} from '@/lib/google-drive';
+import { extractDomainFromEmail, isPublicEmailDomain } from '@/types/company';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    const { name, rfc, adminUid, adminEmail, adminName } = body;
+
+    // Validaciones
+    if (!name || !adminUid || !adminEmail) {
+      return NextResponse.json(
+        { success: false, error: 'Faltan campos requeridos: name, adminUid, adminEmail' },
+        { status: 400 }
+      );
+    }
+
+    // Extraer dominio del email
+    let domain: string;
+    try {
+      domain = extractDomainFromEmail(adminEmail);
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Email inválido' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que no sea un dominio público
+    if (isPublicEmailDomain(domain)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'No puedes crear una empresa con un email público (gmail, hotmail, etc.). Usa un email corporativo.',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que el usuario existe
+    const userProfile = await getUserProfile(adminUid);
+    if (!userProfile) {
+      return NextResponse.json(
+        { success: false, error: 'Usuario no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Verificar que el usuario no ya pertenezca a una empresa
+    if (userProfile.companyId) {
+      return NextResponse.json(
+        { success: false, error: 'Ya perteneces a una empresa' },
+        { status: 400 }
+      );
+    }
+
+    // Verificar que no exista otra empresa con el mismo dominio
+    const existingCompany = await getCompanyByDomain(domain);
+    if (existingCompany) {
+      return NextResponse.json(
+        { success: false, error: `Ya existe una empresa registrada con el dominio ${domain}` },
+        { status: 409 }
+      );
+    }
+
+    // Crear la empresa en Firestore
+    const company = await createCompany({
+      name,
+      domain,
+      rfc,
+      adminEmail,
+      adminUid,
+      adminName: adminName || userProfile.displayName || 'Admin',
+    });
+
+    // Crear estructura de carpetas en Google Drive (si está configurado)
+    let driveFolderInfo = null;
+    if (isDriveConfigured()) {
+      try {
+        const folderStructure = await createCompanyFolderStructure(name);
+
+        // Compartir carpeta con el admin
+        await shareFolderWithUser(folderStructure.rootFolderId, adminEmail, 'writer');
+
+        // Actualizar empresa con IDs de carpetas
+        await updateCompanyDriveFolders(
+          company.id,
+          folderStructure.rootFolderId,
+          folderStructure.docsFolderId
+        );
+
+        driveFolderInfo = {
+          rootFolderId: folderStructure.rootFolderId,
+          docsFolderId: folderStructure.docsFolderId,
+          rootWebViewLink: folderStructure.rootWebViewLink,
+        };
+
+        // Actualizar objeto company local
+        company.driveFolderId = folderStructure.rootFolderId;
+        company.driveDocsFolderId = folderStructure.docsFolderId;
+      } catch (driveError) {
+        console.error('Error creando carpetas en Drive:', driveError);
+        // Continuamos sin Drive, la empresa ya está creada
+      }
+    }
+
+    // Vincular usuario a empresa como admin
+    await linkUserToCompany(
+      adminUid,
+      company.id,
+      company.name,
+      'admin',
+      undefined // La carpeta del admin se crea después si es necesario
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Empresa creada exitosamente',
+      company: {
+        id: company.id,
+        name: company.name,
+        domain: company.domain,
+        driveFolderId: company.driveFolderId,
+      },
+      driveFolder: driveFolderInfo,
+    });
+  } catch (error) {
+    console.error('Error creando empresa:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Error interno del servidor',
+        details: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    );
+  }
+}

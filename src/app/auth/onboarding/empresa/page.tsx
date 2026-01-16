@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Building2, Loader2, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
-import { extractDomainFromEmail, isPublicEmailDomain } from '@/types/company';
+import { extractDomainFromEmail } from '@/types/company';
 
 interface FormData {
   companyName: string;
@@ -36,13 +36,6 @@ export default function CreateCompanyPage() {
       try {
         const domain = extractDomainFromEmail(user.email);
         setDetectedDomain(domain);
-
-        if (isPublicEmailDomain(domain)) {
-          setErrors({
-            general:
-              'Estás usando un email público. Para crear una empresa necesitas un email corporativo.',
-          });
-        }
       } catch {
         setErrors({ general: 'Email inválido' });
       }
@@ -78,10 +71,6 @@ export default function CreateCompanyPage() {
     // RFC es opcional pero si se proporciona, validar formato básico
     if (formData.rfc && !/^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/i.test(formData.rfc)) {
       newErrors.rfc = 'Formato de RFC inválido';
-    }
-
-    if (isPublicEmailDomain(detectedDomain)) {
-      newErrors.general = 'No puedes crear una empresa con un email público';
     }
 
     setErrors(newErrors);
@@ -256,7 +245,7 @@ export default function CreateCompanyPage() {
             type="submit"
             size="lg"
             className="w-full"
-            disabled={isSubmitting || isPublicEmailDomain(detectedDomain)}
+            disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>

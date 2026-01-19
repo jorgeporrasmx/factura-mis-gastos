@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogleRedirect } from '@/lib/firebase/auth';
+import { signInWithGoogle, signInWithGoogleRedirect } from '@/lib/firebase/auth';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -21,9 +21,40 @@ export function GoogleSignInButton({
 
   const handleClick = async () => {
     setIsSigningIn(true);
-    // Use redirect instead of popup to avoid COOP issues
-    await signInWithGoogleRedirect();
-    // The page will redirect, so we don't need to handle the result here
+
+    try {
+      // Try popup first (works better with third-party cookie restrictions)
+      const result = await signInWithGoogle();
+
+      if (result.success && result.user) {
+        // Successfully signed in with popup
+        onSuccess?.();
+      } else if (result.error) {
+        // Check if popup was blocked - fallback to redirect
+        if (result.error.code === 'auth/popup-blocked') {
+          console.log('Popup blocked, falling back to redirect');
+          await signInWithGoogleRedirect();
+          // Page will redirect, no need to handle result
+          return;
+        }
+        // Other errors
+        onError?.(result.error.message);
+        setIsSigningIn(false);
+      } else {
+        // User cancelled - just reset state
+        setIsSigningIn(false);
+      }
+    } catch (error) {
+      console.error('Sign in error:', error);
+      // If popup fails completely, try redirect
+      try {
+        await signInWithGoogleRedirect();
+      } catch (redirectError) {
+        console.error('Redirect also failed:', redirectError);
+        onError?.('Error al iniciar sesión. Por favor intenta de nuevo.');
+        setIsSigningIn(false);
+      }
+    }
   };
 
   return (

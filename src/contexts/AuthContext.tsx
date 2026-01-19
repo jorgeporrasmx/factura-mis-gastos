@@ -64,12 +64,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check for redirect result (after Google sign-in redirect)
     getGoogleRedirectResult()
       .then((result) => {
-        if (mounted && result.error) {
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            error: result.error?.message || null
-          }));
+        if (mounted) {
+          if (result.error) {
+            console.error('Google redirect error:', result.error);
+            setState((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: result.error?.message || 'Error al iniciar sesión con Google'
+            }));
+          } else if (result.success && result.user) {
+            // User successfully authenticated via redirect
+            setState({
+              user: result.user,
+              isLoading: false,
+              isAuthenticated: true,
+              error: null,
+            });
+          }
         }
       })
       .catch((err) => {
@@ -78,7 +89,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setState((prev) => ({
             ...prev,
             isLoading: false,
-            error: 'Error al procesar inicio de sesión'
+            error: 'Error al procesar inicio de sesión con Google'
           }));
         }
       });

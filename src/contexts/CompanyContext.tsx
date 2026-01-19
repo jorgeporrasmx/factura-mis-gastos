@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import type { Company, UserProfile, CompanyUser } from '@/types/company';
 
@@ -139,7 +139,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const hasCompany = Boolean(userProfile?.companyId);
   const onboardingCompleted = userProfile?.onboardingCompleted ?? false;
 
-  const value: CompanyContextType = {
+  const value = useMemo<CompanyContextType>(() => ({
     company,
     userProfile,
     companyUsers,
@@ -150,7 +150,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     isAdmin,
     hasCompany,
     onboardingCompleted,
-  };
+  }), [company, userProfile, companyUsers, isLoading, error, refreshCompany, refreshUsers, isAdmin, hasCompany, onboardingCompleted]);
 
   return <CompanyContext.Provider value={value}>{children}</CompanyContext.Provider>;
 }

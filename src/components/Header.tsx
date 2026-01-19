@@ -132,6 +132,7 @@ export function Header() {
                           src={user.photoURL}
                           alt={user.displayName || 'Usuario'}
                           className="w-8 h-8 rounded-full object-cover"
+                          loading="lazy"
                         />
                       ) : (
                         <div className="w-8 h-8 gradient-bg rounded-full flex items-center justify-center text-white text-sm font-medium">

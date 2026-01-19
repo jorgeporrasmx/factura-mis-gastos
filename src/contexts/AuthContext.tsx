@@ -62,14 +62,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
 
     // Check for redirect result (after Google sign-in redirect)
+    // We must handle success explicitly because onAuthStateChanged may fire
+    // with null before Firebase processes the redirect result
     getGoogleRedirectResult()
       .then((result) => {
-        if (mounted && result.error) {
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            error: result.error?.message || null
-          }));
+        if (mounted) {
+          if (result.success && result.user) {
+            // Success: update state with the authenticated user
+            setState({
+              user: result.user,
+              isLoading: false,
+              isAuthenticated: true,
+              error: null,
+            });
+          } else if (result.error) {
+            // Error: show error message
+            setState((prev) => ({
+              ...prev,
+              isLoading: false,
+              error: result.error?.message || null
+            }));
+          }
         }
       })
       .catch((err) => {

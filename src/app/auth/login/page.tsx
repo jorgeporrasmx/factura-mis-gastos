@@ -1,17 +1,22 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { AppleSignInButton } from '@/components/auth/AppleSignInButton';
+import { PhoneAuthForm } from '@/components/auth/PhoneAuthForm';
+import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading, error } = useAuth();
+  const [activeTab, setActiveTab] = useState('sms');
 
   const redirectTo = searchParams.get('redirect') || '/portal';
 
@@ -75,8 +80,11 @@ function LoginContent() {
               </div>
             )}
 
-            {/* Google Sign In */}
-            <GoogleSignInButton onSuccess={handleSuccess} className="mb-6" />
+            {/* Social Login Buttons */}
+            <div className="space-y-3 mb-6">
+              <GoogleSignInButton onSuccess={handleSuccess} />
+              <AppleSignInButton onSuccess={handleSuccess} />
+            </div>
 
             {/* Divider */}
             <div className="relative my-6">
@@ -85,13 +93,31 @@ function LoginContent() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-gray-500">
-                  o continúa con email
+                  o continúa con
                 </span>
               </div>
             </div>
 
-            {/* Magic Link Form */}
-            <MagicLinkForm onSuccess={() => {}} />
+            {/* Tabs for other auth methods */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="sms">SMS</TabsTrigger>
+                <TabsTrigger value="password">Contraseña</TabsTrigger>
+                <TabsTrigger value="magic-link">Magic Link</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="sms">
+                <PhoneAuthForm onSuccess={handleSuccess} />
+              </TabsContent>
+
+              <TabsContent value="password">
+                <EmailPasswordForm mode="login" onSuccess={handleSuccess} />
+              </TabsContent>
+
+              <TabsContent value="magic-link">
+                <MagicLinkForm onSuccess={() => {}} />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Footer */}

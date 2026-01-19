@@ -5,7 +5,8 @@ export interface User {
   displayName: string | null;
   photoURL: string | null;
   emailVerified: boolean;
-  provider: 'google' | 'email';
+  phoneNumber: string | null;
+  provider: 'google' | 'email' | 'phone' | 'apple' | 'password';
   createdAt: Date;
   lastLoginAt: Date;
 }
@@ -26,13 +27,21 @@ export interface AuthResult {
     code: string;
     message: string;
   };
+  verificationId?: string;
+  needsEmailVerification?: boolean;
 }
 
 // Contexto de autenticación
 export interface AuthContextType extends AuthState {
   signInWithGoogle: () => Promise<AuthResult>;
+  signInWithApple: () => Promise<AuthResult>;
   signInWithMagicLink: (email: string) => Promise<AuthResult>;
   verifyMagicLink: (url: string) => Promise<AuthResult>;
+  signInWithEmailPassword: (email: string, password: string) => Promise<AuthResult>;
+  signUpWithEmailPassword: (email: string, password: string) => Promise<AuthResult>;
+  sendPasswordResetEmail: (email: string) => Promise<AuthResult>;
+  sendPhoneVerification: (phoneNumber: string) => Promise<AuthResult>;
+  verifyPhoneCode: (code: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }

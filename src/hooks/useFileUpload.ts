@@ -164,30 +164,65 @@ export function useFileUpload({
         // Update status to uploading
         updateFile(fileId, { status: 'uploading' as UploadStatus });
 
-        // Generate storage path
-        const storagePath = getStoragePath(userId, type, uploadFile_.file.name);
+        // For receipts, use Google Drive API
+        if (type === 'receipts') {
+          // Simulate initial progress
+          updateFile(fileId, { progress: 30 });
 
-        // Upload with progress tracking
-        const { promise } = uploadFile(storagePath, compressedFile, (progress: UploadProgress) => {
-          updateFile(fileId, { progress: progress.progress });
-        });
+          const formData = new FormData();
+          formData.append('file', compressedFile, uploadFile_.file.name);
 
-        const result = await promise;
+          const response = await fetch('/api/upload/receipt', {
+            method: 'POST',
+            headers: { 'x-user-uid': userId },
+            body: formData,
+          });
 
-        if (result.success && result.downloadUrl) {
-          const updatedFile: UploadFile = {
-            ...uploadFile_,
-            status: 'success',
-            progress: 100,
-            downloadUrl: result.downloadUrl,
-            storagePath,
-          };
-          updateFile(fileId, updatedFile);
-          onComplete?.(updatedFile);
+          // Simulate progress after upload
+          updateFile(fileId, { progress: 80 });
+
+          const result = await response.json();
+
+          if (result.success && result.file) {
+            const updatedFile: UploadFile = {
+              ...uploadFile_,
+              status: 'success',
+              progress: 100,
+              downloadUrl: result.file.url,
+              storagePath: result.file.id, // Drive file ID
+            };
+            updateFile(fileId, updatedFile);
+            onComplete?.(updatedFile);
+          } else {
+            const errorMsg = result.error || 'Error al subir el archivo a Drive';
+            updateFile(fileId, { status: 'error' as UploadStatus, error: errorMsg });
+            onError?.(uploadFile_, errorMsg);
+          }
         } else {
-          const errorMsg = result.error || 'Error al subir el archivo';
-          updateFile(fileId, { status: 'error' as UploadStatus, error: errorMsg });
-          onError?.(uploadFile_, errorMsg);
+          // For other types (csf), use Firebase Storage
+          const storagePath = getStoragePath(userId, type, uploadFile_.file.name);
+
+          const { promise } = uploadFile(storagePath, compressedFile, (progress: UploadProgress) => {
+            updateFile(fileId, { progress: progress.progress });
+          });
+
+          const result = await promise;
+
+          if (result.success && result.downloadUrl) {
+            const updatedFile: UploadFile = {
+              ...uploadFile_,
+              status: 'success',
+              progress: 100,
+              downloadUrl: result.downloadUrl,
+              storagePath,
+            };
+            updateFile(fileId, updatedFile);
+            onComplete?.(updatedFile);
+          } else {
+            const errorMsg = result.error || 'Error al subir el archivo';
+            updateFile(fileId, { status: 'error' as UploadStatus, error: errorMsg });
+            onError?.(uploadFile_, errorMsg);
+          }
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Error desconocido';

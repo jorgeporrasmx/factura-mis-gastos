@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserProfile, updateUserProfile } from '@/lib/firebase/firestore';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { CSFUploader } from '@/components/documents/CSFUploader';
 import { CSFStatus } from '@/components/documents/CSFStatus';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, Info, Loader2 } from 'lucide-react';
 import type { CSFStatus as CSFStatusType } from '@/types/documents';
 
 interface CSFData {
@@ -20,51 +22,106 @@ interface CSFData {
 
 export default function CSFPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [csfData, setCSFData] = useState<CSFData>({ status: 'pending_upload' });
   const [showUploader, setShowUploader] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Load CSF data from localStorage (in production, from Firebase)
+  // Load CSF data from Firestore
   useEffect(() => {
-    const csfUploaded = localStorage.getItem('csf_uploaded');
-    if (csfUploaded) {
-      const uploadDate = new Date(csfUploaded);
-      const expiresAt = new Date(uploadDate);
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
-      const now = new Date();
-      const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    async function loadCSFData() {
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
 
-      let status: CSFStatusType = 'valid';
-      if (daysUntilExpiry <= 0) status = 'expired';
-      else if (daysUntilExpiry <= 15) status = 'expiring_soon';
+      try {
+        const profile = await getUserProfile(user.uid);
 
-      setCSFData({
-        status,
-        fileName: 'constancia_situacion_fiscal.pdf',
-        uploadedAt: uploadDate,
-        expiresAt,
-        daysUntilExpiry: Math.max(0, daysUntilExpiry),
-      });
+        if (profile?.csfUploadedAt) {
+          const uploadDate = new Date(profile.csfUploadedAt);
+          const expiresAt = new Date(uploadDate);
+          expiresAt.setMonth(expiresAt.getMonth() + 3);
+          const now = new Date();
+          const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+          let status: CSFStatusType = 'valid';
+          if (daysUntilExpiry <= 0) status = 'expired';
+          else if (daysUntilExpiry <= 15) status = 'expiring_soon';
+
+          setCSFData({
+            status,
+            fileUrl: profile.csfUrl,
+            fileName: profile.csfFileName || 'constancia_situacion_fiscal.pdf',
+            uploadedAt: uploadDate,
+            expiresAt,
+            daysUntilExpiry: Math.max(0, daysUntilExpiry),
+          });
+        }
+      } catch (error) {
+        console.error('Error loading CSF data:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, []);
 
-  const handleUploadComplete = (fileUrl: string, storagePath: string) => {
+    loadCSFData();
+  }, [user?.uid]);
+
+  const handleUploadComplete = async (fileUrl: string, storagePath: string) => {
+    if (!user?.uid) return;
+
+    setIsSaving(true);
     const now = new Date();
     const expiresAt = new Date(now);
     expiresAt.setMonth(expiresAt.getMonth() + 3);
 
-    setCSFData({
-      status: 'valid',
-      fileUrl,
-      fileName: 'constancia_situacion_fiscal.pdf',
-      uploadedAt: now,
-      expiresAt,
-      daysUntilExpiry: 90,
-    });
+    try {
+      // Save to Firestore
+      await updateUserProfile(user.uid, {
+        csfUrl: fileUrl,
+        csfStoragePath: storagePath,
+        csfFileName: 'constancia_situacion_fiscal.pdf',
+        csfUploadedAt: now,
+      });
 
-    setShowUploader(false);
+      // Update local state
+      setCSFData({
+        status: 'valid',
+        fileUrl,
+        fileName: 'constancia_situacion_fiscal.pdf',
+        uploadedAt: now,
+        expiresAt,
+        daysUntilExpiry: 90,
+      });
+
+      // Also save to localStorage for backwards compatibility
+      localStorage.setItem('csf_uploaded', now.toISOString());
+
+      setShowUploader(false);
+    } catch (error) {
+      console.error('Error saving CSF to profile:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const needsUpload = csfData.status === 'pending_upload' || csfData.status === 'expired';
+
+  if (isLoading) {
+    return (
+      <div>
+        <PortalHeader title="Constancia Fiscal" />
+        <div className="p-4 md:p-6 max-w-2xl mx-auto flex items-center justify-center min-h-[300px]">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-gray-600">Cargando información...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -118,7 +175,16 @@ export default function CSFPage() {
 
         {/* Uploader */}
         {(needsUpload || showUploader) && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6 relative">
+            {isSaving && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-xl z-10">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                  <p className="text-gray-700 font-medium">Guardando en tu perfil...</p>
+                </div>
+              </div>
+            )}
+
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               {csfData.status === 'expired' ? 'Actualiza tu CSF' : 'Sube tu CSF'}
             </h2>
@@ -132,7 +198,7 @@ export default function CSFPage() {
               }
             />
 
-            {showUploader && !needsUpload && (
+            {showUploader && !needsUpload && !isSaving && (
               <Button
                 variant="ghost"
                 onClick={() => setShowUploader(false)}

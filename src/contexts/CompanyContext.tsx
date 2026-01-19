@@ -75,6 +75,20 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error('Error cargando datos de usuario:', err);
       setError('Error al cargar datos de usuario');
+      // Crear un perfil básico en memoria para evitar loops
+      setUserProfile({
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        companyId: null,
+        role: 'user',
+        onboardingCompleted: true, // Marcar como completado para evitar loop
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastLoginAt: new Date(),
+        status: 'active',
+      });
     } finally {
       setIsLoading(false);
     }

@@ -9,14 +9,14 @@ import { PortalNav } from '@/components/portal/PortalNav';
 // Componente interno que verifica onboarding
 function PortalContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { userProfile, isLoading: companyLoading } = useCompany();
+  const { userProfile, isLoading: companyLoading, error } = useCompany();
 
-  // Redirigir a onboarding si no está completo
+  // Redirigir a onboarding si no está completo (solo si no hay error)
   useEffect(() => {
-    if (!companyLoading && userProfile && !userProfile.onboardingCompleted) {
+    if (!companyLoading && !error && userProfile && !userProfile.onboardingCompleted) {
       router.push('/auth/onboarding');
     }
-  }, [companyLoading, userProfile, router]);
+  }, [companyLoading, error, userProfile, router]);
 
   // Mostrar loading mientras verifica
   if (companyLoading) {
@@ -30,8 +30,9 @@ function PortalContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // No renderizar si onboarding no completado
-  if (userProfile && !userProfile.onboardingCompleted) {
+  // No redirigir si hay error - permitir acceso básico al portal
+  // No renderizar si onboarding no completado (y no hay error)
+  if (!error && userProfile && !userProfile.onboardingCompleted) {
     return null;
   }
 

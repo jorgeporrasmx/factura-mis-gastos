@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Building2, User, Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
-import { extractDomainFromEmail, isPublicEmailDomain } from '@/types/company';
+import { extractDomainFromEmail } from '@/types/company';
 
 type AccountType = 'empresa' | 'empleado' | null;
 
@@ -41,16 +41,6 @@ export default function OnboardingPage() {
 
     try {
       const domain = extractDomainFromEmail(email);
-
-      if (isPublicEmailDomain(domain)) {
-        setCompanyCheck({
-          checking: false,
-          found: false,
-          isPublicEmail: true,
-          domain,
-        });
-        return;
-      }
 
       const response = await fetch(`/api/companies/join?email=${encodeURIComponent(email)}`);
       const data = await response.json();
@@ -212,17 +202,6 @@ export default function OnboardingPage() {
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <span>Buscando empresa para {user?.email}...</span>
               </div>
-            ) : companyCheck.isPublicEmail ? (
-              <div className="flex items-start gap-3 text-amber-600 bg-amber-50 p-4 rounded-lg">
-                <XCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Email público detectado</p>
-                  <p className="text-sm mt-1">
-                    Estás usando un email público ({companyCheck.domain}). Para unirte a una
-                    empresa, necesitas usar tu email corporativo.
-                  </p>
-                </div>
-              </div>
             ) : companyCheck.found ? (
               <div className="flex items-start gap-3 text-green-600 bg-green-50 p-4 rounded-lg">
                 <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
@@ -235,13 +214,18 @@ export default function OnboardingPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-start gap-3 text-red-600 bg-red-50 p-4 rounded-lg">
+              <div className="flex items-start gap-3 text-amber-600 bg-amber-50 p-4 rounded-lg">
                 <XCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium">Empresa no encontrada</p>
+                  <p className="font-medium">No hay empresa registrada</p>
                   <p className="text-sm mt-1">
-                    No hay ninguna empresa registrada con el dominio @{companyCheck.domain}. Tu
-                    empresa debe registrarse primero.
+                    No encontramos una empresa con el dominio @{companyCheck.domain}.
+                    Si eres el administrador, puedes <button
+                      onClick={() => setSelectedType('empresa')}
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      registrar tu empresa
+                    </button>.
                   </p>
                 </div>
               </div>

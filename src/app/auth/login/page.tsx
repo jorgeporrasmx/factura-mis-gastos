@@ -11,7 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, error } = useAuth();
 
   const redirectTo = searchParams.get('redirect') || '/portal';
 
@@ -67,6 +67,13 @@ function LoginContent() {
             <p className="text-gray-600 text-center mb-8">
               Accede a tu portal para gestionar tus recibos
             </p>
+
+            {/* Error message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
 
             {/* Google Sign In */}
             <GoogleSignInButton onSuccess={handleSuccess} className="mb-6" />

@@ -6,6 +6,7 @@ import {
   getUserProfile,
   getCompanyById,
   updateUserProfile,
+  createUserProfile,
 } from '@/lib/firebase/firestore';
 import {
   uploadFile,
@@ -35,8 +36,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener UID del header
+    // Obtener UID y email del header
     const uid = request.headers.get('x-user-uid');
+    const userEmail = request.headers.get('x-user-email');
 
     if (!uid) {
       return NextResponse.json(
@@ -45,14 +47,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener perfil del usuario
-    const userProfile = await getUserProfile(uid);
+    // Obtener perfil del usuario, o crearlo si no existe
+    let userProfile = await getUserProfile(uid);
 
     if (!userProfile) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      // Si tenemos el email, crear perfil automáticamente
+      // Usamos email del header, o generamos uno placeholder
+      const emailToUse = userEmail && userEmail.trim() !== ''
+        ? userEmail
+        : `${uid}@placeholder.facturamisgastos.com`;
+
+      try {
+        userProfile = await createUserProfile({
+          uid,
+          email: emailToUse,
+          displayName: null,
+          photoURL: null,
+        });
+        console.log('Perfil de usuario creado automáticamente:', uid);
+      } catch (createError) {
+        console.error('Error creando perfil de usuario:', createError);
+        return NextResponse.json(
+          { success: false, error: 'Error al crear perfil de usuario' },
+          { status: 500 }
+        );
+      }
     }
 
     // Verificar que tiene empresa

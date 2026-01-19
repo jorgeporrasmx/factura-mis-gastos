@@ -26,6 +26,7 @@ export function CSFUploader({ onUploadComplete, existingFile }: CSFUploaderProps
     errors,
   } = useFileUpload({
     userId: user?.uid || '',
+    userEmail: user?.email || undefined,
     type: 'csf',
     config: UPLOAD_CONFIGS.csf,
     onComplete: (file) => {

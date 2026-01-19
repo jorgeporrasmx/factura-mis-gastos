@@ -57,13 +57,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que no sea un dominio público
+    // Para emails públicos, no hay empresa a la cual unirse
     if (isPublicEmailDomain(domain)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'No puedes unirte a una empresa con un email público. Usa tu email corporativo.',
+          error: 'Los emails públicos no pueden unirse a empresas existentes. Registra tu propia empresa.',
           isPublicEmail: true,
+          suggestion: 'register_company',
         },
         { status: 400 }
       );
@@ -158,13 +159,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verificar si es dominio público
+    // Si es dominio público, informar que no hay empresa que unirse
+    // (pero no bloquear - pueden registrarse como empresa)
     if (isPublicEmailDomain(domain)) {
       return NextResponse.json({
         success: true,
         isPublicEmail: true,
         companyFound: false,
-        message: 'Este es un email público. Usa tu email corporativo para unirte a una empresa.',
+        domain,
+        message: 'No hay empresa asociada a este dominio. Puedes registrar tu propia empresa.',
       });
     }
 

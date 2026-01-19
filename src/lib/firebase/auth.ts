@@ -35,6 +35,26 @@ const notConfiguredError: AuthResult = {
   },
 };
 
+// Spanish error messages for better UX
+function getSpanishErrorMessage(code?: string): string | null {
+  const messages: Record<string, string> = {
+    'auth/popup-blocked': 'El navegador bloqueó la ventana emergente. Permite ventanas emergentes e intenta de nuevo.',
+    'auth/popup-closed-by-user': 'Cerraste la ventana de inicio de sesión. Intenta de nuevo.',
+    'auth/cancelled-popup-request': 'Se canceló la solicitud. Intenta de nuevo.',
+    'auth/redirect-cancelled-by-user': 'Cancelaste el inicio de sesión. Intenta de nuevo.',
+    'auth/network-request-failed': 'Error de conexión. Verifica tu internet e intenta de nuevo.',
+    'auth/too-many-requests': 'Demasiados intentos. Espera un momento e intenta de nuevo.',
+    'auth/user-disabled': 'Esta cuenta ha sido deshabilitada.',
+    'auth/operation-not-allowed': 'El inicio de sesión con Google no está habilitado.',
+    'auth/invalid-credential': 'Las credenciales son inválidas. Intenta de nuevo.',
+    'auth/account-exists-with-different-credential': 'Ya existe una cuenta con este email usando otro método de inicio de sesión.',
+    'auth/credential-already-in-use': 'Esta credencial ya está asociada a otra cuenta.',
+    'auth/timeout': 'La solicitud tardó demasiado. Intenta de nuevo.',
+    'auth/web-storage-unsupported': 'Tu navegador no soporta almacenamiento local. Habilítalo o usa otro navegador.',
+  };
+  return code ? messages[code] || null : null;
+}
+
 // Convert Firebase User to our User type
 export function mapFirebaseUser(firebaseUser: FirebaseUser): User {
   return {
@@ -62,11 +82,19 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     };
   } catch (error) {
     const err = error as { code?: string; message?: string };
+
+    // Errores cancelados por usuario no deberían mostrarse
+    if (err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request') {
+      return { success: false };
+    }
+
+    const spanishMessage = getSpanishErrorMessage(err.code);
     return {
       success: false,
       error: {
         code: err.code || 'unknown',
-        message: err.message || 'Error al iniciar sesión con Google',
+        message: spanishMessage || err.message || 'Error al iniciar sesión con Google',
       },
     };
   }
@@ -100,20 +128,33 @@ export async function getGoogleRedirectResult(): Promise<AuthResult> {
 
   try {
     const result = await getRedirectResult(auth);
-    if (result) {
+    if (result && result.user) {
       return {
         success: true,
         user: mapFirebaseUser(result.user),
       };
     }
+    // No hay resultado de redirect - esto es normal si no venimos de un redirect
+    // No es un error, simplemente no hay nada que procesar
     return { success: false };
   } catch (error) {
     const err = error as { code?: string; message?: string };
+
+    // Errores cancelados por usuario no deberían mostrarse como error persistente
+    if (err.code === 'auth/redirect-cancelled-by-user' ||
+        err.code === 'auth/popup-closed-by-user' ||
+        err.code === 'auth/cancelled-popup-request') {
+      console.log('User cancelled sign-in');
+      return { success: false }; // Sin error visible al usuario
+    }
+
+    // Para otros errores, usar mensaje en español si está disponible
+    const spanishMessage = getSpanishErrorMessage(err.code);
     return {
       success: false,
       error: {
         code: err.code || 'unknown',
-        message: err.message || 'Error al obtener resultado de redirección',
+        message: spanishMessage || err.message || 'Error al iniciar sesión con Google',
       },
     };
   }

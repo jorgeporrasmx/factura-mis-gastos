@@ -92,8 +92,8 @@ export default function OnboardingPage() {
       const data = await response.json();
 
       if (data.success) {
-        // Redirigir al portal
-        router.push('/portal');
+        // Redirigir al portal con parámetro para forzar recarga del contexto
+        router.push('/portal?onboarding=completed');
       } else {
         setError(data.error || 'Error al unirse a la empresa');
       }

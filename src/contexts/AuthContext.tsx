@@ -12,11 +12,18 @@ import {
   signInWithGoogle as firebaseSignInWithGoogle,
   sendMagicLink,
   completeMagicLinkSignIn,
+  signInWithEmailPassword as firebaseSignInWithEmailPassword,
+  signUpWithEmailPassword as firebaseSignUpWithEmailPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  sendPhoneVerification as firebaseSendPhoneVerification,
+  verifyPhoneCode as firebaseVerifyPhoneCode,
+  setupRecaptcha,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   getGoogleRedirectResult,
 } from '@/lib/firebase/auth';
 import type { User, AuthState, AuthResult, AuthContextType } from '@/types/auth';
+import type { RecaptchaVerifier } from 'firebase/auth';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -31,6 +38,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated: false,
     error: null,
   });
+
+  // Store reCAPTCHA verifier for phone auth
+  const [phoneRecaptcha, setPhoneRecaptcha] = useState<RecaptchaVerifier | null>(null);
 
   // Initialize auth state
   // IMPORTANT: Process redirect result FIRST, then subscribe to auth changes
@@ -117,7 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const result = await firebaseSignInWithGoogle();
 
-    if (!result.success) {
+    if (!result.success && result.error) {
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -129,11 +139,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Sign in with magic link
-  // Note: We don't set isLoading here because this only sends an email,
-  // not a full authentication. The MagicLinkForm component handles its own
-  // loading state (isSending). Setting isLoading here would unmount the form
-  // and lose its internal state (like isSent), causing the user to see
-  // the form again instead of the success message.
   const signInWithMagicLink = useCallback(async (email: string): Promise<AuthResult> => {
     setState((prev) => ({ ...prev, error: null }));
 
@@ -166,6 +171,111 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return result;
   }, []);
 
+  // Sign in with email and password
+  const signInWithEmailPassword = useCallback(async (
+    email: string,
+    password: string
+  ): Promise<AuthResult> => {
+    setState((prev) => ({ ...prev, error: null }));
+
+    const result = await firebaseSignInWithEmailPassword(email, password);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al iniciar sesión',
+      }));
+    }
+
+    return result;
+  }, []);
+
+  // Sign up with email and password
+  const signUpWithEmailPassword = useCallback(async (
+    email: string,
+    password: string
+  ): Promise<AuthResult> => {
+    setState((prev) => ({ ...prev, error: null }));
+
+    const result = await firebaseSignUpWithEmailPassword(email, password);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al crear cuenta',
+      }));
+    }
+
+    return result;
+  }, []);
+
+  // Send password reset email
+  const sendPasswordResetEmail = useCallback(async (email: string): Promise<AuthResult> => {
+    setState((prev) => ({ ...prev, error: null }));
+
+    const result = await firebaseSendPasswordResetEmail(email);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al enviar email',
+      }));
+    }
+
+    return result;
+  }, []);
+
+  // Send phone verification SMS
+  const sendPhoneVerification = useCallback(async (phoneNumber: string): Promise<AuthResult> => {
+    setState((prev) => ({ ...prev, error: null }));
+
+    // Setup reCAPTCHA if not already done
+    let verifier = phoneRecaptcha;
+    if (!verifier) {
+      verifier = setupRecaptcha('recaptcha-container');
+      if (verifier) {
+        setPhoneRecaptcha(verifier);
+      }
+    }
+
+    if (!verifier) {
+      return {
+        success: false,
+        error: {
+          code: 'auth/recaptcha-not-ready',
+          message: 'Error de verificación. Recarga la página e intenta de nuevo.',
+        },
+      };
+    }
+
+    const result = await firebaseSendPhoneVerification(phoneNumber, verifier);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al enviar SMS',
+      }));
+    }
+
+    return result;
+  }, [phoneRecaptcha]);
+
+  // Verify phone code
+  const verifyPhoneCode = useCallback(async (code: string): Promise<AuthResult> => {
+    setState((prev) => ({ ...prev, error: null }));
+
+    const result = await firebaseVerifyPhoneCode(code);
+
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al verificar código',
+      }));
+    }
+
+    return result;
+  }, []);
+
   // Sign out
   const signOut = useCallback(async (): Promise<void> => {
     await firebaseSignOut();
@@ -179,7 +289,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Refresh user (force reload)
   const refreshUser = useCallback(async (): Promise<void> => {
-    // The auth state listener will handle updates
     setState((prev) => ({ ...prev, isLoading: true }));
   }, []);
 
@@ -188,6 +297,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signInWithGoogle,
     signInWithMagicLink,
     verifyMagicLink,
+    signInWithEmailPassword,
+    signUpWithEmailPassword,
+    sendPasswordResetEmail,
+    sendPhoneVerification,
+    verifyPhoneCode,
     signOut,
     refreshUser,
   };

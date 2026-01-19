@@ -1,6 +1,5 @@
 import {
   GoogleAuthProvider,
-  OAuthProvider,
   signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
@@ -32,21 +31,6 @@ function getGoogleProvider(): GoogleAuthProvider {
     googleProvider.addScope('profile');
   }
   return googleProvider;
-}
-
-// Apple Auth Provider (lazy init)
-let appleProvider: OAuthProvider | null = null;
-
-function getAppleProvider(): OAuthProvider {
-  if (!appleProvider) {
-    appleProvider = new OAuthProvider('apple.com');
-    appleProvider.addScope('email');
-    appleProvider.addScope('name');
-    appleProvider.setCustomParameters({
-      locale: 'es_MX',
-    });
-  }
-  return appleProvider;
 }
 
 // Phone auth confirmation result
@@ -102,7 +86,6 @@ export function mapFirebaseUser(firebaseUser: FirebaseUser): User {
 
   let provider: User['provider'] = 'email';
   if (providerId === 'google.com') provider = 'google';
-  else if (providerId === 'apple.com') provider = 'apple';
   else if (providerId === 'phone') provider = 'phone';
   else if (providerId === 'password') provider = 'password';
 
@@ -197,49 +180,6 @@ export async function getGoogleRedirectResult(): Promise<AuthResult> {
       },
     };
   }
-}
-
-// ============================================
-// APPLE AUTH
-// ============================================
-
-// Sign in with Apple (popup)
-export async function signInWithApple(): Promise<AuthResult> {
-  const auth = getFirebaseAuth();
-  if (!auth) return notConfiguredError;
-
-  try {
-    const result = await signInWithPopup(auth, getAppleProvider());
-    return {
-      success: true,
-      user: mapFirebaseUser(result.user),
-    };
-  } catch (error) {
-    const err = error as { code?: string; message?: string };
-
-    // User cancelled
-    if (err.code === 'auth/popup-closed-by-user' ||
-        err.code === 'auth/cancelled-popup-request') {
-      return { success: false };
-    }
-
-    const spanishMessage = getSpanishErrorMessage(err.code);
-    return {
-      success: false,
-      error: {
-        code: err.code || 'unknown',
-        message: spanishMessage || err.message || 'Error al iniciar sesión con Apple',
-      },
-    };
-  }
-}
-
-// Sign in with Apple (redirect - for mobile)
-export async function signInWithAppleRedirect(): Promise<void> {
-  const auth = getFirebaseAuth();
-  if (!auth) return;
-
-  await signInWithRedirect(auth, getAppleProvider());
 }
 
 // ============================================

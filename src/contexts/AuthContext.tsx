@@ -10,7 +10,6 @@ import {
 } from 'react';
 import {
   signInWithGoogle as firebaseSignInWithGoogle,
-  signInWithApple as firebaseSignInWithApple,
   sendMagicLink,
   completeMagicLinkSignIn,
   signInWithEmailPassword as firebaseSignInWithEmailPassword,
@@ -117,23 +116,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     const result = await firebaseSignInWithGoogle();
-
-    if (!result.success && result.error) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: result.error?.message || 'Error al iniciar sesión',
-      }));
-    }
-
-    return result;
-  }, []);
-
-  // Sign in with Apple
-  const signInWithApple = useCallback(async (): Promise<AuthResult> => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
-
-    const result = await firebaseSignInWithApple();
 
     if (!result.success && result.error) {
       setState((prev) => ({
@@ -303,7 +285,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     ...state,
     signInWithGoogle,
-    signInWithApple,
     signInWithMagicLink,
     verifyMagicLink,
     signInWithEmailPassword,

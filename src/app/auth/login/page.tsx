@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
-import { AppleSignInButton } from '@/components/auth/AppleSignInButton';
 import { PhoneAuthForm } from '@/components/auth/PhoneAuthForm';
 import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import { MagicLinkForm } from '@/components/auth/MagicLinkForm';
@@ -80,11 +79,8 @@ function LoginContent() {
               </div>
             )}
 
-            {/* Social Login Buttons */}
-            <div className="space-y-3 mb-6">
-              <GoogleSignInButton onSuccess={handleSuccess} />
-              <AppleSignInButton onSuccess={handleSuccess} />
-            </div>
+            {/* Google Sign In */}
+            <GoogleSignInButton onSuccess={handleSuccess} className="mb-6" />
 
             {/* Divider */}
             <div className="relative my-6">

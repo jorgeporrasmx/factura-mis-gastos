@@ -14,6 +14,7 @@ import {
 
 interface UseFileUploadOptions {
   userId: string;
+  userEmail?: string;
   type: 'csf' | 'receipts';
   config: UploadConfig;
   onComplete?: (file: UploadFile) => void;
@@ -35,6 +36,7 @@ interface UseFileUploadReturn {
 
 export function useFileUpload({
   userId,
+  userEmail,
   type,
   config,
   onComplete,
@@ -211,7 +213,10 @@ export function useFileUpload({
 
           const response = await fetch('/api/upload/csf', {
             method: 'POST',
-            headers: { 'x-user-uid': userId },
+            headers: {
+              'x-user-uid': userId,
+              ...(userEmail && { 'x-user-email': userEmail }),
+            },
             body: formData,
           });
 

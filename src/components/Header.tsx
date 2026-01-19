@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
-const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+// Ya no se usa Monday form para el inicio, los usuarios van directo a login
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -84,7 +84,7 @@ export function Header() {
                     Iniciar Sesión
                   </Button>
                 </Link>
-                <Link href={MONDAY_FORM_URL} target="_blank">
+                <Link href="/auth/login">
                   <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
                     Comenzar ahora
                   </Button>
@@ -163,7 +163,7 @@ export function Header() {
                         Iniciar Sesión
                       </Button>
                     </Link>
-                    <Link href={MONDAY_FORM_URL} target="_blank" className="w-full">
+                    <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button className="w-full gradient-bg">
                         Comenzar ahora
                       </Button>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserProfile, updateUserProfile } from '@/lib/firebase/firestore';
+import { getUserProfile } from '@/lib/firebase/firestore';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { CSFUploader } from '@/components/documents/CSFUploader';
 import { CSFStatus } from '@/components/documents/CSFStatus';
@@ -78,13 +78,8 @@ export default function CSFPage() {
     expiresAt.setMonth(expiresAt.getMonth() + 3);
 
     try {
-      // Save to Firestore
-      await updateUserProfile(user.uid, {
-        csfUrl: fileUrl,
-        csfStoragePath: storagePath,
-        csfFileName: 'constancia_situacion_fiscal.pdf',
-        csfUploadedAt: now,
-      });
+      // El endpoint /api/upload/csf ya guarda los datos en el perfil
+      // Solo actualizamos el estado local
 
       // Update local state
       setCSFData({

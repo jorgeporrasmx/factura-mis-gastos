@@ -106,7 +106,8 @@ export default function CreateCompanyPage() {
         setIsSuccess(true);
         // Esperar un momento para mostrar el mensaje de éxito
         setTimeout(() => {
-          router.push('/portal');
+          // Pasar parámetro para forzar recarga del contexto
+          router.push('/portal?onboarding=completed');
         }, 2000);
       } else {
         setErrors({ general: data.error || 'Error al crear la empresa' });

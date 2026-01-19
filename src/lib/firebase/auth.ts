@@ -29,6 +29,10 @@ function getGoogleProvider(): GoogleAuthProvider {
     googleProvider = new GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
+    // Always show account selector when multiple accounts are available
+    googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
   }
   return googleProvider;
 }
@@ -138,11 +142,24 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 }
 
 // Sign in with Google (redirect - for mobile)
-export async function signInWithGoogleRedirect(): Promise<void> {
+export async function signInWithGoogleRedirect(): Promise<AuthResult> {
   const auth = getFirebaseAuth();
-  if (!auth) return;
+  if (!auth) return notConfiguredError;
 
-  await signInWithRedirect(auth, getGoogleProvider());
+  try {
+    await signInWithRedirect(auth, getGoogleProvider());
+    // The page will redirect to Google, so this return won't be reached in success case
+    return { success: true };
+  } catch (error) {
+    const err = error as { code?: string; message?: string };
+    return {
+      success: false,
+      error: {
+        code: err.code || 'unknown',
+        message: err.message || 'Error al redirigir a Google',
+      },
+    };
+  }
 }
 
 // Get redirect result after OAuth redirect

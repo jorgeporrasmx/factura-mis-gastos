@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-// URL del formulario de Monday para captar leads
+// URL del formulario de Monday para contacto comercial (hablar con asesor)
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 export function CTASection() {
@@ -30,7 +30,7 @@ export function CTASection() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href={MONDAY_FORM_URL} target="_blank">
+          <Link href="/auth/login">
             <Button
               size="lg"
               className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"

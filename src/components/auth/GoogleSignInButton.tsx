@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogle, signInWithGoogleRedirect } from '@/lib/firebase/auth';
+import { signInWithGoogle } from '@/lib/firebase/auth';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -18,53 +18,36 @@ export function GoogleSignInButton({
   disabled,
 }: GoogleSignInButtonProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClick = async () => {
     setIsSigningIn(true);
+    setError(null);
 
-    try {
-      // Try popup first (works better with third-party cookie restrictions)
-      const result = await signInWithGoogle();
+    // Use popup instead of redirect to avoid Chrome's bounce tracking mitigation
+    // which blocks Firebase's redirect flow
+    const result = await signInWithGoogle();
 
-      if (result.success && result.user) {
-        // Successfully signed in with popup
-        onSuccess?.();
-      } else if (result.error) {
-        // Check if popup was blocked - fallback to redirect
-        if (result.error.code === 'auth/popup-blocked') {
-          console.log('Popup blocked, falling back to redirect');
-          await signInWithGoogleRedirect();
-          // Page will redirect, no need to handle result
-          return;
-        }
-        // Other errors
-        onError?.(result.error.message);
-        setIsSigningIn(false);
-      } else {
-        // User cancelled - just reset state
-        setIsSigningIn(false);
-      }
-    } catch (error) {
-      console.error('Sign in error:', error);
-      // If popup fails completely, try redirect
-      try {
-        await signInWithGoogleRedirect();
-      } catch (redirectError) {
-        console.error('Redirect also failed:', redirectError);
-        onError?.('Error al iniciar sesión. Por favor intenta de nuevo.');
-        setIsSigningIn(false);
-      }
+    setIsSigningIn(false);
+
+    if (result.success) {
+      onSuccess?.();
+    } else {
+      const errorMessage = result.error?.message || 'Error al iniciar sesión con Google';
+      setError(errorMessage);
+      onError?.(errorMessage);
     }
   };
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={handleClick}
-      disabled={disabled || isSigningIn}
-      className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
-    >
+    <div className="space-y-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleClick}
+        disabled={disabled || isSigningIn}
+        className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
+      >
       {/* Google Icon */}
       <svg
         className="w-5 h-5"
@@ -89,6 +72,10 @@ export function GoogleSignInButton({
         />
       </svg>
       {isSigningIn ? 'Conectando...' : 'Continuar con Google'}
-    </Button>
+      </Button>
+      {error && (
+        <p className="text-sm text-red-600 text-center">{error}</p>
+      )}
+    </div>
   );
 }

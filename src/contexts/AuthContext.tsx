@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react';
 import {
@@ -292,7 +293,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setState((prev) => ({ ...prev, isLoading: true }));
   }, []);
 
-  const value: AuthContextType = {
+  const value = useMemo<AuthContextType>(() => ({
     ...state,
     signInWithGoogle,
     signInWithMagicLink,
@@ -304,7 +305,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     verifyPhoneCode,
     signOut,
     refreshUser,
-  };
+  }), [state, signInWithGoogle, signInWithMagicLink, verifyMagicLink, signInWithEmailPassword, signUpWithEmailPassword, sendPasswordResetEmail, sendPhoneVerification, verifyPhoneCode, signOut, refreshUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

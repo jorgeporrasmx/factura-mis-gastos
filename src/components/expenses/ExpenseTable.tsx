@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
   ChevronUp,
   ChevronDown,
@@ -104,7 +104,7 @@ function SortableHeader({
   );
 }
 
-export function ExpenseTable({
+export const ExpenseTable = memo(function ExpenseTable({
   expenses,
   isLoading,
   sort,
@@ -270,7 +270,7 @@ export function ExpenseTable({
       </div>
     </div>
   );
-}
+});
 
 // Versión compacta para móvil
 export function ExpenseList({

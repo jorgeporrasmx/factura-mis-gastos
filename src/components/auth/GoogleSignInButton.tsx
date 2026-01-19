@@ -18,22 +18,35 @@ export function GoogleSignInButton({
   disabled,
 }: GoogleSignInButtonProps) {
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClick = async () => {
     setIsSigningIn(true);
+    setError(null);
+
     // Use redirect instead of popup to avoid COOP issues
-    await signInWithGoogleRedirect();
-    // The page will redirect, so we don't need to handle the result here
+    const result = await signInWithGoogleRedirect();
+
+    // If we get here with an error, it means the redirect didn't happen
+    // (e.g., Firebase not configured)
+    if (!result.success) {
+      setIsSigningIn(false);
+      const errorMessage = result.error?.message || 'Error al iniciar sesión con Google';
+      setError(errorMessage);
+      onError?.(errorMessage);
+    }
+    // If successful, the page will redirect to Google and we won't reach here
   };
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={handleClick}
-      disabled={disabled || isSigningIn}
-      className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
-    >
+    <div className="space-y-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleClick}
+        disabled={disabled || isSigningIn}
+        className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
+      >
       {/* Google Icon */}
       <svg
         className="w-5 h-5"
@@ -58,6 +71,10 @@ export function GoogleSignInButton({
         />
       </svg>
       {isSigningIn ? 'Conectando...' : 'Continuar con Google'}
-    </Button>
+      </Button>
+      {error && (
+        <p className="text-sm text-red-600 text-center">{error}</p>
+      )}
+    </div>
   );
 }

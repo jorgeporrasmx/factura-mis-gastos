@@ -54,6 +54,8 @@ export function getFirebaseAuth(): Auth | null {
     const app = getFirebaseApp();
     if (app) {
       _auth = getAuth(app);
+      // Configurar idioma español para la UI de autenticación
+      _auth.languageCode = 'es-MX';
     }
   }
   return _auth;

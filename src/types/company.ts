@@ -66,6 +66,12 @@ export interface UserProfile {
   // Google Drive
   driveFolderId?: string;          // Carpeta personal dentro de la empresa
 
+  // Constancia de Situación Fiscal (CSF) - para freelancers/personales
+  csfUrl?: string;                 // URL del archivo en Firebase Storage
+  csfStoragePath?: string;         // Path en Firebase Storage
+  csfFileName?: string;            // Nombre original del archivo
+  csfUploadedAt?: Date;            // Fecha de subida
+
   // Estado de onboarding
   onboardingCompleted: boolean;
   accountType?: 'empresa' | 'empleado' | 'personal';

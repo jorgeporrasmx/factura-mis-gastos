@@ -225,6 +225,7 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
     createdAt: timestampToDate(data.createdAt),
     updatedAt: timestampToDate(data.updatedAt),
     lastLoginAt: timestampToDate(data.lastLoginAt),
+    csfUploadedAt: data.csfUploadedAt ? timestampToDate(data.csfUploadedAt) : undefined,
   } as UserProfile;
 }
 

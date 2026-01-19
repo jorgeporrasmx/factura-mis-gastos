@@ -14,7 +14,7 @@ import {
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
-import { extractDomainFromEmail, isPublicEmailDomain } from '@/types/company';
+import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain } from '@/types/company';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,22 +32,19 @@ export async function POST(request: NextRequest) {
 
     // Extraer dominio del email
     let domain: string;
+    let isPublicEmail = false;
     try {
-      domain = extractDomainFromEmail(adminEmail);
+      const emailDomain = extractDomainFromEmail(adminEmail);
+      // Si es email público, generar dominio único
+      if (isPublicEmailDomain(emailDomain)) {
+        domain = generateUniqueCompanyDomain(name, adminUid);
+        isPublicEmail = true;
+      } else {
+        domain = emailDomain;
+      }
     } catch {
       return NextResponse.json(
         { success: false, error: 'Email inválido' },
-        { status: 400 }
-      );
-    }
-
-    // Verificar que no sea un dominio público
-    if (isPublicEmailDomain(domain)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No puedes crear una empresa con un email público (gmail, hotmail, etc.). Usa un email corporativo.',
-        },
         { status: 400 }
       );
     }
@@ -69,13 +66,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que no exista otra empresa con el mismo dominio
-    const existingCompany = await getCompanyByDomain(domain);
-    if (existingCompany) {
-      return NextResponse.json(
-        { success: false, error: `Ya existe una empresa registrada con el dominio ${domain}` },
-        { status: 409 }
-      );
+    // Verificar que no exista otra empresa con el mismo dominio (solo para emails corporativos)
+    if (!isPublicEmail) {
+      const existingCompany = await getCompanyByDomain(domain);
+      if (existingCompany) {
+        return NextResponse.json(
+          { success: false, error: `Ya existe una empresa registrada con el dominio ${domain}` },
+          { status: 409 }
+        );
+      }
     }
 
     // Crear la empresa en Firestore
@@ -136,6 +135,7 @@ export async function POST(request: NextRequest) {
         name: company.name,
         domain: company.domain,
         driveFolderId: company.driveFolderId,
+        isPersonalAccount: isPublicEmail,
       },
       driveFolder: driveFolderInfo,
     });

@@ -108,16 +108,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   // Sign in with magic link
+  // Note: We don't set isLoading here because this only sends an email,
+  // not a full authentication. The MagicLinkForm component handles its own
+  // loading state (isSending). Setting isLoading here would unmount the form
+  // and lose its internal state (like isSent), causing the user to see
+  // the form again instead of the success message.
   const signInWithMagicLink = useCallback(async (email: string): Promise<AuthResult> => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+    setState((prev) => ({ ...prev, error: null }));
 
     const result = await sendMagicLink(email);
 
-    setState((prev) => ({
-      ...prev,
-      isLoading: false,
-      error: result.success ? null : (result.error?.message || 'Error al enviar enlace'),
-    }));
+    if (!result.success) {
+      setState((prev) => ({
+        ...prev,
+        error: result.error?.message || 'Error al enviar enlace',
+      }));
+    }
 
     return result;
   }, []);

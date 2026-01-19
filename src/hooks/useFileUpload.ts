@@ -215,7 +215,7 @@ export function useFileUpload({
             method: 'POST',
             headers: {
               'x-user-uid': userId,
-              ...(userEmail && { 'x-user-email': userEmail }),
+              'x-user-email': userEmail || '',
             },
             body: formData,
           });

@@ -52,25 +52,24 @@ export async function POST(request: NextRequest) {
 
     if (!userProfile) {
       // Si tenemos el email, crear perfil automáticamente
-      if (userEmail) {
-        try {
-          userProfile = await createUserProfile({
-            uid,
-            email: userEmail,
-            displayName: null,
-            photoURL: null,
-          });
-        } catch (createError) {
-          console.error('Error creando perfil de usuario:', createError);
-          return NextResponse.json(
-            { success: false, error: 'Error al crear perfil de usuario' },
-            { status: 500 }
-          );
-        }
-      } else {
+      // Usamos email del header, o generamos uno placeholder
+      const emailToUse = userEmail && userEmail.trim() !== ''
+        ? userEmail
+        : `${uid}@placeholder.facturamisgastos.com`;
+
+      try {
+        userProfile = await createUserProfile({
+          uid,
+          email: emailToUse,
+          displayName: null,
+          photoURL: null,
+        });
+        console.log('Perfil de usuario creado automáticamente:', uid);
+      } catch (createError) {
+        console.error('Error creando perfil de usuario:', createError);
         return NextResponse.json(
-          { success: false, error: 'Usuario no encontrado. Por favor cierra sesión y vuelve a iniciar.' },
-          { status: 404 }
+          { success: false, error: 'Error al crear perfil de usuario' },
+          { status: 500 }
         );
       }
     }

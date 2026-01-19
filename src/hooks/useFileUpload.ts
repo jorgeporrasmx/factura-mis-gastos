@@ -164,7 +164,7 @@ export function useFileUpload({
         // Update status to uploading
         updateFile(fileId, { status: 'uploading' as UploadStatus });
 
-        // For receipts, use Google Drive API
+        // For receipts, use Google Drive API via /api/upload/receipt
         if (type === 'receipts') {
           // Simulate initial progress
           updateFile(fileId, { progress: 30 });
@@ -198,8 +198,45 @@ export function useFileUpload({
             updateFile(fileId, { status: 'error' as UploadStatus, error: errorMsg });
             onError?.(uploadFile_, errorMsg);
           }
+        } else if (type === 'csf') {
+          // For CSF, use Google Drive API via /api/upload/csf
+          // Simulate initial progress
+          updateFile(fileId, { progress: 20 });
+
+          const formData = new FormData();
+          formData.append('file', compressedFile, uploadFile_.file.name);
+
+          // Simulate progress while uploading
+          updateFile(fileId, { progress: 40 });
+
+          const response = await fetch('/api/upload/csf', {
+            method: 'POST',
+            headers: { 'x-user-uid': userId },
+            body: formData,
+          });
+
+          // Simulate progress after upload
+          updateFile(fileId, { progress: 80 });
+
+          const result = await response.json();
+
+          if (result.success && result.file) {
+            const updatedFile: UploadFile = {
+              ...uploadFile_,
+              status: 'success',
+              progress: 100,
+              downloadUrl: result.file.url,
+              storagePath: result.file.id, // Drive file ID
+            };
+            updateFile(fileId, updatedFile);
+            onComplete?.(updatedFile);
+          } else {
+            const errorMsg = result.error || 'Error al subir la constancia fiscal';
+            updateFile(fileId, { status: 'error' as UploadStatus, error: errorMsg });
+            onError?.(uploadFile_, errorMsg);
+          }
         } else {
-          // For other types (csf), use Firebase Storage
+          // For other types, use Firebase Storage (fallback)
           const storagePath = getStoragePath(userId, type, uploadFile_.file.name);
 
           const { promise } = uploadFile(storagePath, compressedFile, (progress: UploadProgress) => {

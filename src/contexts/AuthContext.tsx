@@ -32,72 +32,82 @@ export function AuthProvider({ children }: AuthProviderProps) {
     error: null,
   });
 
-  // Listen to auth state changes
+  // Initialize auth state
+  // IMPORTANT: Process redirect result FIRST, then subscribe to auth changes
+  // This fixes the race condition where onAuthStateChanged fires with null
+  // before Firebase processes the redirect result
   useEffect(() => {
     let mounted = true;
-    let hasResolved = false;
+    let unsubscribe: (() => void) | null = null;
 
     // Safety timeout - ensure loading state resolves after 5 seconds max
     const timeout = setTimeout(() => {
-      if (mounted && !hasResolved) {
+      if (mounted) {
         console.warn('Auth state timeout - forcing loading to false');
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-        }));
-        hasResolved = true;
+        setState((prev) => {
+          if (prev.isLoading) {
+            return { ...prev, isLoading: false };
+          }
+          return prev;
+        });
       }
     }, 5000);
 
-    const unsubscribe = onAuthStateChanged((user) => {
-      if (mounted) {
-        hasResolved = true;
-        setState({
-          user,
-          isLoading: false,
-          isAuthenticated: !!user,
-          error: null,
-        });
-      }
-    });
+    async function initAuth() {
+      try {
+        // 1. FIRST: Check for redirect result (after Google sign-in redirect)
+        // This must happen BEFORE subscribing to onAuthStateChanged
+        const redirectResult = await getGoogleRedirectResult();
 
-    // Check for redirect result (after Google sign-in redirect)
-    getGoogleRedirectResult()
-      .then((result) => {
-        if (mounted) {
-          if (result.error) {
-            console.error('Google redirect error:', result.error);
-            setState((prev) => ({
-              ...prev,
-              isLoading: false,
-              error: result.error?.message || 'Error al iniciar sesión con Google'
-            }));
-          } else if (result.success && result.user) {
-            // User successfully authenticated via redirect
+        if (!mounted) return;
+
+        if (redirectResult.success && redirectResult.user) {
+          // User authenticated via redirect - set state immediately
+          setState({
+            user: redirectResult.user,
+            isLoading: false,
+            isAuthenticated: true,
+            error: null,
+          });
+        } else if (redirectResult.error) {
+          // Redirect had an error
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: redirectResult.error?.message || null,
+          }));
+        }
+
+        // 2. THEN: Subscribe to future auth state changes
+        // This handles: manual sign-out, token refresh, other auth methods
+        unsubscribe = onAuthStateChanged((user) => {
+          if (mounted) {
             setState({
-              user: result.user,
+              user,
               isLoading: false,
-              isAuthenticated: true,
+              isAuthenticated: !!user,
               error: null,
             });
           }
-        }
-      })
-      .catch((err) => {
-        console.error('Error getting redirect result:', err);
+        });
+      } catch (err) {
+        console.error('Error initializing auth:', err);
         if (mounted) {
           setState((prev) => ({
             ...prev,
             isLoading: false,
-            error: 'Error al procesar inicio de sesión con Google'
+            error: 'Error al procesar inicio de sesión',
           }));
         }
-      });
+      }
+    }
+
+    initAuth();
 
     return () => {
       mounted = false;
       clearTimeout(timeout);
-      unsubscribe();
+      unsubscribe?.();
     };
   }, []);
 

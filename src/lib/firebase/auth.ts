@@ -22,6 +22,10 @@ function getGoogleProvider(): GoogleAuthProvider {
     googleProvider = new GoogleAuthProvider();
     googleProvider.addScope('email');
     googleProvider.addScope('profile');
+    // Always show account selector when multiple accounts are available
+    googleProvider.setCustomParameters({
+      prompt: 'select_account'
+    });
   }
   return googleProvider;
 }

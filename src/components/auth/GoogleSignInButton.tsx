@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogleRedirect } from '@/lib/firebase/auth';
+import { signInWithGoogle } from '@/lib/firebase/auth';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -24,18 +24,19 @@ export function GoogleSignInButton({
     setIsSigningIn(true);
     setError(null);
 
-    // Use redirect instead of popup to avoid COOP issues
-    const result = await signInWithGoogleRedirect();
+    // Use popup instead of redirect to avoid Chrome's bounce tracking mitigation
+    // which blocks Firebase's redirect flow
+    const result = await signInWithGoogle();
 
-    // If we get here with an error, it means the redirect didn't happen
-    // (e.g., Firebase not configured)
-    if (!result.success) {
-      setIsSigningIn(false);
+    setIsSigningIn(false);
+
+    if (result.success) {
+      onSuccess?.();
+    } else {
       const errorMessage = result.error?.message || 'Error al iniciar sesión con Google';
       setError(errorMessage);
       onError?.(errorMessage);
     }
-    // If successful, the page will redirect to Google and we won't reach here
   };
 
   return (

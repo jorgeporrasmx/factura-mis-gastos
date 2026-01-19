@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-// URL del formulario de Monday para captar leads
+// URL del formulario de Monday para solicitar demos/contacto comercial
 const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
 
 const trustBadges = [
@@ -71,7 +71,7 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
-              <Link href={MONDAY_FORM_URL} target="_blank">
+              <Link href="/auth/login">
                 <Button
                   size="lg"
                   className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"

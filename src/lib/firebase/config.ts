@@ -1,5 +1,5 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
+import { getAuth, browserLocalPersistence, setPersistence, type Auth } from 'firebase/auth';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { getFirestore, type Firestore } from 'firebase/firestore';
 
@@ -48,12 +48,17 @@ function getFirebaseApp(): FirebaseApp | null {
   return _app;
 }
 
-// Getter for auth - lazy initialization
+// Getter for auth - lazy initialization with explicit persistence
 export function getFirebaseAuth(): Auth | null {
   if (!_auth) {
     const app = getFirebaseApp();
     if (app) {
       _auth = getAuth(app);
+      // Configure explicit persistence for browser
+      // This ensures auth state survives page reloads and redirects
+      setPersistence(_auth, browserLocalPersistence).catch((err) => {
+        console.error('Error setting auth persistence:', err);
+      });
     }
   }
   return _auth;

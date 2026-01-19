@@ -139,3 +139,20 @@ export function canAutoJoinCompany(email: string): boolean {
   const domain = extractDomainFromEmail(email);
   return !isPublicEmailDomain(domain);
 }
+
+// Generar un dominio único para empresas con emails públicos
+export function generateUniqueCompanyDomain(companyName: string, adminUid: string): string {
+  // Normalizar nombre de empresa: quitar espacios, acentos, caracteres especiales
+  const normalized = companyName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Quitar acentos
+    .replace(/[^a-z0-9]/g, '-') // Reemplazar caracteres especiales con guión
+    .replace(/-+/g, '-') // Múltiples guiones a uno solo
+    .replace(/^-|-$/g, ''); // Quitar guiones al inicio/final
+
+  // Usar primeros 6 caracteres del UID para hacerlo único
+  const uniqueSuffix = adminUid.slice(0, 6);
+
+  return `${normalized}-${uniqueSuffix}.personal`;
+}

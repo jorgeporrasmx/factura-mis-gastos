@@ -23,7 +23,8 @@ function LoginContent() {
   }, [isAuthenticated, isLoading, router, redirectTo]);
 
   const handleSuccess = () => {
-    router.push(redirectTo);
+    // Redirect is handled by the useEffect above when isAuthenticated changes
+    // This avoids race conditions where we redirect before state is updated
   };
 
   if (isLoading) {

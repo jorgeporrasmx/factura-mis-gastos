@@ -117,12 +117,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const result = await firebaseSignInWithGoogle();
 
-    if (!result.success) {
+    if (result.success && result.user) {
+      // Update state immediately on success - this ensures isAuthenticated
+      // is true BEFORE any redirect happens, avoiding race conditions
+      setState({
+        user: result.user,
+        isLoading: false,
+        isAuthenticated: true,
+        error: null,
+      });
+    } else if (!result.success && result.error) {
+      // Error occurred
       setState((prev) => ({
         ...prev,
         isLoading: false,
         error: result.error?.message || 'Error al iniciar sesión',
       }));
+    } else {
+      // User cancelled (no success, no error) - just reset loading
+      setState((prev) => ({ ...prev, isLoading: false }));
     }
 
     return result;

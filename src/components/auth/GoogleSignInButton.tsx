@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogle } from '@/lib/firebase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -17,26 +17,24 @@ export function GoogleSignInButton({
   className,
   disabled,
 }: GoogleSignInButtonProps) {
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { signInWithGoogle, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   const handleClick = async () => {
-    setIsSigningIn(true);
     setError(null);
 
-    // Use popup instead of redirect to avoid Chrome's bounce tracking mitigation
-    // which blocks Firebase's redirect flow
+    // Use AuthContext's signInWithGoogle which updates global state
+    // This ensures isAuthenticated is updated before any redirect happens
     const result = await signInWithGoogle();
-
-    setIsSigningIn(false);
 
     if (result.success) {
       onSuccess?.();
-    } else {
+    } else if (result.error) {
       const errorMessage = result.error?.message || 'Error al iniciar sesión con Google';
       setError(errorMessage);
       onError?.(errorMessage);
     }
+    // If !success and !error, user cancelled - do nothing
   };
 
   return (
@@ -45,7 +43,7 @@ export function GoogleSignInButton({
         type="button"
         variant="outline"
         onClick={handleClick}
-        disabled={disabled || isSigningIn}
+        disabled={disabled || isLoading}
         className={`w-full flex items-center justify-center gap-3 py-6 ${className}`}
       >
       {/* Google Icon */}
@@ -71,7 +69,7 @@ export function GoogleSignInButton({
           fill="#EA4335"
         />
       </svg>
-      {isSigningIn ? 'Conectando...' : 'Continuar con Google'}
+      {isLoading ? 'Conectando...' : 'Continuar con Google'}
       </Button>
       {error && (
         <p className="text-sm text-red-600 text-center">{error}</p>

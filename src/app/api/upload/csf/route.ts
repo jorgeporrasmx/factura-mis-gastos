@@ -63,11 +63,19 @@ export async function POST(request: NextRequest) {
           displayName: null,
           photoURL: null,
         });
-        console.log('Perfil de usuario creado automáticamente (Admin):', uid);
+        console.log('[CSF Upload] Perfil creado:', uid);
       } catch (createError) {
-        console.error('Error creando perfil de usuario (Admin):', createError);
+        const errorMessage = createError instanceof Error ? createError.message : 'Error desconocido';
+        console.error('[CSF Upload] Error creando perfil:', {
+          uid,
+          email: emailToUse,
+          error: errorMessage,
+        });
         return NextResponse.json(
-          { success: false, error: 'Error al crear perfil de usuario' },
+          {
+            success: false,
+            error: `Error al crear perfil: ${errorMessage}`
+          },
           { status: 500 }
         );
       }

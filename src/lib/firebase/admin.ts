@@ -16,7 +16,7 @@ export function isAdminConfigured(): boolean {
 // Initialize Firebase Admin
 function getAdminApp(): App | null {
   if (!isAdminConfigured()) {
-    console.warn('Firebase Admin no está configurado');
+    console.warn('[Firebase Admin] No configurado - falta PROJECT_ID');
     return null;
   }
 
@@ -32,15 +32,30 @@ function getAdminApp(): App | null {
       const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
       const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY)?.replace(/\\n/g, '\n');
 
+      // Log what credentials we found (without exposing sensitive data)
+      console.log('[Firebase Admin] Credenciales encontradas:', {
+        hasProjectId: Boolean(projectId),
+        hasClientEmail: Boolean(clientEmail),
+        hasPrivateKey: Boolean(privateKey),
+        privateKeyLength: privateKey?.length || 0,
+        privateKeyStart: privateKey?.substring(0, 30) || 'N/A',
+      });
+
       if (clientEmail && privateKey && projectId) {
-        // Use service account credentials
-        _adminApp = initializeApp({
-          credential: cert({
-            projectId,
-            clientEmail,
-            privateKey,
-          }),
-        });
+        try {
+          // Use service account credentials
+          _adminApp = initializeApp({
+            credential: cert({
+              projectId,
+              clientEmail,
+              privateKey,
+            }),
+          });
+          console.log('[Firebase Admin] Inicializado exitosamente');
+        } catch (initError) {
+          console.error('[Firebase Admin] Error en inicialización:', initError);
+          return null;
+        }
       } else if (projectId) {
         // Use default credentials (works in GCP environments)
         // Or Application Default Credentials
@@ -48,7 +63,7 @@ function getAdminApp(): App | null {
           projectId,
         });
       } else {
-        console.warn('No se encontraron credenciales de Firebase Admin');
+        console.warn('[Firebase Admin] Credenciales incompletas');
         return null;
       }
     }

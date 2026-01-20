@@ -3,16 +3,15 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getUserProfile,
-  getCompanyById,
-  updateUserProfile,
-  createUserProfile,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  getCompanyByIdAdmin,
+  updateUserProfileAdmin,
+  createUserProfileAdmin,
+} from '@/lib/firebase/firestore-admin';
 import {
   uploadFile,
   createUserFolder,
   shareFolderWithUser,
-  generateUniqueFileName,
   isDriveConfigured,
 } from '@/lib/google-drive';
 
@@ -47,8 +46,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener perfil del usuario, o crearlo si no existe
-    let userProfile = await getUserProfile(uid);
+    // Obtener perfil del usuario usando Admin SDK, o crearlo si no existe
+    let userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
       // Si tenemos el email, crear perfil automáticamente
@@ -58,15 +57,15 @@ export async function POST(request: NextRequest) {
         : `${uid}@placeholder.facturamisgastos.com`;
 
       try {
-        userProfile = await createUserProfile({
+        userProfile = await createUserProfileAdmin({
           uid,
           email: emailToUse,
           displayName: null,
           photoURL: null,
         });
-        console.log('Perfil de usuario creado automáticamente:', uid);
+        console.log('Perfil de usuario creado automáticamente (Admin):', uid);
       } catch (createError) {
-        console.error('Error creando perfil de usuario:', createError);
+        console.error('Error creando perfil de usuario (Admin):', createError);
         return NextResponse.json(
           { success: false, error: 'Error al crear perfil de usuario' },
           { status: 500 }
@@ -82,8 +81,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener empresa
-    const company = await getCompanyById(userProfile.companyId);
+    // Obtener empresa usando Admin SDK
+    const company = await getCompanyByIdAdmin(userProfile.companyId);
 
     if (!company || !company.driveFolderId) {
       return NextResponse.json(
@@ -137,8 +136,8 @@ export async function POST(request: NextRequest) {
       // Compartir carpeta con el usuario
       await shareFolderWithUser(userFolderId, userProfile.email, 'writer');
 
-      // Actualizar perfil con el folder ID
-      await updateUserProfile(uid, { driveFolderId: userFolderId });
+      // Actualizar perfil con el folder ID usando Admin SDK
+      await updateUserProfileAdmin(uid, { driveFolderId: userFolderId });
     }
 
     // Convertir archivo a buffer
@@ -158,9 +157,9 @@ export async function POST(request: NextRequest) {
       file.type
     );
 
-    // Actualizar perfil del usuario con la información del CSF
+    // Actualizar perfil del usuario con la información del CSF usando Admin SDK
     const now = new Date();
-    await updateUserProfile(uid, {
+    await updateUserProfileAdmin(uid, {
       csfUrl: uploadResult.webViewLink,
       csfDriveId: uploadResult.fileId,
       csfFileName: fileName,

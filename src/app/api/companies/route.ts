@@ -11,6 +11,7 @@ import {
 } from '@/lib/firebase/firestore';
 import {
   createCompanyFolderStructure,
+  createUserFolder,
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
@@ -89,12 +90,29 @@ export async function POST(request: NextRequest) {
 
     // Crear estructura de carpetas en Google Drive (si está configurado)
     let driveFolderInfo = null;
+    let adminDriveFolderId: string | undefined;
+
     if (isDriveConfigured()) {
       try {
+        console.log('[API/companies] Iniciando creación de carpetas en Drive para empresa:', name);
+
         const folderStructure = await createCompanyFolderStructure(name);
 
-        // Compartir carpeta con el admin
+        // Compartir carpeta raíz con el admin
         await shareFolderWithUser(folderStructure.rootFolderId, adminEmail, 'writer');
+
+        // Crear carpeta personal del admin dentro de la carpeta de empresa
+        const adminFolderName = adminName || userProfile.displayName || adminEmail.split('@')[0];
+        const adminFolder = await createUserFolder(folderStructure.rootFolderId, adminFolderName);
+        adminDriveFolderId = adminFolder.folderId;
+
+        // Compartir carpeta personal del admin con permisos de escritura
+        await shareFolderWithUser(adminFolder.folderId, adminEmail, 'writer');
+
+        console.log('[API/companies] Carpeta personal del admin creada:', {
+          adminFolderId: adminDriveFolderId,
+          adminFolderLink: adminFolder.webViewLink,
+        });
 
         // Actualizar empresa con IDs de carpetas
         await updateCompanyDriveFolders(
@@ -107,24 +125,30 @@ export async function POST(request: NextRequest) {
           rootFolderId: folderStructure.rootFolderId,
           docsFolderId: folderStructure.docsFolderId,
           rootWebViewLink: folderStructure.rootWebViewLink,
+          adminFolderId: adminDriveFolderId,
+          adminFolderLink: adminFolder.webViewLink,
         };
 
         // Actualizar objeto company local
         company.driveFolderId = folderStructure.rootFolderId;
         company.driveDocsFolderId = folderStructure.docsFolderId;
+
+        console.log('[API/companies] Estructura de Drive creada exitosamente:', driveFolderInfo);
       } catch (driveError) {
-        console.error('Error creando carpetas en Drive:', driveError);
+        console.error('[API/companies] Error creando carpetas en Drive:', driveError);
         // Continuamos sin Drive, la empresa ya está creada
       }
+    } else {
+      console.log('[API/companies] Google Drive no configurado, omitiendo creación de carpetas');
     }
 
-    // Vincular usuario a empresa como admin
+    // Vincular usuario a empresa como admin (con su carpeta personal si se creó)
     await linkUserToCompany(
       adminUid,
       company.id,
       company.name,
       'admin',
-      undefined // La carpeta del admin se crea después si es necesario
+      adminDriveFolderId
     );
 
     return NextResponse.json({

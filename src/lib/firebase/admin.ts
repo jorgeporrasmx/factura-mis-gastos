@@ -28,8 +28,9 @@ function getAdminApp(): App | null {
     } else {
       // Try to initialize with service account credentials
       const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-      const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, '\n');
+      // Support both naming conventions for credentials
+      const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      const privateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY)?.replace(/\\n/g, '\n');
 
       if (clientEmail && privateKey && projectId) {
         // Use service account credentials

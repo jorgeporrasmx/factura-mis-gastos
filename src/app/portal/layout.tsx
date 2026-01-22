@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { CompanyProvider, useCompany } from '@/contexts/CompanyContext';
@@ -13,6 +13,12 @@ function PortalContent({ children }: { children: React.ReactNode }) {
   const { userProfile, isLoading: companyLoading, error, refreshCompany } = useCompany();
   const [hasRefreshed, setHasRefreshed] = useState(false);
 
+  // Usar ref para evitar que refreshCompany cause re-ejecución del useEffect
+  const refreshCompanyRef = useRef(refreshCompany);
+  useEffect(() => {
+    refreshCompanyRef.current = refreshCompany;
+  }, [refreshCompany]);
+
   // Detectar si viene del onboarding y forzar recarga
   useEffect(() => {
     const onboardingParam = searchParams.get('onboarding');
@@ -21,9 +27,9 @@ function PortalContent({ children }: { children: React.ReactNode }) {
       // Limpiar el parámetro de la URL
       router.replace('/portal');
       // Forzar recarga del contexto
-      refreshCompany();
+      refreshCompanyRef.current();
     }
-  }, [searchParams, hasRefreshed, router, refreshCompany]);
+  }, [searchParams, hasRefreshed, router]); // Sin refreshCompany en deps
 
   // Redirigir a onboarding si no está completo (solo si no hay error y no viene del onboarding)
   useEffect(() => {

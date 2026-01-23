@@ -75,13 +75,18 @@ export async function GET() {
       canWrite: false,
     };
 
+    let readError: string | undefined;
+    let writeError: string | undefined;
+
     try {
       // Intentar leer un documento (no importa si existe)
       const testRef = db.collection('_firebase_status_test').doc('test');
       await testRef.get();
       status.firestoreTest.canRead = true;
-    } catch (readError) {
-      console.error('[Firebase Status] Error de lectura:', readError);
+    } catch (err) {
+      const e = err as Error;
+      readError = e.message;
+      console.error('[Firebase Status] Error de lectura:', e.message);
     }
 
     // Test de escritura: crear y eliminar documento de prueba
@@ -96,11 +101,22 @@ export async function GET() {
 
       // Limpiar: eliminar documento de prueba
       await testDocRef.delete();
-    } catch (writeError) {
-      console.error('[Firebase Status] Error de escritura:', writeError);
+    } catch (err) {
+      const e = err as Error;
+      writeError = e.message;
+      console.error('[Firebase Status] Error de escritura:', e.message);
     }
 
     status.connected = status.firestoreTest.canRead || status.firestoreTest.canWrite;
+
+    // Agregar info de diagnóstico sobre la clave
+    const privateKeyInfo = {
+      length: privateKey?.length || 0,
+      startsCorrectly: privateKey?.startsWith('-----BEGIN PRIVATE KEY-----') || false,
+      endsCorrectly: privateKey?.includes('-----END PRIVATE KEY-----') || false,
+      hasNewlines: privateKey?.includes('\n') || false,
+      hasEscapedNewlines: privateKey?.includes('\\n') || false,
+    };
 
     if (status.connected) {
       return NextResponse.json({
@@ -112,7 +128,12 @@ export async function GET() {
       return NextResponse.json({
         ...status,
         configStatus,
-        error: 'Firebase Admin configurado pero no puede acceder a Firestore. Verificar permisos del Service Account.',
+        privateKeyInfo,
+        errors: {
+          read: readError,
+          write: writeError,
+        },
+        error: 'Firebase Admin configurado pero no puede acceder a Firestore. Ver "errors" para detalles.',
       }, { status: 500 });
     }
 

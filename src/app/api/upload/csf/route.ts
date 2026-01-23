@@ -50,11 +50,23 @@ export async function POST(request: NextRequest) {
     let userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
-      // Si tenemos el email, crear perfil automáticamente
-      // Usamos email del header, o generamos uno placeholder
+      console.log('[API/upload/csf] Perfil no encontrado para UID:', uid);
+
+      // Si tenemos el email, intentar crear perfil automáticamente
       const emailToUse = userEmail && userEmail.trim() !== ''
         ? userEmail
-        : `${uid}@placeholder.facturamisgastos.com`;
+        : null;
+
+      if (!emailToUse) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Usuario no encontrado. Por favor, completa el registro primero.',
+            details: 'No se encontró perfil y no hay email para crear uno nuevo.'
+          },
+          { status: 400 }
+        );
+      }
 
       try {
         userProfile = await createUserProfileAdmin({
@@ -67,16 +79,31 @@ export async function POST(request: NextRequest) {
       } catch (createError) {
         console.error('Error creando perfil de usuario (Admin):', createError);
         return NextResponse.json(
-          { success: false, error: 'Error al crear perfil de usuario' },
+          {
+            success: false,
+            error: 'Error al crear perfil de usuario',
+            details: createError instanceof Error ? createError.message : 'Error desconocido'
+          },
           { status: 500 }
         );
       }
     }
 
+    console.log('[API/upload/csf] Perfil encontrado:', {
+      uid: userProfile.uid,
+      email: userProfile.email,
+      companyId: userProfile.companyId,
+      driveFolderId: userProfile.driveFolderId
+    });
+
     // Verificar que tiene empresa
     if (!userProfile.companyId) {
       return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa para subir tu CSF' },
+        {
+          success: false,
+          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Configuración para crear o unirte a una empresa.',
+          needsCompany: true
+        },
         { status: 400 }
       );
     }

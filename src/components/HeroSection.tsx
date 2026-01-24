@@ -1,10 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-// URL del formulario de Monday para solicitar demos/contacto comercial
-const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+import { LeadFormModal } from './LeadFormModal';
 
 const trustBadges = [
   {
@@ -34,6 +33,8 @@ const trustBadges = [
 ];
 
 export function HeroSection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <section
       id="inicio"
@@ -82,18 +83,17 @@ export function HeroSection() {
                   </svg>
                 </Button>
               </Link>
-              <Link href={MONDAY_FORM_URL} target="_blank">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
-                >
-                  <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Solicitar demo
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setIsModalOpen(true)}
+                className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
+              >
+                <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Solicitar demo
+              </Button>
             </div>
 
             {/* Trust badges */}
@@ -183,6 +183,12 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      <LeadFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formType="standard"
+      />
     </section>
   );
 }

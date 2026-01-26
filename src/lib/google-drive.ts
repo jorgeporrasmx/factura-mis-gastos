@@ -157,6 +157,45 @@ export async function createUserFolder(
   return result;
 }
 
+/**
+ * Asegurar que existe la carpeta de Drive para una empresa
+ * Si no existe, crea la estructura completa de carpetas
+ * Retorna los IDs de las carpetas (existentes o nuevas)
+ */
+export async function ensureCompanyDriveFolder(
+  companyName: string,
+  existingFolderId?: string | null
+): Promise<CompanyFolderStructure> {
+  // Si ya existe la carpeta, verificar que es accesible
+  if (existingFolderId) {
+    logDrive(`Verificando carpeta existente de empresa: "${companyName}"`, { existingFolderId });
+    try {
+      const drive = getDriveClient();
+      const response = await drive.files.get({
+        fileId: existingFolderId,
+        fields: 'id, name, webViewLink',
+      });
+
+      if (response.data.id) {
+        logDrive(`Carpeta de empresa existe y es accesible`, { folderId: existingFolderId });
+        // Retornamos la estructura existente (asumimos que docsFolderId también existe)
+        return {
+          rootFolderId: existingFolderId,
+          docsFolderId: existingFolderId, // Usamos la misma carpeta si no tenemos el docs
+          rootWebViewLink: response.data.webViewLink || '',
+          docsWebViewLink: response.data.webViewLink || '',
+        };
+      }
+    } catch (error) {
+      logDriveError(`Carpeta existente no accesible, creando nueva`, error);
+    }
+  }
+
+  // Crear nueva estructura de carpetas
+  logDrive(`Creando estructura de carpetas para empresa: "${companyName}"`);
+  return createCompanyFolderStructure(companyName);
+}
+
 // ============================================================================
 // PERMISOS
 // ============================================================================

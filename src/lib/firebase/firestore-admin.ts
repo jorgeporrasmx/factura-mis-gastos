@@ -129,3 +129,22 @@ export async function getCompanyByIdAdmin(companyId: string): Promise<Company | 
     return null;
   }
 }
+
+/**
+ * Update company Drive folder IDs (Admin)
+ */
+export async function updateCompanyDriveFoldersAdmin(
+  companyId: string,
+  driveFolderId: string,
+  driveDocsFolderId: string
+): Promise<void> {
+  const db = getAdminFirestore();
+  if (!db) throw new Error('Firestore Admin no disponible');
+
+  const docRef = db.collection('companies').doc(companyId);
+  await docRef.update({
+    driveFolderId,
+    driveDocsFolderId,
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+}

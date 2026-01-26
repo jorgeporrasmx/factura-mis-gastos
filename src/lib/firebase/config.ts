@@ -15,11 +15,21 @@ const firebaseConfig = {
 
 // Helper to check if Firebase is configured
 export function isFirebaseConfigured(): boolean {
-  return Boolean(
+  const isConfigured = Boolean(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
     typeof window !== 'undefined'
   );
+
+  if (!isConfigured && typeof window !== 'undefined') {
+    console.warn('[Firebase] Configuration check failed:', {
+      hasApiKey: Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+      hasProjectId: Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+      isClient: typeof window !== 'undefined',
+    });
+  }
+
+  return isConfigured;
 }
 
 // Lazy initialization - only initialize when needed and in client
@@ -53,14 +63,21 @@ export function getFirebaseAuth(): Auth | null {
   if (!_auth) {
     const app = getFirebaseApp();
     if (app) {
+      console.log('[Firebase] Initializing Auth...');
       _auth = getAuth(app);
       // Configurar idioma español para la UI de autenticación
       _auth.languageCode = 'es-MX';
       // Configure explicit persistence for browser
       // This ensures auth state survives page reloads and redirects
-      setPersistence(_auth, browserLocalPersistence).catch((err) => {
-        console.error('Error setting auth persistence:', err);
-      });
+      setPersistence(_auth, browserLocalPersistence)
+        .then(() => {
+          console.log('[Firebase] Auth persistence set to browserLocalPersistence');
+        })
+        .catch((err) => {
+          console.error('[Firebase] Error setting auth persistence:', err);
+        });
+    } else {
+      console.warn('[Firebase] Could not get Firebase app - Auth not initialized');
     }
   }
   return _auth;

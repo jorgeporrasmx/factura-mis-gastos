@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogle } from '@/lib/firebase/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -17,6 +17,7 @@ export function GoogleSignInButton({
   className,
   disabled,
 }: GoogleSignInButtonProps) {
+  const { signInWithGoogle } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,18 +25,28 @@ export function GoogleSignInButton({
     setIsSigningIn(true);
     setError(null);
 
-    // Use popup instead of redirect to avoid Chrome's bounce tracking mitigation
-    // which blocks Firebase's redirect flow
-    const result = await signInWithGoogle();
+    try {
+      // Use popup instead of redirect to avoid Chrome's bounce tracking mitigation
+      // which blocks Firebase's redirect flow
+      const result = await signInWithGoogle();
 
-    setIsSigningIn(false);
-
-    if (result.success) {
-      onSuccess?.();
-    } else {
-      const errorMessage = result.error?.message || 'Error al iniciar sesión con Google';
+      if (result.success && result.user) {
+        // Small delay to ensure auth state is propagated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        onSuccess?.();
+      } else if (result.error) {
+        const errorMessage = result.error.message || 'Error al iniciar sesión con Google';
+        setError(errorMessage);
+        onError?.(errorMessage);
+      }
+      // If result.success is false but no error, user cancelled - do nothing
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      const errorMessage = 'Error inesperado al iniciar sesión';
       setError(errorMessage);
       onError?.(errorMessage);
+    } finally {
+      setIsSigningIn(false);
     }
   };
 

@@ -126,17 +126,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInWithGoogle = useCallback(async (): Promise<AuthResult> => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    const result = await firebaseSignInWithGoogle();
+    try {
+      const result = await firebaseSignInWithGoogle();
 
-    if (!result.success && result.error) {
+      if (result.success && result.user) {
+        // Update state immediately on success - don't wait for onAuthStateChanged
+        setState({
+          user: result.user,
+          isLoading: false,
+          isAuthenticated: true,
+          error: null,
+        });
+      } else if (result.error) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: result.error?.message || 'Error al iniciar sesión',
+        }));
+      } else {
+        // User cancelled (popup closed) - just reset loading state
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+        }));
+      }
+
+      return result;
+    } catch (err) {
+      console.error('Error in signInWithGoogle:', err);
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: result.error?.message || 'Error al iniciar sesión',
+        error: 'Error inesperado al iniciar sesión con Google',
       }));
+      return {
+        success: false,
+        error: {
+          code: 'unknown',
+          message: 'Error inesperado al iniciar sesión con Google',
+        },
+      };
     }
-
-    return result;
   }, []);
 
   // Sign in with magic link

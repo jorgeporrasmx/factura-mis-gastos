@@ -113,10 +113,22 @@ export function mapFirebaseUser(firebaseUser: FirebaseUser): User {
 // Sign in with Google (popup - for desktop)
 export async function signInWithGoogle(): Promise<AuthResult> {
   const auth = getFirebaseAuth();
-  if (!auth) return notConfiguredError;
+
+  if (!auth) {
+    console.error('[GoogleAuth] Firebase Auth not configured');
+    return notConfiguredError;
+  }
+
+  console.log('[GoogleAuth] Starting Google sign-in with popup...');
 
   try {
-    const result = await signInWithPopup(auth, getGoogleProvider());
+    const provider = getGoogleProvider();
+    console.log('[GoogleAuth] Provider configured, opening popup...');
+
+    const result = await signInWithPopup(auth, provider);
+
+    console.log('[GoogleAuth] Sign-in successful, user:', result.user.email);
+
     return {
       success: true,
       user: mapFirebaseUser(result.user),
@@ -124,9 +136,12 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   } catch (error) {
     const err = error as { code?: string; message?: string };
 
+    console.error('[GoogleAuth] Sign-in error:', err.code, err.message);
+
     // Errores cancelados por usuario no deberían mostrarse
     if (err.code === 'auth/popup-closed-by-user' ||
         err.code === 'auth/cancelled-popup-request') {
+      console.log('[GoogleAuth] User cancelled sign-in');
       return { success: false };
     }
 

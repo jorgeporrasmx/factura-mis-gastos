@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Loader2, MessageCircle, Calendar, X } from 'lucide-react';
+import { CheckCircle2, Loader2, MessageCircle, Calendar, X, HelpCircle } from 'lucide-react';
 
 // Tipos de formulario
 export type FormType = 'express' | 'standard' | 'corporate' | 'callback';
@@ -423,6 +423,17 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
             {' '}y{' '}
             <a href="/privacidad" className="text-blue-600 hover:underline">política de privacidad</a>
           </p>
+
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <a
+              href="/#preguntas-frecuentes"
+              onClick={handleClose}
+              className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+              ¿Necesitas ayuda? Consulta nuestras preguntas frecuentes
+            </a>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

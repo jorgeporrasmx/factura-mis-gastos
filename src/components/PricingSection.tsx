@@ -1,12 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-// URL del formulario de Monday para captar leads
-const MONDAY_FORM_URL = 'https://forms.monday.com/forms/833e567b6bdfd15c2aeced0aaaecb12f?r=use1';
+import { LeadFormModal, FormType } from './LeadFormModal';
 
 type PlanId = 'personal' | 'equipos' | 'empresa' | 'corporativo';
 
@@ -101,6 +100,14 @@ const plans: PlanConfig[] = [
 ];
 
 export function PricingSection() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formType, setFormType] = useState<FormType>('corporate');
+
+  const openModal = (type: FormType) => {
+    setFormType(type);
+    setIsModalOpen(true);
+  };
+
   return (
     <section
       id="precios"
@@ -168,11 +175,9 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                <Link
-                  href={plan.isCustom ? MONDAY_FORM_URL : `/checkout/${plan.id}`}
-                  target={plan.isCustom ? "_blank" : undefined}
-                >
+                {plan.isCustom ? (
                   <Button
+                    onClick={() => openModal('corporate')}
                     className={`w-full transition-all ${
                       plan.popular
                         ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
@@ -180,13 +185,25 @@ export function PricingSection() {
                     }`}
                   >
                     {plan.cta}
-                    {plan.popular && (
-                      <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    )}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={`/checkout/${plan.id}`}>
+                    <Button
+                      className={`w-full transition-all ${
+                        plan.popular
+                          ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                          : 'bg-slate-800 hover:bg-slate-700'
+                      }`}
+                    >
+                      {plan.cta}
+                      {plan.popular && (
+                        <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      )}
+                    </Button>
+                  </Link>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -195,16 +212,21 @@ export function PricingSection() {
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
             ¿Necesitas algo diferente?{' '}
-            <Link
-              href={MONDAY_FORM_URL}
-              target="_blank"
+            <button
+              onClick={() => openModal('standard')}
               className="text-primary font-medium hover:underline"
             >
               Platiquemos sobre tu caso.
-            </Link>
+            </button>
           </p>
         </div>
       </div>
+
+      <LeadFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formType={formType}
+      />
     </section>
   );
 }

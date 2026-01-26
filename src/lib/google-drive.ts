@@ -3,6 +3,17 @@
 
 import { google, type drive_v3 } from 'googleapis';
 
+// Logger con prefijo para identificar operaciones de Drive
+const logDrive = (message: string, data?: unknown) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[DRIVE ${timestamp}] ${message}`, data ? JSON.stringify(data, null, 2) : '');
+};
+
+const logDriveError = (message: string, error: unknown) => {
+  const timestamp = new Date().toISOString();
+  console.error(`[DRIVE ERROR ${timestamp}] ${message}`, error);
+};
+
 // Tipos
 export interface DriveFile {
   id: string;
@@ -69,6 +80,8 @@ export async function createFolder(
   name: string,
   parentFolderId?: string
 ): Promise<CreateFolderResult> {
+  logDrive(`Creando carpeta: "${name}"`, { parentFolderId });
+
   const drive = getDriveClient();
 
   const fileMetadata: drive_v3.Schema$File = {
@@ -83,6 +96,7 @@ export async function createFolder(
     const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID;
     if (rootFolderId) {
       fileMetadata.parents = [rootFolderId];
+      logDrive(`Usando carpeta raíz configurada: ${rootFolderId}`);
     }
   }
 
@@ -92,13 +106,17 @@ export async function createFolder(
   });
 
   if (!response.data.id) {
+    logDriveError(`No se pudo crear la carpeta "${name}"`, { response: response.data });
     throw new Error('No se pudo crear la carpeta');
   }
 
-  return {
+  const result = {
     folderId: response.data.id,
     webViewLink: response.data.webViewLink || '',
   };
+
+  logDrive(`Carpeta creada exitosamente: "${name}"`, result);
+  return result;
 }
 
 /**
@@ -107,18 +125,23 @@ export async function createFolder(
 export async function createCompanyFolderStructure(
   companyName: string
 ): Promise<CompanyFolderStructure> {
+  logDrive(`Iniciando creación de estructura de carpetas para empresa: "${companyName}"`);
+
   // 1. Crear carpeta raíz de la empresa
   const rootFolder = await createFolder(companyName);
 
   // 2. Crear subcarpeta "Documentos Empresa"
   const docsFolder = await createFolder('Documentos Empresa', rootFolder.folderId);
 
-  return {
+  const result = {
     rootFolderId: rootFolder.folderId,
     docsFolderId: docsFolder.folderId,
     rootWebViewLink: rootFolder.webViewLink,
     docsWebViewLink: docsFolder.webViewLink,
   };
+
+  logDrive(`Estructura de carpetas creada para empresa: "${companyName}"`, result);
+  return result;
 }
 
 /**
@@ -128,7 +151,10 @@ export async function createUserFolder(
   parentFolderId: string,
   userName: string
 ): Promise<CreateFolderResult> {
-  return createFolder(userName, parentFolderId);
+  logDrive(`Creando carpeta de usuario: "${userName}"`, { parentFolderId });
+  const result = await createFolder(userName, parentFolderId);
+  logDrive(`Carpeta de usuario creada: "${userName}"`, result);
+  return result;
 }
 
 // ============================================================================
@@ -143,6 +169,8 @@ export async function shareFolderWithUser(
   email: string,
   role: 'reader' | 'writer' | 'commenter' = 'writer'
 ): Promise<void> {
+  logDrive(`Compartiendo carpeta con usuario`, { folderId, email, role });
+
   const drive = getDriveClient();
 
   try {
@@ -155,12 +183,15 @@ export async function shareFolderWithUser(
       },
       sendNotificationEmail: false, // Evitar spam de notificaciones
     });
+    logDrive(`Carpeta compartida exitosamente`, { folderId, email, role });
   } catch (error: unknown) {
     // Si el usuario ya tiene acceso, ignorar el error
     const err = error as { code?: number; message?: string };
     if (err.code === 400 && err.message?.includes('already has access')) {
+      logDrive(`Usuario ya tiene acceso a la carpeta`, { folderId, email });
       return;
     }
+    logDriveError(`Error compartiendo carpeta`, { folderId, email, error: err });
     throw error;
   }
 }

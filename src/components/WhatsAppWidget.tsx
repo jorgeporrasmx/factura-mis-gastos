@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, Calendar, ChevronDown, Bot, User } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '5216144273301';
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+const CALENDLY_URL = 'https://calendly.com/jorgeporras';
 
 interface Message {
   id: number;

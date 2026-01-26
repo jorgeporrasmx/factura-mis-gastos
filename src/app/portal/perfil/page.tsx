@@ -99,7 +99,7 @@ export default function PerfilPage() {
         </div>
 
         {/* Company section */}
-        {company && (
+        {company ? (
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Building2 className="w-5 h-5" />
@@ -137,6 +137,24 @@ export default function PerfilPage() {
                 </div>
               )}
             </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+            <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-amber-600" />
+              Sin empresa
+            </h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Necesitas pertenecer a una empresa para subir tu CSF y recibos.
+              Crea una empresa o pide a tu administrador que te invite.
+            </p>
+            <Button
+              onClick={() => router.push('/auth/onboarding/empresa')}
+              className="w-full sm:w-auto"
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              Crear empresa
+            </Button>
           </div>
         )}
 

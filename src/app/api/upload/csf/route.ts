@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Configuración para crear o unirte a una empresa.',
+          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Mi Perfil para crear una empresa.',
           needsCompany: true
         },
         { status: 400 }

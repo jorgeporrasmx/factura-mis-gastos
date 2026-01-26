@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PortalHeader } from '@/components/portal/PortalHeader';
-import { ChevronDown, ChevronUp, FileImage, Clock, AlertCircle, CheckCircle, HelpCircle, Mail, MessageCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileImage, Clock, AlertCircle, CheckCircle, HelpCircle, Mail, MessageCircle, Calendar } from 'lucide-react';
 import { TermsModal } from '@/components/TermsModal';
 
 interface FAQItem {
@@ -293,6 +293,15 @@ export default function AyudaPage() {
             >
               <MessageCircle className="w-4 h-4" />
               WhatsApp
+            </a>
+            <a
+              href="https://calendly.com/jorgeporras"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              Agendar cita
             </a>
           </div>
           <p className="text-xs text-gray-500 mt-3">

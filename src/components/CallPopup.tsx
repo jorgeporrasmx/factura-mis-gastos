@@ -28,8 +28,7 @@ export function CallPopup() {
   }, [isOpen, isMinimized]);
 
   const handleCall = () => {
-    // Aquí se agregará el enlace al agente virtual
-    window.open('https://cal.com/facturamisgastos/demo', '_blank');
+    window.open('https://calendly.com/jorgeporras', '_blank');
   };
 
   if (!isOpen) return null;

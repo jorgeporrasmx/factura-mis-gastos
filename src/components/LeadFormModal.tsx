@@ -36,7 +36,7 @@ interface FormData {
 }
 
 const WHATSAPP_NUMBER = '5216144273301';
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+const CALENDLY_URL = 'https://calendly.com/jorgeporras';
 
 const initialFormData: FormData = {
   nombre: '',

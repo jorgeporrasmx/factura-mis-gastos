@@ -110,7 +110,10 @@ export default function CreateCompanyPage() {
           router.push('/portal?onboarding=completed');
         }, 2000);
       } else {
-        setErrors({ general: data.error || 'Error al crear la empresa' });
+        // Show both error and details if available
+        const errorMessage = data.error || 'Error al crear la empresa';
+        setErrors({ general: errorMessage });
+        console.error('[Onboarding/Empresa] Error:', data);
       }
     } catch {
       setErrors({ general: 'Error de conexión. Intenta de nuevo.' });

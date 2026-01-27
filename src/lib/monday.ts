@@ -110,28 +110,21 @@ export function formatColumnValues(data: LeadData): string {
     columnValues[MONDAY_CONFIG.columns.cargo] = data.cargo;
   }
 
+  // Campos opcionales como texto (evita errores de labels de dropdown)
   if (data.recibos_mes) {
-    columnValues[MONDAY_CONFIG.columns.recibos_mes] = {
-      labels: [data.recibos_mes],
-    };
+    columnValues[MONDAY_CONFIG.columns.recibos_mes] = data.recibos_mes;
   }
 
   if (data.empleados) {
-    columnValues[MONDAY_CONFIG.columns.empleados] = {
-      labels: [data.empleados],
-    };
+    columnValues[MONDAY_CONFIG.columns.empleados] = data.empleados;
   }
 
   if (data.integraciones && data.integraciones.length > 0) {
-    columnValues[MONDAY_CONFIG.columns.integraciones] = {
-      labels: data.integraciones,
-    };
+    columnValues[MONDAY_CONFIG.columns.integraciones] = data.integraciones.join(', ');
   }
 
   if (data.plan_interes) {
-    columnValues[MONDAY_CONFIG.columns.plan_interes] = {
-      labels: [data.plan_interes],
-    };
+    columnValues[MONDAY_CONFIG.columns.plan_interes] = data.plan_interes;
   }
 
   if (data.notas) {

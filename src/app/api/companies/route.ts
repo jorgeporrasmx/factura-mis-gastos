@@ -3,12 +3,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  createCompany,
-  getCompanyByDomain,
-  updateCompanyDriveFolders,
-  getUserProfile,
-  linkUserToCompany,
-} from '@/lib/firebase/firestore';
+  createCompanyAdmin,
+  getCompanyByDomainAdmin,
+  updateCompanyDriveFoldersAdmin,
+  getUserProfileAdmin,
+  linkUserToCompanyAdmin,
+} from '@/lib/firebase/firestore-admin';
 import {
   createCompanyFolderStructure,
   createUserFolder,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar que el usuario existe
     console.log('[API/companies] Buscando perfil de usuario:', adminUid);
-    const userProfile = await getUserProfile(adminUid);
+    const userProfile = await getUserProfileAdmin(adminUid);
     console.log('[API/companies] Perfil encontrado:', userProfile ? 'Sí' : 'No');
     if (!userProfile) {
       return NextResponse.json(
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar que no exista otra empresa con el mismo dominio (solo para emails corporativos)
     if (!isPublicEmail) {
-      const existingCompany = await getCompanyByDomain(domain);
+      const existingCompany = await getCompanyByDomainAdmin(domain);
       if (existingCompany) {
         return NextResponse.json(
           { success: false, error: `Ya existe una empresa registrada con el dominio ${domain}` },
@@ -82,11 +82,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Crear la empresa en Firestore
+    // Crear la empresa en Firestore (usando Admin SDK para bypass reglas de seguridad)
     console.log('[API/companies] Creando empresa en Firestore...');
     let company;
     try {
-      company = await createCompany({
+      company = await createCompanyAdmin({
         name,
         domain,
         rfc,
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
         });
 
         // Actualizar empresa con IDs de carpetas
-        await updateCompanyDriveFolders(
+        await updateCompanyDriveFoldersAdmin(
           company.id,
           folderStructure.rootFolderId,
           folderStructure.docsFolderId
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     // Vincular usuario a empresa como admin (con su carpeta personal si se creó)
     console.log('[API/companies] Vinculando usuario a empresa...');
     try {
-      await linkUserToCompany(
+      await linkUserToCompanyAdmin(
         adminUid,
         company.id,
         company.name,

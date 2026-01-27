@@ -5,6 +5,8 @@ import type {
   UserProfile,
   CreateUserProfileData,
   Company,
+  CreateCompanyData,
+  UserRole,
 } from '@/types/company';
 
 // ============================================================================
@@ -146,5 +148,95 @@ export async function updateCompanyDriveFoldersAdmin(
     driveFolderId,
     driveDocsFolderId,
     updatedAt: FieldValue.serverTimestamp(),
+  });
+}
+
+/**
+ * Create a new company (Admin)
+ */
+export async function createCompanyAdmin(data: CreateCompanyData): Promise<Company> {
+  const db = getAdminFirestore();
+  if (!db) throw new Error('Firestore Admin no disponible');
+
+  const companyRef = db.collection('companies').doc();
+  const now = new Date();
+
+  const company: Company = {
+    id: companyRef.id,
+    name: data.name,
+    domain: data.domain.toLowerCase(),
+    rfc: data.rfc,
+    driveFolderId: '', // Se actualiza después de crear la carpeta
+    driveDocsFolderId: '',
+    driveSharedWith: [data.adminEmail],
+    createdAt: now,
+    updatedAt: now,
+    createdBy: data.adminUid,
+    plan: 'personal',
+    status: 'active',
+  };
+
+  await companyRef.set({
+    ...company,
+    createdAt: FieldValue.serverTimestamp(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  return company;
+}
+
+/**
+ * Get company by domain (Admin)
+ */
+export async function getCompanyByDomainAdmin(domain: string): Promise<Company | null> {
+  const db = getAdminFirestore();
+  if (!db) {
+    console.error('Firestore Admin no disponible');
+    return null;
+  }
+
+  try {
+    const snapshot = await db
+      .collection('companies')
+      .where('domain', '==', domain.toLowerCase())
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) return null;
+
+    const docSnap = snapshot.docs[0];
+    const data = docSnap.data();
+
+    return {
+      ...data,
+      id: docSnap.id,
+      createdAt: data.createdAt?.toDate() ?? new Date(),
+      updatedAt: data.updatedAt?.toDate() ?? new Date(),
+    } as Company;
+  } catch (error) {
+    console.error('Error getting company by domain (Admin):', error);
+    return null;
+  }
+}
+
+/**
+ * Link user to company (Admin)
+ */
+export async function linkUserToCompanyAdmin(
+  uid: string,
+  companyId: string,
+  companyName: string,
+  role: UserRole = 'user',
+  driveFolderId?: string
+): Promise<void> {
+  await updateUserProfileAdmin(uid, {
+    companyId,
+    companyName,
+    role,
+    driveFolderId,
+    status: 'active',
+    onboardingCompleted: true,
+    accountType: role === 'admin' ? 'empresa' : 'empleado',
   });
 }

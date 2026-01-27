@@ -17,22 +17,17 @@ const firebaseConfig = {
 export function isFirebaseConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
-    typeof window !== 'undefined'
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
   );
 }
 
-// Lazy initialization - only initialize when needed and in client
+// Lazy initialization - only initialize when needed
 let _app: FirebaseApp | null = null;
 let _auth: Auth | null = null;
 let _storage: FirebaseStorage | null = null;
 let _firestore: Firestore | null = null;
 
 function getFirebaseApp(): FirebaseApp | null {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
   if (!isFirebaseConfigured()) {
     return null;
   }
@@ -54,13 +49,16 @@ export function getFirebaseAuth(): Auth | null {
     const app = getFirebaseApp();
     if (app) {
       _auth = getAuth(app);
-      // Configurar idioma español para la UI de autenticación
-      _auth.languageCode = 'es-MX';
-      // Configure explicit persistence for browser
-      // This ensures auth state survives page reloads and redirects
-      setPersistence(_auth, browserLocalPersistence).catch((err) => {
-        console.error('Error setting auth persistence:', err);
-      });
+      // Solo configurar opciones de navegador si estamos en el cliente
+      if (typeof window !== 'undefined') {
+        // Configurar idioma español para la UI de autenticación
+        _auth.languageCode = 'es-MX';
+        // Configure explicit persistence for browser
+        // This ensures auth state survives page reloads and redirects
+        setPersistence(_auth, browserLocalPersistence).catch((err) => {
+          console.error('Error setting auth persistence:', err);
+        });
+      }
     }
   }
   return _auth;

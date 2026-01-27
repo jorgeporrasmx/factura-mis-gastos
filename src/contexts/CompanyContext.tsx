@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import type { Company, UserProfile, CompanyUser } from '@/types/company';
+// Imports estáticos - el 'use client' garantiza que solo se ejecutan en el navegador
+import { getUserProfile, getCompanyById, createUserProfile, getCompanyUsers } from '@/lib/firebase/firestore';
 
 interface CompanyContextType {
   // Estado
@@ -36,6 +38,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     if (!user?.uid) {
       setUserProfile(null);
       setCompany(null);
+      setCompanyUsers([]);
       setIsLoading(false);
       return;
     }
@@ -44,15 +47,11 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      // Importar funciones de firestore dinámicamente para evitar errores de SSR
-      const { getUserProfile, getCompanyById } = await import('@/lib/firebase/firestore');
-
       // Obtener perfil del usuario
       const profile = await getUserProfile(user.uid);
 
       if (!profile) {
         // Usuario nuevo, crear perfil básico
-        const { createUserProfile } = await import('@/lib/firebase/firestore');
         const newProfile = await createUserProfile({
           uid: user.uid,
           email: user.email || '',
@@ -61,15 +60,21 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         });
         setUserProfile(newProfile);
         setCompany(null);
+        setCompanyUsers([]);
       } else {
         setUserProfile(profile);
 
-        // Si tiene empresa, cargarla
+        // Si tiene empresa, cargar company y users EN PARALELO
         if (profile.companyId) {
-          const companyData = await getCompanyById(profile.companyId);
+          const [companyData, users] = await Promise.all([
+            getCompanyById(profile.companyId),
+            profile.role === 'admin' ? getCompanyUsers(profile.companyId) : Promise.resolve([]),
+          ]);
           setCompany(companyData);
+          setCompanyUsers(users);
         } else {
           setCompany(null);
+          setCompanyUsers([]);
         }
       }
     } catch (err) {
@@ -92,9 +97,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user?.uid]); // Solo depende del uid, no del objeto user completo
 
-  // Cargar usuarios de la empresa (solo admin)
+  // Cargar usuarios de la empresa (solo admin) - para refrescos manuales
   const refreshUsers = useCallback(async () => {
     if (!userProfile?.companyId || userProfile.role !== 'admin') {
       setCompanyUsers([]);
@@ -102,7 +107,6 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { getCompanyUsers } = await import('@/lib/firebase/firestore');
       const users = await getCompanyUsers(userProfile.companyId);
       setCompanyUsers(users);
     } catch (err) {

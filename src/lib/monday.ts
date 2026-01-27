@@ -97,8 +97,10 @@ export function formatColumnValues(data: LeadData): string {
     [MONDAY_CONFIG.columns.fecha_entrada]: {
       date: today,
     },
-    // Origen (como texto para evitar problemas con labels de dropdown)
-    [MONDAY_CONFIG.columns.origen]: data.origen,
+    // Origen
+    [MONDAY_CONFIG.columns.origen]: {
+      labels: [data.origen],
+    },
   };
 
   // Campos opcionales
@@ -110,28 +112,33 @@ export function formatColumnValues(data: LeadData): string {
     columnValues[MONDAY_CONFIG.columns.cargo] = data.cargo;
   }
 
-  // NOTA: Los campos recibos_mes, empleados, integraciones, plan_interes
-  // requieren configurar las etiquetas en Monday o cambiar columnas a tipo texto.
-  // Por ahora se agregan a las notas para no perder la información.
-  const extraInfo: string[] = [];
   if (data.recibos_mes) {
-    extraInfo.push(`Recibos/mes: ${data.recibos_mes}`);
-  }
-  if (data.empleados) {
-    extraInfo.push(`Empleados: ${data.empleados}`);
-  }
-  if (data.integraciones && data.integraciones.length > 0) {
-    extraInfo.push(`Integraciones: ${data.integraciones.join(', ')}`);
-  }
-  if (data.plan_interes) {
-    extraInfo.push(`Plan interés: ${data.plan_interes}`);
+    columnValues[MONDAY_CONFIG.columns.recibos_mes] = {
+      labels: [data.recibos_mes],
+    };
   }
 
-  // Combinar notas con información extra
-  const allNotes = [...extraInfo, data.notas].filter(Boolean).join('\n');
-  if (allNotes) {
+  if (data.empleados) {
+    columnValues[MONDAY_CONFIG.columns.empleados] = {
+      labels: [data.empleados],
+    };
+  }
+
+  if (data.integraciones && data.integraciones.length > 0) {
+    columnValues[MONDAY_CONFIG.columns.integraciones] = {
+      labels: data.integraciones,
+    };
+  }
+
+  if (data.plan_interes) {
+    columnValues[MONDAY_CONFIG.columns.plan_interes] = {
+      labels: [data.plan_interes],
+    };
+  }
+
+  if (data.notas) {
     columnValues[MONDAY_CONFIG.columns.notas] = {
-      text: allNotes,
+      text: data.notas,
     };
   }
 

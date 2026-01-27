@@ -14,6 +14,7 @@ export default function PerfilPage() {
   const router = useRouter();
 
   const [creatingFolder, setCreatingFolder] = useState(false);
+  const [creatingUserFolder, setCreatingUserFolder] = useState(false);
   const [folderMessage, setFolderMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleSignOut = async () => {
@@ -59,6 +60,47 @@ export default function PerfilPage() {
       });
     } finally {
       setCreatingFolder(false);
+    }
+  };
+
+  const handleCreateUserDriveFolder = async () => {
+    if (!user?.uid) return;
+
+    setCreatingUserFolder(true);
+    setFolderMessage(null);
+
+    try {
+      const response = await fetch(`/api/users/${user.uid}/drive-folder`, {
+        method: 'POST',
+        headers: {
+          'x-user-uid': user.uid,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setFolderMessage({
+          type: 'success',
+          text: data.alreadyExists
+            ? 'Tu carpeta personal ya existe. Puedes acceder a ella a continuación.'
+            : 'Carpeta personal de Drive creada exitosamente.',
+        });
+        // Refrescar los datos para mostrar el link
+        await refreshCompany();
+      } else {
+        setFolderMessage({
+          type: 'error',
+          text: data.error || 'Error al crear la carpeta personal de Drive',
+        });
+      }
+    } catch {
+      setFolderMessage({
+        type: 'error',
+        text: 'Error de conexión. Por favor intenta de nuevo.',
+      });
+    } finally {
+      setCreatingUserFolder(false);
     }
   };
 
@@ -288,11 +330,38 @@ export default function PerfilPage() {
                 </div>
               )}
 
-              {/* Message for non-admin users without folders */}
+              {/* Button for users without personal folder but company has Drive folder */}
+              {!userDriveLink && companyDriveLink && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800 mb-3">
+                    Aún no tienes una carpeta personal de Drive.
+                    Crea una para organizar tus documentos y recibos.
+                  </p>
+                  <Button
+                    onClick={handleCreateUserDriveFolder}
+                    disabled={creatingUserFolder}
+                    className="w-full sm:w-auto"
+                  >
+                    {creatingUserFolder ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Creando carpeta...
+                      </>
+                    ) : (
+                      <>
+                        <FolderPlus className="w-4 h-4 mr-2" />
+                        Crear mi carpeta personal
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* Message for users without folders and company without Drive */}
               {!userDriveLink && !companyDriveLink && !isAdmin && (
                 <p className="text-sm text-gray-500 text-center py-4">
-                  Aún no tienes carpetas de Drive configuradas.
-                  Se crearán automáticamente cuando subas tu primer documento.
+                  La empresa aún no tiene carpeta de Drive configurada.
+                  Contacta a tu administrador para habilitarla.
                 </p>
               )}
             </div>

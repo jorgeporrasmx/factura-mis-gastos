@@ -7,12 +7,14 @@ import {
   getCompanyByIdAdmin,
   updateUserProfileAdmin,
   createUserProfileAdmin,
+  updateCompanyDriveFoldersAdmin,
 } from '@/lib/firebase/firestore-admin';
 import {
   uploadFile,
   createUserFolder,
   shareFolderWithUser,
   isDriveConfigured,
+  ensureCompanyDriveFolder,
 } from '@/lib/google-drive';
 
 // Tipos MIME permitidos para CSF
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Configuración para crear o unirte a una empresa.',
+          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Mi Perfil para crear una empresa.',
           needsCompany: true
         },
         { status: 400 }
@@ -111,11 +113,48 @@ export async function POST(request: NextRequest) {
     // Obtener empresa usando Admin SDK
     const company = await getCompanyByIdAdmin(userProfile.companyId);
 
-    if (!company || !company.driveFolderId) {
+    if (!company) {
       return NextResponse.json(
-        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+        { success: false, error: 'Empresa no encontrada' },
         { status: 400 }
       );
+    }
+
+    // Asegurar que la empresa tiene carpeta de Drive (crear si no existe)
+    let companyDriveFolderId = company.driveFolderId;
+
+    if (!companyDriveFolderId) {
+      console.log('[API/upload/csf] Empresa sin carpeta de Drive, creando automáticamente:', {
+        companyId: company.id,
+        companyName: company.name,
+      });
+
+      try {
+        const folderStructure = await ensureCompanyDriveFolder(company.name);
+        companyDriveFolderId = folderStructure.rootFolderId;
+
+        // Actualizar la empresa con los IDs de las carpetas
+        await updateCompanyDriveFoldersAdmin(
+          company.id,
+          folderStructure.rootFolderId,
+          folderStructure.docsFolderId
+        );
+
+        console.log('[API/upload/csf] Carpeta de empresa creada exitosamente:', {
+          companyId: company.id,
+          driveFolderId: companyDriveFolderId,
+        });
+      } catch (driveError) {
+        console.error('[API/upload/csf] Error creando carpeta de empresa:', driveError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No se pudo crear la carpeta de Drive para la empresa',
+            details: driveError instanceof Error ? driveError.message : 'Error desconocido',
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // Obtener el archivo del FormData
@@ -157,7 +196,7 @@ export async function POST(request: NextRequest) {
     if (!userFolderId) {
       // Crear carpeta del usuario si no existe
       const userName = userProfile.displayName || userProfile.email.split('@')[0];
-      const userFolder = await createUserFolder(company.driveFolderId, userName);
+      const userFolder = await createUserFolder(companyDriveFolderId, userName);
       userFolderId = userFolder.folderId;
 
       // Compartir carpeta con el usuario

@@ -97,8 +97,10 @@ export function formatColumnValues(data: LeadData): string {
     [MONDAY_CONFIG.columns.fecha_entrada]: {
       date: today,
     },
-    // Origen (como texto para evitar problemas con labels de dropdown)
-    [MONDAY_CONFIG.columns.origen]: data.origen,
+    // Origen
+    [MONDAY_CONFIG.columns.origen]: {
+      labels: [data.origen],
+    },
   };
 
   // Campos opcionales

@@ -15,10 +15,20 @@ const firebaseConfig = {
 
 // Helper to check if Firebase is configured
 export function isFirebaseConfigured(): boolean {
-  return Boolean(
+  const isConfigured = Boolean(
     process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
   );
+
+  if (!isConfigured && typeof window !== 'undefined') {
+    console.warn('[Firebase] Configuration check failed:', {
+      hasApiKey: Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+      hasProjectId: Boolean(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+      isClient: typeof window !== 'undefined',
+    });
+  }
+
+  return isConfigured;
 }
 
 // Lazy initialization - only initialize when needed
@@ -48,6 +58,7 @@ export function getFirebaseAuth(): Auth | null {
   if (!_auth) {
     const app = getFirebaseApp();
     if (app) {
+      console.log('[Firebase] Initializing Auth...');
       _auth = getAuth(app);
       // Solo configurar opciones de navegador si estamos en el cliente
       if (typeof window !== 'undefined') {

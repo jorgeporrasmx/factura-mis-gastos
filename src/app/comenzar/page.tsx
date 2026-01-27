@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-const CALENDLY_URL = 'https://calendly.com/facturamisgastos/asesoria';
+const CALENDLY_URL = 'https://calendly.com/jorgeporras';
 
 const plans = [
   {
@@ -436,7 +436,7 @@ export default function ComenzarPage() {
           <p className="text-muted-foreground">
             ¿Tienes dudas?{' '}
             <a
-              href="https://calendly.com/facturamisgastos/asesoria"
+              href="https://calendly.com/jorgeporras"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary font-medium hover:underline"

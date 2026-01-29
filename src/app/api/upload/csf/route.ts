@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Subir archivo a Firebase Storage
-    const bucket = storage.bucket(bucketName);
+    // Subir archivo a Firebase Storage (usar bucket por defecto configurado en Admin)
+    const bucket = storage.bucket();
     const fileRef = bucket.file(storagePath);
 
     await fileRef.save(buffer, {

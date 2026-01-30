@@ -103,6 +103,7 @@ export async function createFolder(
   const response = await drive.files.create({
     requestBody: fileMetadata,
     fields: 'id, webViewLink',
+    supportsAllDrives: true,
   });
 
   if (!response.data.id) {
@@ -174,6 +175,7 @@ export async function ensureCompanyDriveFolder(
       const response = await drive.files.get({
         fileId: existingFolderId,
         fields: 'id, name, webViewLink',
+        supportsAllDrives: true,
       });
 
       if (response.data.id) {
@@ -221,6 +223,7 @@ export async function shareFolderWithUser(
         emailAddress: email,
       },
       sendNotificationEmail: false, // Evitar spam de notificaciones
+      supportsAllDrives: true,
     });
     logDrive(`Carpeta compartida exitosamente`, { folderId, email, role });
   } catch (error: unknown) {
@@ -258,6 +261,7 @@ export async function removeUserAccess(folderId: string, email: string): Promise
   const permissions = await drive.permissions.list({
     fileId: folderId,
     fields: 'permissions(id, emailAddress)',
+    supportsAllDrives: true,
   });
 
   const permission = permissions.data.permissions?.find(
@@ -268,6 +272,7 @@ export async function removeUserAccess(folderId: string, email: string): Promise
     await drive.permissions.delete({
       fileId: folderId,
       permissionId: permission.id,
+      supportsAllDrives: true,
     });
   }
 }
@@ -303,6 +308,7 @@ export async function uploadFile(
       body: stream,
     },
     fields: 'id, webViewLink, webContentLink',
+    supportsAllDrives: true,
   });
 
   if (!response.data.id) {
@@ -335,6 +341,7 @@ export async function uploadFilePublic(
       type: 'anyone',
       role: 'reader',
     },
+    supportsAllDrives: true,
   });
 
   return result;
@@ -350,6 +357,7 @@ export async function getFileInfo(fileId: string): Promise<DriveFile | null> {
     const response = await drive.files.get({
       fileId,
       fields: 'id, name, mimeType, webViewLink, webContentLink, createdTime, modifiedTime, size',
+      supportsAllDrives: true,
     });
 
     return {
@@ -377,6 +385,8 @@ export async function listFolderFiles(folderId: string): Promise<DriveFile[]> {
     q: `'${folderId}' in parents and trashed = false`,
     fields: 'files(id, name, mimeType, webViewLink, webContentLink, createdTime, modifiedTime, size)',
     orderBy: 'createdTime desc',
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
   });
 
   return (response.data.files || []).map(file => ({
@@ -396,7 +406,7 @@ export async function listFolderFiles(folderId: string): Promise<DriveFile[]> {
  */
 export async function deleteFile(fileId: string): Promise<void> {
   const drive = getDriveClient();
-  await drive.files.delete({ fileId });
+  await drive.files.delete({ fileId, supportsAllDrives: true });
 }
 
 /**
@@ -412,6 +422,7 @@ export async function moveFile(
   const file = await drive.files.get({
     fileId,
     fields: 'parents',
+    supportsAllDrives: true,
   });
 
   const previousParents = file.data.parents?.join(',') || '';
@@ -422,6 +433,7 @@ export async function moveFile(
     addParents: newParentFolderId,
     removeParents: previousParents,
     fields: 'id, parents',
+    supportsAllDrives: true,
   });
 }
 

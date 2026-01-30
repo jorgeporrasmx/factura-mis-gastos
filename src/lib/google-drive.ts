@@ -283,6 +283,7 @@ export async function removeUserAccess(folderId: string, email: string): Promise
 
 /**
  * Subir un archivo a una carpeta
+ * La carpeta destino debe estar dentro de un Shared Drive para que funcione con Service Accounts
  */
 export async function uploadFile(
   folderId: string,
@@ -291,6 +292,8 @@ export async function uploadFile(
   mimeType: string
 ): Promise<UploadFileResult> {
   const drive = getDriveClient();
+
+  logDrive(`Subiendo archivo: "${fileName}"`, { folderId, mimeType });
 
   // Crear stream desde buffer
   const { Readable } = await import('stream');
@@ -312,14 +315,18 @@ export async function uploadFile(
   });
 
   if (!response.data.id) {
+    logDriveError(`No se pudo subir el archivo "${fileName}"`, { response: response.data });
     throw new Error('No se pudo subir el archivo');
   }
 
-  return {
+  const result = {
     fileId: response.data.id,
     webViewLink: response.data.webViewLink || '',
     webContentLink: response.data.webContentLink || undefined,
   };
+
+  logDrive(`Archivo subido exitosamente: "${fileName}"`, result);
+  return result;
 }
 
 /**

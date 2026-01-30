@@ -1,17 +1,19 @@
-// API para subir Constancia de Situación Fiscal (CSF) a Firebase Storage
-// POST /api/upload/csf - Subir CSF a carpeta del usuario
+// API para subir Constancia de Situación Fiscal (CSF) a Google Drive
+// POST /api/upload/csf - Subir CSF a carpeta del usuario en Drive
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserProfileAdmin,
+  getCompanyByIdAdmin,
   updateUserProfileAdmin,
   createUserProfileAdmin,
 } from '@/lib/firebase/firestore-admin';
 import {
-  getAdminStorage,
-  getStorageBucketName,
-  isAdminConfigured,
-} from '@/lib/firebase/admin';
+  uploadFile,
+  createUserFolder,
+  shareFolderWithUser,
+  isDriveConfigured,
+} from '@/lib/google-drive';
 
 // Tipos MIME permitidos para CSF
 const ALLOWED_MIME_TYPES = [
@@ -25,19 +27,10 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar que Firebase Admin está configurado
-    if (!isAdminConfigured()) {
+    // Verificar que Drive está configurado
+    if (!isDriveConfigured()) {
       return NextResponse.json(
-        { success: false, error: 'Firebase Admin no está configurado' },
-        { status: 503 }
-      );
-    }
-
-    // Verificar que Storage está configurado
-    const bucketName = getStorageBucketName();
-    if (!bucketName) {
-      return NextResponse.json(
-        { success: false, error: 'Firebase Storage bucket no está configurado' },
+        { success: false, error: 'Google Drive no está configurado' },
         { status: 503 }
       );
     }
@@ -101,6 +94,24 @@ export async function POST(request: NextRequest) {
       email: userProfile.email,
     });
 
+    // Verificar que tiene empresa
+    if (!userProfile.companyId) {
+      return NextResponse.json(
+        { success: false, error: 'Debes pertenecer a una empresa para subir tu CSF' },
+        { status: 400 }
+      );
+    }
+
+    // Obtener empresa (usando Admin SDK)
+    const company = await getCompanyByIdAdmin(userProfile.companyId);
+
+    if (!company || !company.driveFolderId) {
+      return NextResponse.json(
+        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+        { status: 400 }
+      );
+    }
+
     // Obtener el archivo del FormData
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
@@ -134,6 +145,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verificar/crear carpeta del usuario
+    let userFolderId = userProfile.driveFolderId;
+
+    if (!userFolderId) {
+      // Crear carpeta del usuario si no existe
+      const userName = userProfile.displayName || userProfile.email.split('@')[0];
+      const userFolder = await createUserFolder(company.driveFolderId, userName);
+      userFolderId = userFolder.folderId;
+
+      // Compartir carpeta con el usuario
+      await shareFolderWithUser(userFolderId, userProfile.email, 'writer');
+
+      // Actualizar perfil con el folder ID (usando Admin SDK)
+      await updateUserProfileAdmin(uid, { driveFolderId: userFolderId });
+    }
+
     // Convertir archivo a buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -143,60 +170,37 @@ export async function POST(request: NextRequest) {
     const timestamp = Date.now();
     const fileName = `CSF_${timestamp}.${extension}`;
 
-    // Path en Firebase Storage: users/{uid}/csf/{fileName}
-    const storagePath = `users/${uid}/csf/${fileName}`;
-
-    // Obtener Storage Admin
-    const storage = getAdminStorage();
-    if (!storage) {
-      return NextResponse.json(
-        { success: false, error: 'No se pudo inicializar Firebase Storage' },
-        { status: 500 }
-      );
-    }
-
-    // Subir archivo a Firebase Storage (usar bucket por defecto configurado en Admin)
-    const bucket = storage.bucket();
-    const fileRef = bucket.file(storagePath);
-
-    await fileRef.save(buffer, {
-      metadata: {
-        contentType: file.type,
-        metadata: {
-          uploadedBy: uid,
-          originalName: file.name,
-        },
-      },
-    });
-
-    // Hacer el archivo público para que sea accesible
-    await fileRef.makePublic();
-
-    // Obtener URL pública
-    const publicUrl = `https://storage.googleapis.com/${bucketName}/${storagePath}`;
+    // Subir archivo a Drive
+    const uploadResult = await uploadFile(
+      userFolderId,
+      buffer,
+      fileName,
+      file.type
+    );
 
     // Actualizar perfil del usuario con la información del CSF
     const now = new Date();
     await updateUserProfileAdmin(uid, {
-      csfUrl: publicUrl,
-      csfStoragePath: storagePath,
+      csfUrl: uploadResult.webViewLink,
+      csfDriveId: uploadResult.fileId,
       csfFileName: fileName,
       csfUploadedAt: now,
     });
 
-    console.log('[API/upload/csf] CSF subida exitosamente:', {
+    console.log('[API/upload/csf] CSF subida exitosamente a Drive:', {
       uid,
-      storagePath,
-      url: publicUrl,
+      fileId: uploadResult.fileId,
+      url: uploadResult.webViewLink,
     });
 
     return NextResponse.json({
       success: true,
       message: 'Constancia de Situación Fiscal subida exitosamente',
       file: {
-        id: storagePath,
+        id: uploadResult.fileId,
         name: fileName,
-        url: publicUrl,
+        url: uploadResult.webViewLink,
+        downloadUrl: uploadResult.webContentLink,
         mimeType: file.type,
         size: file.size,
         uploadedAt: now.toISOString(),

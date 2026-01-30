@@ -3,9 +3,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getUserProfile,
-  getCompanyById,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  getCompanyByIdAdmin,
+  updateUserProfileAdmin,
+} from '@/lib/firebase/firestore-admin';
 import {
   uploadFile,
   createUserFolder,
@@ -47,8 +48,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener perfil del usuario
-    const userProfile = await getUserProfile(uid);
+    // Obtener perfil del usuario (usando Admin SDK)
+    const userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
       return NextResponse.json(
@@ -65,8 +66,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener empresa
-    const company = await getCompanyById(userProfile.companyId);
+    // Obtener empresa (usando Admin SDK)
+    const company = await getCompanyByIdAdmin(userProfile.companyId);
 
     if (!company || !company.driveFolderId) {
       return NextResponse.json(
@@ -120,9 +121,8 @@ export async function POST(request: NextRequest) {
       // Compartir carpeta con el usuario
       await shareFolderWithUser(userFolderId, userProfile.email, 'writer');
 
-      // Actualizar perfil con el folder ID (importar función)
-      const { updateUserProfile } = await import('@/lib/firebase/firestore');
-      await updateUserProfile(uid, { driveFolderId: userFolderId });
+      // Actualizar perfil con el folder ID (usando Admin SDK)
+      await updateUserProfileAdmin(uid, { driveFolderId: userFolderId });
     }
 
     // Convertir archivo a buffer

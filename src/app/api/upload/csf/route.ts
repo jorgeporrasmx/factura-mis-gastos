@@ -1,5 +1,5 @@
 // API para subir Constancia de Situación Fiscal (CSF) a Google Drive
-// POST /api/upload/csf - Subir CSF a carpeta del usuario
+// POST /api/upload/csf - Subir CSF a carpeta del usuario en Drive
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
@@ -7,14 +7,12 @@ import {
   getCompanyByIdAdmin,
   updateUserProfileAdmin,
   createUserProfileAdmin,
-  updateCompanyDriveFoldersAdmin,
 } from '@/lib/firebase/firestore-admin';
 import {
   uploadFile,
   createUserFolder,
   shareFolderWithUser,
   isDriveConfigured,
-  ensureCompanyDriveFolder,
 } from '@/lib/google-drive';
 
 // Tipos MIME permitidos para CSF
@@ -94,67 +92,24 @@ export async function POST(request: NextRequest) {
     console.log('[API/upload/csf] Perfil encontrado:', {
       uid: userProfile.uid,
       email: userProfile.email,
-      companyId: userProfile.companyId,
-      driveFolderId: userProfile.driveFolderId
     });
 
     // Verificar que tiene empresa
     if (!userProfile.companyId) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Debes pertenecer a una empresa para subir tu CSF. Ve a Mi Perfil para crear una empresa.',
-          needsCompany: true
-        },
+        { success: false, error: 'Debes pertenecer a una empresa para subir tu CSF' },
         { status: 400 }
       );
     }
 
-    // Obtener empresa usando Admin SDK
+    // Obtener empresa (usando Admin SDK)
     const company = await getCompanyByIdAdmin(userProfile.companyId);
 
-    if (!company) {
+    if (!company || !company.driveFolderId) {
       return NextResponse.json(
-        { success: false, error: 'Empresa no encontrada' },
+        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
         { status: 400 }
       );
-    }
-
-    // Asegurar que la empresa tiene carpeta de Drive (crear si no existe)
-    let companyDriveFolderId = company.driveFolderId;
-
-    if (!companyDriveFolderId) {
-      console.log('[API/upload/csf] Empresa sin carpeta de Drive, creando automáticamente:', {
-        companyId: company.id,
-        companyName: company.name,
-      });
-
-      try {
-        const folderStructure = await ensureCompanyDriveFolder(company.name);
-        companyDriveFolderId = folderStructure.rootFolderId;
-
-        // Actualizar la empresa con los IDs de las carpetas
-        await updateCompanyDriveFoldersAdmin(
-          company.id,
-          folderStructure.rootFolderId,
-          folderStructure.docsFolderId
-        );
-
-        console.log('[API/upload/csf] Carpeta de empresa creada exitosamente:', {
-          companyId: company.id,
-          driveFolderId: companyDriveFolderId,
-        });
-      } catch (driveError) {
-        console.error('[API/upload/csf] Error creando carpeta de empresa:', driveError);
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'No se pudo crear la carpeta de Drive para la empresa',
-            details: driveError instanceof Error ? driveError.message : 'Error desconocido',
-          },
-          { status: 500 }
-        );
-      }
     }
 
     // Obtener el archivo del FormData
@@ -196,13 +151,13 @@ export async function POST(request: NextRequest) {
     if (!userFolderId) {
       // Crear carpeta del usuario si no existe
       const userName = userProfile.displayName || userProfile.email.split('@')[0];
-      const userFolder = await createUserFolder(companyDriveFolderId, userName);
+      const userFolder = await createUserFolder(company.driveFolderId, userName);
       userFolderId = userFolder.folderId;
 
       // Compartir carpeta con el usuario
       await shareFolderWithUser(userFolderId, userProfile.email, 'writer');
 
-      // Actualizar perfil con el folder ID usando Admin SDK
+      // Actualizar perfil con el folder ID (usando Admin SDK)
       await updateUserProfileAdmin(uid, { driveFolderId: userFolderId });
     }
 
@@ -223,13 +178,19 @@ export async function POST(request: NextRequest) {
       file.type
     );
 
-    // Actualizar perfil del usuario con la información del CSF usando Admin SDK
+    // Actualizar perfil del usuario con la información del CSF
     const now = new Date();
     await updateUserProfileAdmin(uid, {
       csfUrl: uploadResult.webViewLink,
       csfDriveId: uploadResult.fileId,
       csfFileName: fileName,
       csfUploadedAt: now,
+    });
+
+    console.log('[API/upload/csf] CSF subida exitosamente a Drive:', {
+      uid,
+      fileId: uploadResult.fileId,
+      url: uploadResult.webViewLink,
     });
 
     return NextResponse.json({

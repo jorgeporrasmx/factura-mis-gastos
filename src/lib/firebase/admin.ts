@@ -1,9 +1,11 @@
 // Firebase Admin SDK for server-side operations
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { getStorage, type Storage } from 'firebase-admin/storage';
 
 let _adminApp: App | null = null;
 let _adminDb: Firestore | null = null;
+let _adminStorage: Storage | null = null;
 
 // Fix private key format - handles various formats from Vercel
 function formatPrivateKey(key: string | undefined): string | undefined {
@@ -74,6 +76,9 @@ function getAdminApp(): App | null {
       const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL || process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
       const privateKey = formatPrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY || process.env.GOOGLE_PRIVATE_KEY);
 
+      // Get storage bucket for initialization
+      const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
       if (clientEmail && privateKey && projectId) {
         // Use service account credentials
         _adminApp = initializeApp({
@@ -82,12 +87,14 @@ function getAdminApp(): App | null {
             clientEmail,
             privateKey,
           }),
+          storageBucket: storageBucket || undefined,
         });
       } else if (projectId) {
         // Use default credentials (works in GCP environments)
         // Or Application Default Credentials
         _adminApp = initializeApp({
           projectId,
+          storageBucket: storageBucket || undefined,
         });
       } else {
         console.warn('No se encontraron credenciales de Firebase Admin');
@@ -108,6 +115,22 @@ export function getAdminFirestore(): Firestore | null {
     }
   }
   return _adminDb;
+}
+
+// Get Storage instance for admin operations
+export function getAdminStorage(): Storage | null {
+  if (!_adminStorage) {
+    const app = getAdminApp();
+    if (app) {
+      _adminStorage = getStorage(app);
+    }
+  }
+  return _adminStorage;
+}
+
+// Get the default bucket name from environment
+export function getStorageBucketName(): string | null {
+  return process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || null;
 }
 
 // Export for use in server-side code

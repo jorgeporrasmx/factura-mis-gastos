@@ -2,32 +2,51 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserProfile } from '@/lib/firebase/firestore';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ReceiptGrid } from '@/components/receipts/ReceiptGrid';
 import { ReceiptCapture } from '@/components/receipts/ReceiptCapture';
 import { ReceiptUploader } from '@/components/receipts/ReceiptUploader';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Plus, AlertTriangle } from 'lucide-react';
+import { Camera, Upload, Plus, AlertTriangle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Receipt } from '@/types/documents';
 
 function RecibosContent() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [showCapture, setShowCapture] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const [csfValid, setCsfValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check CSF status
+  // Check CSF status from Firestore (source of truth)
   useEffect(() => {
-    const csfUploaded = localStorage.getItem('csf_uploaded');
-    if (csfUploaded) {
-      const uploadDate = new Date(csfUploaded);
-      const expiresAt = new Date(uploadDate);
-      expiresAt.setMonth(expiresAt.getMonth() + 3);
-      setCsfValid(new Date() < expiresAt);
+    async function checkCSFStatus() {
+      if (!user?.uid) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const profile = await getUserProfile(user.uid);
+        if (profile?.csfUploadedAt) {
+          const uploadDate = new Date(profile.csfUploadedAt);
+          const expiresAt = new Date(uploadDate);
+          expiresAt.setMonth(expiresAt.getMonth() + 3);
+          setCsfValid(new Date() < expiresAt);
+        }
+      } catch (error) {
+        console.error('Error checking CSF status:', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, []);
+
+    checkCSFStatus();
+  }, [user?.uid]);
 
   // Handle action from URL params
   useEffect(() => {
@@ -93,6 +112,21 @@ function RecibosContent() {
     localStorage.setItem('receipts', JSON.stringify(allReceipts));
     setShowUploader(false);
   };
+
+  // Show loading state while checking CSF
+  if (isLoading) {
+    return (
+      <div>
+        <PortalHeader title="Mis Recibos" />
+        <div className="p-4 md:p-6 flex items-center justify-center min-h-[300px]">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-gray-600">Verificando CSF...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If CSF is not valid, show message
   if (!csfValid) {

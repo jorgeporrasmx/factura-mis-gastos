@@ -7,15 +7,15 @@ import { TermsModal } from '@/components/TermsModal';
 
 const footerLinks = {
   producto: [
-    { label: "Características", href: "#" },
+    { label: "Características", href: "#como-funciona" },
     { label: "Precios", href: "#precios" },
     { label: "Integraciones", href: "#integraciones" },
     { label: "API", href: "#" },
   ],
   empresa: [
     { label: "Acerca de", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Casos de éxito", href: "#" },
+    { label: "Blog", href: "/blog" },
+    { label: "Casos de éxito", href: "/blog/caso-exito-logistica" },
     { label: "Contacto", href: "#" },
   ],
   recursos: [
@@ -25,8 +25,8 @@ const footerLinks = {
     { label: "Status", href: "#" },
   ],
   legal: [
-    { label: "Privacidad", href: "#" },
-    { label: "Cookies", href: "#" },
+    { label: "Privacidad", href: "/privacidad" },
+    { label: "Cookies", href: "/privacidad#cookies" },
   ],
 };
 

@@ -14,8 +14,8 @@ const footerLinks = {
   ],
   empresa: [
     { label: "Acerca de", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Casos de éxito", href: "#" },
+    { label: "Blog", href: "/blog" },
+    { label: "Casos de éxito", href: "/blog/caso-exito-logistica" },
     { label: "Contacto", href: "#" },
   ],
   recursos: [
@@ -25,7 +25,7 @@ const footerLinks = {
     { label: "Status", href: "#" },
   ],
   legal: [
-    { label: "Privacidad", href: "#" },
+    { label: "Privacidad", href: "/privacidad" },
     { label: "Cookies", href: "#" },
   ],
 };

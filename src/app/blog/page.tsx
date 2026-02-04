@@ -47,21 +47,21 @@ export default function BlogPage() {
           
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {articles.map((article) => (
-              <article key={article.slug} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-                <div className="p-6">
+              <article key={article.slug} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow flex flex-col">
+                <div className="p-6 flex flex-col flex-grow">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">{article.category}</span>
                     <span className="text-xs text-gray-500">{article.readTime}</span>
                   </div>
-                  <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                    <Link href={`/blog/${article.slug}`} className="hover:text-blue-600">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-3 min-h-[3.5rem]">
+                    <Link href={`/blog/${article.slug}`} className="hover:text-blue-600 line-clamp-3">
                       {article.title}
                     </Link>
                   </h2>
-                  <p className="text-gray-600 mb-4">{article.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{new Date(article.date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                    <Link href={`/blog/${article.slug}`} className="text-blue-600 font-medium hover:underline">
+                  <p className="text-gray-600 mb-4 text-sm line-clamp-3 flex-grow">{article.excerpt}</p>
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                    <span className="text-sm text-gray-500">{new Date(article.date).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                    <Link href={`/blog/${article.slug}`} className="text-blue-600 font-medium hover:underline text-sm">
                       Leer más →
                     </Link>
                   </div>

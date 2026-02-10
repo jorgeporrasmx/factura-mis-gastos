@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserProfile } from '@/lib/firebase/firestore';
+import { getUserProfile, getUserReceipts, saveReceipt } from '@/lib/firebase/firestore';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ReceiptGrid } from '@/components/receipts/ReceiptGrid';
 import { ReceiptCapture } from '@/components/receipts/ReceiptCapture';
 import { ReceiptUploader } from '@/components/receipts/ReceiptUploader';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Plus, AlertTriangle, Loader2 } from 'lucide-react';
+import { Camera, Upload, Plus, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import type { Receipt } from '@/types/documents';
 
@@ -21,6 +21,20 @@ function RecibosContent() {
   const [showUploader, setShowUploader] = useState(false);
   const [csfValid, setCsfValid] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Load receipts from Firestore
+  const loadReceipts = useCallback(async () => {
+    if (!user?.uid) return;
+    
+    try {
+      const userReceipts = await getUserReceipts(user.uid);
+      setReceipts(userReceipts);
+    } catch (error) {
+      console.error('Error loading receipts:', error);
+    }
+  }, [user?.uid]);
 
   // Check CSF status from Firestore (source of truth)
   useEffect(() => {
@@ -38,6 +52,9 @@ function RecibosContent() {
           expiresAt.setMonth(expiresAt.getMonth() + 3);
           setCsfValid(new Date() < expiresAt);
         }
+        
+        // Load receipts from Firestore
+        await loadReceipts();
       } catch (error) {
         console.error('Error checking CSF status:', error);
       } finally {
@@ -46,7 +63,7 @@ function RecibosContent() {
     }
 
     checkCSFStatus();
-  }, [user?.uid]);
+  }, [user?.uid, loadReceipts]);
 
   // Handle action from URL params
   useEffect(() => {
@@ -58,58 +75,97 @@ function RecibosContent() {
     }
   }, [searchParams, csfValid]);
 
-  // Load receipts from localStorage (mock)
-  useEffect(() => {
-    const stored = localStorage.getItem('receipts');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setReceipts(parsed.map((r: Receipt) => ({
-          ...r,
-          uploadedAt: new Date(r.uploadedAt),
-        })));
-      } catch {
-        // Ignore parse errors
-      }
-    }
-  }, []);
-
-  const handleCapture = (blob: Blob) => {
-    // Create a receipt from the captured blob
-    const receipt: Receipt = {
-      id: `receipt-${Date.now()}`,
-      userId: 'user',
-      fileUrl: URL.createObjectURL(blob),
-      fileName: `recibo-${Date.now()}.jpg`,
-      fileSize: blob.size,
-      mimeType: 'image/jpeg',
-      uploadedAt: new Date(),
-      status: 'pending',
-      storagePath: '',
-    };
-
-    const newReceipts = [receipt, ...receipts];
-    setReceipts(newReceipts);
-    localStorage.setItem('receipts', JSON.stringify(newReceipts));
+  // Handle camera capture - uploads to Drive
+  const handleCapture = async (blob: Blob) => {
+    if (!user?.uid) return;
+    
+    setIsUploading(true);
+    setUploadError(null);
     setShowCapture(false);
+
+    try {
+      // Create File from Blob
+      const fileName = `recibo-${Date.now()}.jpg`;
+      const file = new File([blob], fileName, { type: 'image/jpeg' });
+
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Upload to Drive via API
+      const response = await fetch('/api/upload/receipt', {
+        method: 'POST',
+        headers: {
+          'x-user-uid': user.uid,
+        },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Error al subir el recibo');
+      }
+
+      // Create receipt object
+      const receipt: Receipt = {
+        id: result.file.id || `receipt-${Date.now()}`,
+        userId: user.uid,
+        fileUrl: result.file.url,
+        storagePath: result.file.id,
+        fileName: result.file.name,
+        fileSize: result.file.size,
+        mimeType: result.file.mimeType,
+        uploadedAt: new Date(),
+        status: 'pending',
+        metadata: {
+          capturedAt: new Date(),
+        },
+      };
+
+      // Save to Firestore
+      await saveReceipt(receipt);
+
+      // Update local state
+      setReceipts(prev => [receipt, ...prev]);
+
+      console.log('[Recibos] Recibo subido exitosamente:', receipt.id);
+    } catch (error) {
+      console.error('Error uploading receipt:', error);
+      setUploadError(error instanceof Error ? error.message : 'Error al subir el recibo');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const handleUploadComplete = (files: Array<{ url: string; path: string; name: string }>) => {
-    const newReceipts = files.map((file) => ({
-      id: `receipt-${Date.now()}-${Math.random()}`,
-      userId: 'user',
-      fileUrl: file.url,
-      storagePath: file.path,
-      fileName: file.name,
-      fileSize: 0,
-      mimeType: 'image/jpeg',
-      uploadedAt: new Date(),
-      status: 'pending' as const,
-    }));
+  // Handle file upload complete (from ReceiptUploader which already uploads to Drive)
+  const handleUploadComplete = async (files: Array<{ url: string; path: string; name: string }>) => {
+    if (!user?.uid) return;
 
-    const allReceipts = [...newReceipts, ...receipts];
-    setReceipts(allReceipts);
-    localStorage.setItem('receipts', JSON.stringify(allReceipts));
+    const newReceipts: Receipt[] = [];
+
+    for (const file of files) {
+      const receipt: Receipt = {
+        id: file.path || `receipt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        userId: user.uid,
+        fileUrl: file.url,
+        storagePath: file.path,
+        fileName: file.name,
+        fileSize: 0,
+        mimeType: 'image/jpeg',
+        uploadedAt: new Date(),
+        status: 'pending',
+      };
+
+      try {
+        await saveReceipt(receipt);
+        newReceipts.push(receipt);
+      } catch (error) {
+        console.error('Error saving receipt to Firestore:', error);
+      }
+    }
+
+    setReceipts(prev => [...newReceipts, ...prev]);
     setShowUploader(false);
   };
 
@@ -121,7 +177,7 @@ function RecibosContent() {
         <div className="p-4 md:p-6 flex items-center justify-center min-h-[300px]">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
-            <p className="text-gray-600">Verificando CSF...</p>
+            <p className="text-gray-600">Cargando recibos...</p>
           </div>
         </div>
       </div>
@@ -158,15 +214,54 @@ function RecibosContent() {
       <PortalHeader title="Mis Recibos" />
 
       <div className="p-4 md:p-6 space-y-6">
+        {/* Upload in progress */}
+        {isUploading && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+            <span className="text-blue-800">Subiendo recibo a Drive...</span>
+          </div>
+        )}
+
+        {/* Upload error */}
+        {uploadError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-red-800">{uploadError}</p>
+            <button 
+              onClick={() => setUploadError(null)}
+              className="text-sm text-red-600 underline mt-1"
+            >
+              Cerrar
+            </button>
+          </div>
+        )}
+
         {/* Actions bar */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={() => setShowCapture(true)} className="flex-1 sm:flex-none">
+          <Button 
+            onClick={() => setShowCapture(true)} 
+            className="flex-1 sm:flex-none"
+            disabled={isUploading}
+          >
             <Camera className="w-4 h-4 mr-2" />
             Tomar foto
           </Button>
-          <Button variant="outline" onClick={() => setShowUploader(true)} className="flex-1 sm:flex-none">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowUploader(true)} 
+            className="flex-1 sm:flex-none"
+            disabled={isUploading}
+          >
             <Upload className="w-4 h-4 mr-2" />
             Subir desde galería
+          </Button>
+          <Button 
+            variant="ghost" 
+            onClick={loadReceipts} 
+            className="sm:ml-auto"
+            disabled={isUploading}
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Actualizar
           </Button>
         </div>
 
@@ -184,8 +279,13 @@ function RecibosContent() {
             size="lg"
             className="w-14 h-14 rounded-full shadow-lg"
             onClick={() => setShowCapture(true)}
+            disabled={isUploading}
           >
-            <Plus className="w-6 h-6" />
+            {isUploading ? (
+              <Loader2 className="w-6 h-6 animate-spin" />
+            ) : (
+              <Plus className="w-6 h-6" />
+            )}
           </Button>
         </div>
       </div>

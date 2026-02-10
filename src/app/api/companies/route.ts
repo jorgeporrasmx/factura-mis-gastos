@@ -15,6 +15,11 @@ import {
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
+import {
+  duplicateBoardForCompany,
+  createClientDashboardView,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
 import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain } from '@/types/company';
 
 export async function POST(request: NextRequest) {
@@ -154,6 +159,36 @@ export async function POST(request: NextRequest) {
       console.log('[API/companies] Google Drive no configurado, omitiendo creación de carpetas');
     }
 
+    // Crear tablero de Monday para la empresa (si está configurado)
+    let mondayBoardInfo = null;
+
+    if (isMondayBoardsConfigured()) {
+      try {
+        console.log('[API/companies] Creando tablero Monday para empresa:', name);
+
+        const boardResult = await duplicateBoardForCompany(name);
+        
+        // Crear vista de cliente
+        const viewId = await createClientDashboardView(boardResult.boardId);
+
+        mondayBoardInfo = {
+          boardId: boardResult.boardId,
+          boardUrl: boardResult.boardUrl,
+          clientViewId: viewId,
+        };
+
+        console.log('[API/companies] Tablero Monday creado:', mondayBoardInfo);
+
+        // TODO: Actualizar empresa con mondayBoardId en Firestore
+        // await updateCompanyMondayBoardAdmin(company.id, boardResult.boardId);
+      } catch (mondayError) {
+        console.error('[API/companies] Error creando tablero Monday:', mondayError);
+        // Continuamos sin Monday, la empresa ya está creada
+      }
+    } else {
+      console.log('[API/companies] Monday API no configurada, omitiendo creación de tablero');
+    }
+
     // Vincular usuario a empresa como admin (con su carpeta personal si se creó)
     console.log('[API/companies] Vinculando usuario a empresa...');
     try {
@@ -178,9 +213,11 @@ export async function POST(request: NextRequest) {
         name: company.name,
         domain: company.domain,
         driveFolderId: company.driveFolderId,
+        mondayBoardId: mondayBoardInfo?.boardId,
         isPersonalAccount: isPublicEmail,
       },
       driveFolder: driveFolderInfo,
+      mondayBoard: mondayBoardInfo,
     });
   } catch (error) {
     console.error('Error creando empresa:', error);

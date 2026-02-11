@@ -11,7 +11,7 @@ import {
   linkUserToCompanyAdmin,
 } from '@/lib/firebase/firestore-admin';
 import {
-  duplicateMachoteBoard,
+  duplicateBoardForCompany,
   isMondayBoardsConfigured,
 } from '@/lib/monday-boards';
 import {
@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     if (isMondayBoardsConfigured()) {
       try {
         console.log('[API/companies] Duplicando tablero MACHOTE para empresa:', name);
-        const boardResult = await duplicateMachoteBoard(name);
+        const boardResult = await duplicateBoardForCompany(name);
         
         // Actualizar empresa con el ID del tablero
         await updateCompanyAdmin(company.id, {

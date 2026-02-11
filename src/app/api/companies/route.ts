@@ -173,8 +173,7 @@ export async function POST(request: NextRequest) {
         
         mondayBoardInfo = {
           boardId: boardResult.boardId,
-          boardName: boardResult.boardName,
-          boardUrl: `https://sutilde.monday.com/boards/${boardResult.boardId}`,
+          boardUrl: boardResult.boardUrl,
         };
         
         console.log('[API/companies] Tablero de Monday creado:', mondayBoardInfo);

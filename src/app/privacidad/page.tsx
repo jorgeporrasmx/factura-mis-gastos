@@ -1,156 +1,95 @@
-import type { Metadata } from 'next';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
-export const metadata: Metadata = {
-  title: 'Aviso de Privacidad',
-  description: 'Aviso de privacidad de Factura Mis Gastos. Conoce cómo protegemos y utilizamos tu información personal.',
+export const metadata = {
+  title: 'Aviso de Privacidad | Factura Mis Gastos',
+  description: 'Aviso de privacidad integral de Factura Mis Gastos - Sutilde SAPI de CV',
 };
 
 export default function PrivacidadPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-8">
-            Aviso de Privacidad
-          </h1>
-          
-          <div className="prose prose-slate max-w-none">
-            <p className="text-muted-foreground mb-6">
-              <strong>Última actualización:</strong> {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">1. Identidad del Responsable</h2>
-              <p className="text-muted-foreground mb-4">
-                <strong>Factura Mis Gastos</strong>, con domicilio en Ciudad de México, México, es responsable del tratamiento de sus datos personales.
-              </p>
-              <p className="text-muted-foreground">
-                Correo electrónico de contacto: <a href="mailto:privacidad@facturamisgastos.com" className="text-primary hover:underline">privacidad@facturamisgastos.com</a>
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">2. Datos Personales que Recopilamos</h2>
-              <p className="text-muted-foreground mb-4">Para brindar nuestros servicios, recopilamos los siguientes datos personales:</p>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li><strong>Datos de identificación:</strong> Nombre completo, RFC, razón social</li>
-                <li><strong>Datos de contacto:</strong> Correo electrónico, número telefónico, dirección fiscal</li>
-                <li><strong>Datos fiscales:</strong> Régimen fiscal, Constancia de Situación Fiscal (CSF), uso de CFDI</li>
-                <li><strong>Datos de transacciones:</strong> Recibos, tickets y comprobantes de gastos que nos envíe</li>
-                <li><strong>Datos de pago:</strong> Información necesaria para procesar sus pagos (procesada por terceros autorizados)</li>
-              </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">3. Finalidades del Tratamiento</h2>
-              <p className="text-muted-foreground mb-4">Sus datos personales serán utilizados para:</p>
+      <main className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">Aviso de Privacidad Integral</h1>
+            <p className="text-sm text-gray-500 mb-8">Última actualización: 31 de enero de 2026</p>
+            
+            <div className="prose prose-lg max-w-none">
+              <h2 className="text-xl font-semibold mt-6 mb-3">1. Identidad y Domicilio del Responsable</h2>
+              <p>Sutilde SAPI de CV, con domicilio en Chihuahua, Chihuahua, México, es responsable del tratamiento de sus datos personales.</p>
+              <p>Contacto: <a href="mailto:privacidad@facturamisgastos.com" className="text-blue-600">privacidad@facturamisgastos.com</a></p>
               
-              <h3 className="text-lg font-medium text-foreground mb-2">Finalidades primarias (necesarias para el servicio):</h3>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
-                <li>Gestionar la solicitud de facturas CFDI en su nombre</li>
-                <li>Procesar y organizar sus recibos y comprobantes de gastos</li>
-                <li>Generar reportes de gastos empresariales</li>
-                <li>Procesar pagos y facturación de nuestros servicios</li>
-                <li>Brindar soporte y atención al cliente</li>
-                <li>Cumplir con obligaciones legales y fiscales</li>
+              <h2 className="text-xl font-semibold mt-6 mb-3">2. Datos Personales que Recabamos</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Datos de identificación:</strong> Nombre, correo electrónico, teléfono, empresa, puesto, RFC</li>
+                <li><strong>Datos laborales:</strong> Empleados autorizados, departamento, límites de gasto</li>
+                <li><strong>Datos financieros:</strong> Recibos, montos, categorías de gasto, CFDIs</li>
+                <li><strong>Datos de uso:</strong> Historial de actividad, reportes generados, dirección IP</li>
               </ul>
-
-              <h3 className="text-lg font-medium text-foreground mb-2">Finalidades secundarias (opcionales):</h3>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li>Enviar comunicaciones promocionales y de marketing</li>
+              <p className="mt-4">No recabamos datos personales sensibles.</p>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">3. Finalidades del Tratamiento</h2>
+              <h3 className="text-lg font-medium mt-4 mb-2">Finalidades Primarias (necesarias):</h3>
+              <ol className="list-decimal pl-6 space-y-1">
+                <li>Crear y administrar su cuenta de usuario</li>
+                <li>Procesar los recibos y comprobantes que nos envíe</li>
+                <li>Solicitar y gestionar facturas CFDI ante proveedores</li>
+                <li>Generar reportes de gastos para su empresa</li>
+                <li>Aplicar reglas de aprobación configuradas</li>
+                <li>Enviar notificaciones sobre el estado de sus gastos</li>
+                <li>Facturar nuestros servicios</li>
+                <li>Brindar soporte técnico</li>
+              </ol>
+              
+              <h3 className="text-lg font-medium mt-4 mb-2">Finalidades Secundarias (opcionales):</h3>
+              <ol className="list-decimal pl-6 space-y-1" start={9}>
+                <li>Enviar comunicaciones promocionales sobre nuestros servicios</li>
                 <li>Realizar encuestas de satisfacción</li>
-                <li>Mejorar nuestros productos y servicios</li>
+                <li>Elaborar estadísticas internas</li>
+                <li>Publicar casos de éxito (con su consentimiento previo)</li>
+              </ol>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">4. Transferencias de Datos</h2>
+              <p>Sus datos podrán ser transferidos a:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li><strong>Proveedores de servicios en la nube:</strong> Para almacenamiento seguro de información</li>
+                <li><strong>Proveedores para gestión de facturas:</strong> Para solicitar CFDIs en su nombre</li>
+                <li><strong>Autoridades competentes:</strong> Cuando exista obligación legal</li>
+                <li><strong>Contador o área contable del cliente:</strong> Con su consentimiento expreso</li>
               </ul>
-              <p className="text-muted-foreground mt-4">
-                Si no desea que sus datos sean tratados para finalidades secundarias, puede manifestarlo enviando un correo a <a href="mailto:privacidad@facturamisgastos.com" className="text-primary hover:underline">privacidad@facturamisgastos.com</a>.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">4. Transferencia de Datos</h2>
-              <p className="text-muted-foreground mb-4">Sus datos personales podrán ser transferidos a:</p>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li><strong>Proveedores de servicios tecnológicos:</strong> Para almacenamiento seguro en la nube y procesamiento de datos</li>
-                <li><strong>Procesadores de pago:</strong> Para gestionar transacciones de forma segura</li>
-                <li><strong>Establecimientos comerciales:</strong> Únicamente para solicitar la factura CFDI correspondiente a sus gastos</li>
-                <li><strong>Autoridades competentes:</strong> Cuando sea requerido por ley</li>
+              <p className="mt-4 font-medium">No vendemos ni comercializamos sus datos personales a terceros.</p>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">5. Medidas de Seguridad</h2>
+              <p>Implementamos medidas de seguridad administrativas, técnicas y físicas para proteger sus datos:</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li>Cifrado SSL/TLS en todas las comunicaciones</li>
+                <li>Cifrado AES-256 para datos almacenados</li>
+                <li>Acceso restringido basado en roles</li>
+                <li>Monitoreo continuo de actividad</li>
+                <li>Respaldos periódicos</li>
               </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">5. Derechos ARCO</h2>
-              <p className="text-muted-foreground mb-4">
-                Usted tiene derecho a Acceder, Rectificar, Cancelar u Oponerse al tratamiento de sus datos personales (Derechos ARCO). Para ejercer estos derechos, envíe su solicitud a:
-              </p>
-              <p className="text-muted-foreground mb-4">
-                <strong>Correo:</strong> <a href="mailto:privacidad@facturamisgastos.com" className="text-primary hover:underline">privacidad@facturamisgastos.com</a>
-              </p>
-              <p className="text-muted-foreground">
-                Su solicitud deberá incluir: nombre completo, correo electrónico registrado, descripción clara de los datos sobre los que desea ejercer sus derechos, y cualquier documento que acredite su identidad.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">6. Medidas de Seguridad</h2>
-              <p className="text-muted-foreground mb-4">
-                Implementamos medidas de seguridad técnicas, administrativas y físicas para proteger sus datos personales:
-              </p>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li>Cifrado de datos en tránsito y en reposo</li>
-                <li>Autenticación segura con múltiples factores</li>
-                <li>Acceso restringido solo a personal autorizado</li>
-                <li>Monitoreo continuo de seguridad</li>
-                <li>Respaldos periódicos de información</li>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">6. Derechos ARCO</h2>
+              <p>Usted tiene derecho a:</p>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>Acceso:</strong> Conocer qué datos tenemos de usted</li>
+                <li><strong>Rectificación:</strong> Corregir datos inexactos</li>
+                <li><strong>Cancelación:</strong> Solicitar la eliminación de sus datos</li>
+                <li><strong>Oposición:</strong> Oponerse al uso de sus datos para ciertas finalidades</li>
               </ul>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">7. Uso de Cookies y Tecnologías de Rastreo</h2>
-              <p className="text-muted-foreground mb-4">
-                Utilizamos cookies y tecnologías similares para mejorar su experiencia en nuestro sitio web. Estas tecnologías nos permiten:
-              </p>
-              <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li>Recordar sus preferencias</li>
-                <li>Analizar el uso del sitio para mejorarlo</li>
-                <li>Personalizar contenido</li>
-              </ul>
-              <p className="text-muted-foreground mt-4">
-                Puede configurar su navegador para rechazar cookies, aunque esto podría afectar la funcionalidad del sitio.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">8. Cambios al Aviso de Privacidad</h2>
-              <p className="text-muted-foreground">
-                Nos reservamos el derecho de modificar este Aviso de Privacidad. Cualquier cambio será notificado a través de nuestro sitio web o por correo electrónico. Le recomendamos revisar periódicamente esta página.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">9. Consentimiento</h2>
-              <p className="text-muted-foreground">
-                Al utilizar nuestros servicios y proporcionar sus datos personales, usted otorga su consentimiento para el tratamiento de los mismos conforme a lo establecido en este Aviso de Privacidad.
-              </p>
-            </section>
-
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-foreground mb-4">10. Contacto</h2>
-              <p className="text-muted-foreground">
-                Para cualquier duda o aclaración sobre este Aviso de Privacidad, puede contactarnos en:
-              </p>
-              <ul className="list-none text-muted-foreground mt-4 space-y-2">
-                <li><strong>Correo:</strong> <a href="mailto:privacidad@facturamisgastos.com" className="text-primary hover:underline">privacidad@facturamisgastos.com</a></li>
-                <li><strong>WhatsApp:</strong> <a href="https://wa.me/5215512345678" className="text-primary hover:underline">+52 55 1234 5678</a></li>
-              </ul>
-            </section>
-
-            <div className="mt-12 p-6 bg-slate-50 rounded-xl">
-              <p className="text-sm text-muted-foreground text-center">
-                Este aviso de privacidad cumple con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP) de México.
-              </p>
+              <p className="mt-4">Para ejercer estos derechos, contacte a: <a href="mailto:privacidad@facturamisgastos.com" className="text-blue-600">privacidad@facturamisgastos.com</a></p>
+              <p>Plazo de respuesta: 20 días hábiles.</p>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">7. Uso de Cookies</h2>
+              <p>Utilizamos cookies propias y de terceros para mejorar su experiencia de navegación, analizar el tráfico y personalizar el contenido.</p>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">8. Cambios al Aviso de Privacidad</h2>
+              <p>Nos reservamos el derecho de modificar este aviso. Cualquier cambio será publicado en esta página y, de ser significativo, se lo notificaremos por correo electrónico.</p>
+              
+              <h2 className="text-xl font-semibold mt-6 mb-3">9. Autoridad</h2>
+              <p>Si considera que sus derechos han sido vulnerados, puede acudir al Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales (INAI): <a href="https://home.inai.org.mx" className="text-blue-600" target="_blank" rel="noopener">www.inai.org.mx</a></p>
             </div>
           </div>
         </div>

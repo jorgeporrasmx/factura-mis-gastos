@@ -1,56 +1,30 @@
-// Monday.com Board Management
-// Funciones para crear y duplicar tableros de Monday
+// Monday.com Board Operations
+// Crear y duplicar tableros para nuevas empresas
 
 const MONDAY_API_URL = 'https://api.monday.com/v2';
-const MACHOTE_BOARD_ID = '18398058025'; // ID del tablero MACHOTE
 
-interface MondayResponse<T = unknown> {
-  data?: T;
-  errors?: Array<{ message: string }>;
-}
+// ID del tablero MACHOTE (template)
+const TEMPLATE_BOARD_ID = '18398058025';
 
-interface DuplicateBoardResult {
-  id: string;
-  name: string;
-  board_folder_id?: number;
-  workspace?: {
-    id: string;
-    name: string;
-  };
-}
-
-interface BoardInfo {
-  id: string;
-  name: string;
-  columns: Array<{
-    id: string;
-    title: string;
-    type: string;
-  }>;
-}
+// Workspace ID donde crear los tableros
+const WORKSPACE_ID = process.env.MONDAY_WORKSPACE_ID || '7660065';
 
 /**
- * Verificar si Monday está configurado
+ * Ejecutar mutation GraphQL a Monday
  */
-export function isMondayBoardsConfigured(): boolean {
-  return Boolean(process.env.MONDAY_API_KEY);
-}
+async function executeMondayMutation<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
+  const apiKey = process.env.MONDAY_API_KEY;
 
-/**
- * Hacer query a Monday API
- */
-async function mondayQuery<T>(query: string, variables?: Record<string, unknown>): Promise<MondayResponse<T>> {
-  const token = process.env.MONDAY_API_KEY;
-  
-  if (!token) {
-    throw new Error('MONDAY_API_KEY no configurado');
+  if (!apiKey) {
+    throw new Error('MONDAY_API_KEY no configurada');
   }
 
   const response = await fetch(MONDAY_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': token,
+      'Authorization': apiKey,
+      'API-Version': '2024-01',
     },
     body: JSON.stringify({ query, variables }),
   });
@@ -59,240 +33,185 @@ async function mondayQuery<T>(query: string, variables?: Record<string, unknown>
     throw new Error(`Monday API error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const result = await response.json();
+
+  if (result.errors && result.errors.length > 0) {
+    throw new Error(`Monday GraphQL error: ${result.errors[0].message}`);
+  }
+
+  return result.data;
 }
 
 /**
  * Duplicar el tablero MACHOTE para una nueva empresa
- * @param companyName - Nombre de la empresa (se usará en el nombre del tablero)
- * @param workspaceId - ID del workspace donde crear el tablero (opcional)
- * @returns ID del nuevo tablero
+ * Retorna el ID del nuevo tablero
  */
-export async function duplicateMachoteBoard(
-  companyName: string,
-  workspaceId?: string
-): Promise<{ boardId: string; boardName: string }> {
-  const boardName = `Facturas ${companyName}`;
+export async function duplicateBoardForCompany(companyName: string): Promise<{
+  boardId: string;
+  boardUrl: string;
+}> {
+  const boardName = `FMG - ${companyName}`;
   
-  console.log('[Monday/Boards] Duplicando MACHOTE para:', companyName);
+  console.log(`[Monday] Duplicando tablero MACHOTE para empresa: ${companyName}`);
 
-  // Mutation para duplicar tablero
-  // duplicate_type: duplicate_board_with_structure (solo estructura, sin items)
-  const mutation = `
-    mutation DuplicateBoard($boardId: ID!, $boardName: String!, $workspaceId: ID) {
+  const query = `
+    mutation {
       duplicate_board(
-        board_id: $boardId,
+        board_id: ${TEMPLATE_BOARD_ID},
         duplicate_type: duplicate_board_with_structure,
-        board_name: $boardName,
-        workspace_id: $workspaceId
+        board_name: "${boardName}",
+        workspace_id: ${WORKSPACE_ID}
       ) {
         board {
           id
           name
-          workspace {
-            id
-            name
-          }
         }
       }
     }
   `;
 
-  const variables: Record<string, unknown> = {
-    boardId: MACHOTE_BOARD_ID,
-    boardName,
-  };
+  try {
+    const result = await executeMondayMutation<{
+      duplicate_board: {
+        board: {
+          id: string;
+          name: string;
+        };
+      };
+    }>(query);
 
-  if (workspaceId) {
-    variables.workspaceId = workspaceId;
+    const newBoardId = result.duplicate_board.board.id;
+    const boardUrl = `https://sutilde.monday.com/boards/${newBoardId}`;
+
+    console.log(`[Monday] Tablero creado: ${newBoardId} - ${boardName}`);
+    console.log(`[Monday] URL: ${boardUrl}`);
+
+    return {
+      boardId: newBoardId,
+      boardUrl,
+    };
+  } catch (error) {
+    console.error('[Monday] Error duplicando tablero:', error);
+    throw error;
   }
+}
 
-  const result = await mondayQuery<{ duplicate_board: { board: DuplicateBoardResult } }>(
-    mutation,
-    variables
-  );
+/**
+ * Crear vista de dashboard para el cliente
+ * Esta vista muestra solo las columnas relevantes para el usuario final
+ */
+export async function createClientDashboardView(boardId: string): Promise<string> {
+  // Columnas visibles para el cliente (ocultar las internas)
+  const clientColumns = [
+    'name',           // Proveedor
+    'text_mkthrxct',  // Fecha compra
+    'n_meros',        // Total
+    'formula_mkt75fbv', // Neto
+    'formula_mkt7rhw3', // IVA
+    'status',         // Estado
+    'text_mky72d18',  // UUID CFDI
+    'text_mky7nh3g',  // Razón Social
+    'tag_mm063vts',   // Empleado
+  ];
 
-  if (result.errors && result.errors.length > 0) {
-    console.error('[Monday/Boards] Error duplicando tablero:', result.errors);
-    throw new Error(`Error duplicando tablero: ${result.errors[0].message}`);
+  console.log(`[Monday] Creando vista de cliente para tablero: ${boardId}`);
+
+  const query = `
+    mutation {
+      create_board_view(
+        board_id: ${boardId},
+        view_name: "Vista Cliente",
+        view_type: table
+      ) {
+        id
+      }
+    }
+  `;
+
+  try {
+    const result = await executeMondayMutation<{
+      create_board_view: { id: string };
+    }>(query);
+
+    console.log(`[Monday] Vista de cliente creada: ${result.create_board_view.id}`);
+    return result.create_board_view.id;
+  } catch (error) {
+    // Si falla crear la vista, no es crítico
+    console.warn('[Monday] No se pudo crear vista de cliente:', error);
+    return '';
   }
+}
 
-  if (!result.data?.duplicate_board?.board?.id) {
-    throw new Error('No se pudo obtener el ID del tablero duplicado');
-  }
+/**
+ * Crear item de gasto en el tablero de una empresa
+ */
+export async function createExpenseItem(
+  boardId: string,
+  itemName: string,
+  columnValues: Record<string, unknown>
+): Promise<string> {
+  const query = `
+    mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
+      create_item(
+        board_id: $boardId,
+        item_name: $itemName,
+        column_values: $columnValues
+      ) {
+        id
+      }
+    }
+  `;
 
-  const newBoard = result.data.duplicate_board.board;
-
-  console.log('[Monday/Boards] Tablero duplicado exitosamente:', {
-    boardId: newBoard.id,
-    boardName: newBoard.name,
-    workspace: newBoard.workspace?.name,
+  const result = await executeMondayMutation<{
+    create_item: { id: string };
+  }>(query, {
+    boardId,
+    itemName,
+    columnValues: JSON.stringify(columnValues),
   });
 
-  return {
-    boardId: newBoard.id,
-    boardName: newBoard.name,
-  };
+  return result.create_item.id;
 }
 
 /**
  * Obtener información de un tablero
  */
-export async function getBoardInfo(boardId: string): Promise<BoardInfo | null> {
+export async function getBoardInfo(boardId: string): Promise<{
+  id: string;
+  name: string;
+  url: string;
+} | null> {
   const query = `
-    query GetBoard($boardId: [ID!]!) {
-      boards(ids: $boardId) {
+    query {
+      boards(ids: ${boardId}) {
         id
         name
-        columns {
-          id
-          title
-          type
-        }
       }
     }
   `;
 
-  const result = await mondayQuery<{ boards: BoardInfo[] }>(query, { boardId: [boardId] });
+  try {
+    const result = await executeMondayMutation<{
+      boards: Array<{ id: string; name: string }>;
+    }>(query);
 
-  if (result.errors || !result.data?.boards?.[0]) {
+    if (result.boards && result.boards.length > 0) {
+      const board = result.boards[0];
+      return {
+        id: board.id,
+        name: board.name,
+        url: `https://sutilde.monday.com/boards/${board.id}`,
+      };
+    }
+    return null;
+  } catch {
     return null;
   }
-
-  return result.data.boards[0];
 }
 
 /**
- * Crear una etiqueta (tag) en un tablero
- * @param boardId - ID del tablero
- * @param tagColumnId - ID de la columna de tags
- * @param tagName - Nombre de la etiqueta a crear
+ * Verificar si Monday está configurado
  */
-export async function createTag(
-  boardId: string,
-  tagColumnId: string,
-  tagName: string
-): Promise<number> {
-  // Para crear un tag, primero necesitamos crear un item temporal o usar
-  // la API de tags directamente
-  const mutation = `
-    mutation CreateTag($boardId: ID!) {
-      create_or_get_tag(board_id: $boardId, tag_name: "${tagName}") {
-        id
-        name
-      }
-    }
-  `;
-
-  const result = await mondayQuery<{ create_or_get_tag: { id: number; name: string } }>(
-    mutation,
-    { boardId }
-  );
-
-  if (result.errors) {
-    throw new Error(`Error creando tag: ${result.errors[0].message}`);
-  }
-
-  return result.data?.create_or_get_tag?.id || 0;
-}
-
-/**
- * Agregar un item al tablero con el tag del empleado
- */
-export async function createExpenseItem(
-  boardId: string,
-  itemName: string,
-  columnValues: Record<string, unknown>,
-  groupId?: string
-): Promise<string> {
-  const mutation = `
-    mutation CreateItem($boardId: ID!, $itemName: String!, $columnValues: JSON!, $groupId: String) {
-      create_item(
-        board_id: $boardId,
-        item_name: $itemName,
-        column_values: $columnValues,
-        group_id: $groupId
-      ) {
-        id
-        name
-      }
-    }
-  `;
-
-  const result = await mondayQuery<{ create_item: { id: string; name: string } }>(
-    mutation,
-    {
-      boardId,
-      itemName,
-      columnValues: JSON.stringify(columnValues),
-      groupId,
-    }
-  );
-
-  if (result.errors) {
-    throw new Error(`Error creando item: ${result.errors[0].message}`);
-  }
-
-  return result.data?.create_item?.id || '';
-}
-
-/**
- * Actualizar columna de un item (para asignar tag de empleado)
- */
-export async function updateItemColumn(
-  boardId: string,
-  itemId: string,
-  columnId: string,
-  value: unknown
-): Promise<void> {
-  const mutation = `
-    mutation UpdateColumn($boardId: ID!, $itemId: ID!, $columnId: String!, $value: JSON!) {
-      change_column_value(
-        board_id: $boardId,
-        item_id: $itemId,
-        column_id: $columnId,
-        value: $value
-      ) {
-        id
-      }
-    }
-  `;
-
-  const result = await mondayQuery(mutation, {
-    boardId,
-    itemId,
-    columnId,
-    value: JSON.stringify(value),
-  });
-
-  if (result.errors) {
-    throw new Error(`Error actualizando columna: ${result.errors[0].message}`);
-  }
-}
-
-/**
- * Obtener ID del workspace de Factura Mis Gastos (si existe)
- */
-export async function getFacturaWorkspaceId(): Promise<string | null> {
-  const query = `
-    query GetWorkspaces {
-      workspaces {
-        id
-        name
-      }
-    }
-  `;
-
-  const result = await mondayQuery<{ workspaces: Array<{ id: string; name: string }> }>(query);
-
-  if (result.errors || !result.data?.workspaces) {
-    return null;
-  }
-
-  // Buscar workspace que contenga "Factura" en el nombre
-  const facturaWorkspace = result.data.workspaces.find(
-    ws => ws.name.toLowerCase().includes('factura')
-  );
-
-  return facturaWorkspace?.id || null;
+export function isMondayBoardsConfigured(): boolean {
+  return Boolean(process.env.MONDAY_API_KEY);
 }

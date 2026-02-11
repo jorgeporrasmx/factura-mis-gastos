@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
-// Ya no se usa Monday form para el inicio, los usuarios van directo a login
-
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isAuthenticated, isLoading, signOut } = useAuth();
@@ -53,6 +51,12 @@ export function Header() {
             >
               Precios
             </button>
+            <Link
+              href="/blog"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Blog
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -123,6 +127,13 @@ export function Header() {
               >
                 Precios
               </button>
+              <Link
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+              >
+                Blog
+              </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 {isAuthenticated && user ? (
                   <>

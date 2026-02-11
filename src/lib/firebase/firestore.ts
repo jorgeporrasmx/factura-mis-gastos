@@ -606,3 +606,88 @@ export async function updateCompanySyncMetadata(
     success: syncResult.success,
   });
 }
+
+// ============================================================================
+// RECEIPTS
+// ============================================================================
+
+import type { Receipt, ReceiptStatus } from '@/types/documents';
+
+/**
+ * Guardar un recibo en Firestore
+ */
+export async function saveReceipt(receipt: Receipt): Promise<void> {
+  const db = getFirestoreDb();
+  if (!db) throw new Error('Firestore no disponible');
+
+  const receiptRef = doc(db, 'receipts', receipt.id);
+  
+  await setDoc(receiptRef, {
+    ...receipt,
+    uploadedAt: dateToTimestamp(receipt.uploadedAt),
+    metadata: receipt.metadata ? {
+      ...receipt.metadata,
+      capturedAt: receipt.metadata.capturedAt 
+        ? dateToTimestamp(receipt.metadata.capturedAt) 
+        : null,
+    } : null,
+  });
+}
+
+/**
+ * Obtener recibos de un usuario
+ */
+export async function getUserReceipts(userId: string): Promise<Receipt[]> {
+  const db = getFirestoreDb();
+  if (!db) return [];
+
+  const receiptsRef = collection(db, 'receipts');
+  const q = query(
+    receiptsRef,
+    where('userId', '==', userId),
+    orderBy('uploadedAt', 'desc'),
+    limit(100)
+  );
+
+  const querySnapshot = await getDocs(q);
+  
+  return querySnapshot.docs.map((docSnap) => {
+    const data = docSnap.data();
+    return {
+      ...data,
+      id: docSnap.id,
+      uploadedAt: timestampToDate(data.uploadedAt),
+      metadata: data.metadata ? {
+        ...data.metadata,
+        capturedAt: data.metadata.capturedAt 
+          ? timestampToDate(data.metadata.capturedAt) 
+          : undefined,
+      } : undefined,
+    } as Receipt;
+  });
+}
+
+/**
+ * Actualizar estado de un recibo
+ */
+export async function updateReceiptStatus(
+  receiptId: string, 
+  status: ReceiptStatus
+): Promise<void> {
+  const db = getFirestoreDb();
+  if (!db) throw new Error('Firestore no disponible');
+
+  const receiptRef = doc(db, 'receipts', receiptId);
+  await updateDoc(receiptRef, { status });
+}
+
+/**
+ * Eliminar un recibo
+ */
+export async function deleteReceipt(receiptId: string): Promise<void> {
+  const db = getFirestoreDb();
+  if (!db) throw new Error('Firestore no disponible');
+
+  const receiptRef = doc(db, 'receipts', receiptId);
+  await deleteDoc(receiptRef);
+}

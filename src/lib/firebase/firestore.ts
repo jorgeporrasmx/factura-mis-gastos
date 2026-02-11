@@ -71,6 +71,7 @@ export async function createCompany(data: CreateCompanyData): Promise<Company> {
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
+    subscriptionStatus: 'none',
     createdAt: now,
     updatedAt: now,
     createdBy: data.adminUid,

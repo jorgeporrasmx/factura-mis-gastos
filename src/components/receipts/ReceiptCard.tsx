@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Clock, CheckCircle, AlertCircle, FileText, ExternalLink } from 'lucide-react';
 import type { Receipt, ReceiptStatus } from '@/types/documents';
 
 interface ReceiptCardProps {
@@ -29,26 +29,42 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
   };
 
   const isImage = receipt.mimeType.startsWith('image/');
+  const isPDF = receipt.mimeType === 'application/pdf';
+
+  // Abrir en Drive (nueva pestaña)
+  const handleOpenInDrive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (receipt.fileUrl) {
+      window.open(receipt.fileUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   return (
     <div
       onClick={onClick}
       className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
     >
-      {/* Image preview */}
-      <div className="aspect-[4/3] bg-gray-100 relative">
-        {isImage ? (
-          <img
-            src={receipt.thumbnailUrl || receipt.fileUrl}
-            alt={receipt.fileName}
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <FileText className="w-12 h-12 text-gray-400" />
-          </div>
-        )}
+      {/* Drive link preview */}
+      <div className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-blue-100 relative flex flex-col items-center justify-center p-4">
+        {/* Icon based on file type */}
+        <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mb-2">
+          {isImage ? (
+            <FileText className="w-6 h-6 text-blue-500" />
+          ) : isPDF ? (
+            <FileText className="w-6 h-6 text-red-500" />
+          ) : (
+            <FileText className="w-6 h-6 text-gray-500" />
+          )}
+        </div>
+
+        {/* Open in Drive button */}
+        <button
+          onClick={handleOpenInDrive}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          Abrir en Drive
+        </button>
 
         {/* Status badge */}
         <div className="absolute top-2 right-2">

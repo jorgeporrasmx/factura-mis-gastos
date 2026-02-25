@@ -13,6 +13,12 @@ import {
   generateCustomerId,
   generateSubscriptionId,
 } from '@/types/payments';
+import {
+  upsertCustomer,
+  createTransaction,
+  createSubscription,
+  createPaymentMethod,
+} from '@/lib/firebase/payments-admin';
 
 /**
  * POST /api/payments/checkout
@@ -86,6 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
     const transactionId = generateTransactionId();
     const customerId = generateCustomerId();
     const subscriptionId = generateSubscriptionId();
+    const paymentMethodId = `pm_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 10)}`;
 
     // Procesar el pago
     const result = await client.purchase({
@@ -98,11 +105,69 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
     });
 
     if (result.success) {
-      // TODO: Guardar en base de datos:
-      // 1. Crear/actualizar cliente
-      // 2. Tokenizar la tarjeta para pagos futuros
+      // 1. Crear/actualizar cliente en Firestore
+      await upsertCustomer({
+        id: customerId,
+        email: body.customer.email,
+        name: body.customer.name,
+        phone: body.customer.phone,
+        company: body.customer.company,
+        taxId: body.customer.taxId,
+        address: body.billingAddress,
+      });
+
+      // 2. Tokenizar la tarjeta para pagos recurrentes
+      let tokenValue: string | undefined;
+      try {
+        const tokenResult = await client.tokenize(body.card);
+        if (tokenResult.success && tokenResult.token) {
+          tokenValue = tokenResult.token;
+          await createPaymentMethod({
+            id: paymentMethodId,
+            customerId,
+            card: {
+              brand: tokenResult.card?.brand || detectCardBrand(body.card.number),
+              last4: tokenResult.card?.last4 || body.card.number.replace(/\s/g, '').slice(-4),
+              expMonth: tokenResult.card?.expMonth || parseInt(body.card.expMonth, 10),
+              expYear: tokenResult.card?.expYear || parseInt(body.card.expYear, 10),
+              holderName: body.card.holderName,
+            },
+            token: tokenResult.token,
+            isDefault: true,
+          });
+        } else {
+          console.warn('Tokenización falló, continuando sin token:', tokenResult.errorMessage);
+        }
+      } catch (tokenError) {
+        // No fallar el checkout por error de tokenización
+        console.error('Error tokenizando tarjeta:', tokenError);
+      }
+
       // 3. Crear suscripción
+      await createSubscription({
+        id: subscriptionId,
+        customerId,
+        planId: body.planId,
+        status: 'active',
+        paymentMethodId: tokenValue ? paymentMethodId : '',
+      });
+
       // 4. Registrar transacción
+      await createTransaction({
+        id: transactionId,
+        customerId,
+        subscriptionId,
+        paymentMethodId: tokenValue ? paymentMethodId : '',
+        type: 'purchase',
+        status: 'approved',
+        amount: plan.price,
+        currency: 'MXN',
+        description: `Suscripción al plan ${plan.name}`,
+        firstDataTransactionId: result.transactionId,
+        firstDataApprovalCode: result.approvalCode,
+        firstDataResponseCode: result.processor?.responseCode,
+        firstDataResponseMessage: result.processor?.responseMessage,
+      });
 
       // Enviar notificación a Monday.com (opcional)
       await notifyMondayNewSubscription({
@@ -123,7 +188,35 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         message: '¡Pago procesado exitosamente! Bienvenido a Factura Mis Gastos.',
       });
     } else {
-      // Pago rechazado
+      // Pago rechazado — registrar transacción fallida
+      try {
+        await upsertCustomer({
+          id: customerId,
+          email: body.customer.email,
+          name: body.customer.name,
+          phone: body.customer.phone,
+          company: body.customer.company,
+          taxId: body.customer.taxId,
+          address: body.billingAddress,
+        });
+
+        await createTransaction({
+          id: transactionId,
+          customerId,
+          type: 'purchase',
+          status: 'declined',
+          paymentMethodId: '',
+          amount: plan.price,
+          currency: 'MXN',
+          description: `Intento fallido: plan ${plan.name}`,
+          firstDataTransactionId: result.transactionId,
+          firstDataResponseCode: result.errorCode,
+          firstDataResponseMessage: result.errorMessage,
+        });
+      } catch (dbError) {
+        console.error('Error guardando transacción rechazada:', dbError);
+      }
+
       const errorMessage = result.errorCode
         ? getErrorMessage(result.errorCode)
         : result.errorMessage || 'Error procesando el pago';

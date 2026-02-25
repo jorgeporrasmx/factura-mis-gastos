@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import {
+  getTransactionByFirstDataId,
+  getTransactionByOrderId,
+  updateTransactionStatus,
+  getSubscription,
+  updateSubscriptionStatus,
+} from '@/lib/firebase/payments-admin';
 
 /**
  * POST /api/webhooks/firstdata
@@ -110,60 +117,184 @@ function verifyWebhookSignature(
 }
 
 // ============================================
+// HELPERS
+// ============================================
+
+/**
+ * Busca la transacción en nuestra BD usando el ID de First Data o el orderId
+ */
+async function findTransaction(event: WebhookEvent) {
+  // Primero intentar por First Data transaction ID
+  let transaction = await getTransactionByFirstDataId(event.transactionId);
+  if (transaction) return transaction;
+
+  // Luego intentar por orderId (nuestro ID interno)
+  if (event.orderId) {
+    transaction = await getTransactionByOrderId(event.orderId);
+    if (transaction) return transaction;
+  }
+
+  return null;
+}
+
+// ============================================
 // HANDLERS DE EVENTOS
 // ============================================
 
 async function handleTransactionApproved(event: WebhookEvent): Promise<void> {
   console.log('Transacción aprobada:', event.transactionId);
 
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Activar suscripción si es pago inicial
-  // 3. Enviar email de confirmación al cliente
-  // 4. Actualizar Monday.com
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para webhook approved:', event.transactionId);
+    return;
+  }
+
+  // Actualizar estado de transacción
+  await updateTransactionStatus(transaction.id, 'approved', {
+    firstDataTransactionId: event.transactionId,
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
+
+  // Si tiene suscripción asociada, asegurar que esté activa
+  if (transaction.subscriptionId) {
+    const subscription = await getSubscription(transaction.subscriptionId);
+    if (subscription && subscription.status !== 'active') {
+      await updateSubscriptionStatus(transaction.subscriptionId, 'active');
+    }
+  }
 }
 
 async function handleTransactionDeclined(event: WebhookEvent): Promise<void> {
   console.log('Transacción rechazada:', event.transactionId);
 
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Notificar al cliente
-  // 3. Si es pago recurrente, marcar suscripción como "past_due"
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para webhook declined:', event.transactionId);
+    return;
+  }
+
+  // Actualizar estado de transacción
+  await updateTransactionStatus(transaction.id, 'declined', {
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
+
+  // Si es pago recurrente, marcar suscripción como past_due
+  if (transaction.subscriptionId) {
+    const subscription = await getSubscription(transaction.subscriptionId);
+    if (subscription && subscription.status === 'active') {
+      await updateSubscriptionStatus(transaction.subscriptionId, 'past_due');
+    }
+  }
 }
 
 async function handleTransactionVoided(event: WebhookEvent): Promise<void> {
   console.log('Transacción anulada:', event.transactionId);
 
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Si aplica, cancelar suscripción
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para webhook voided:', event.transactionId);
+    return;
+  }
+
+  await updateTransactionStatus(transaction.id, 'voided', {
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
+
+  // Si tiene suscripción y era el pago inicial, cancelar
+  if (transaction.subscriptionId) {
+    const subscription = await getSubscription(transaction.subscriptionId);
+    if (subscription && subscription.status === 'active') {
+      await updateSubscriptionStatus(transaction.subscriptionId, 'canceled', {
+        canceledAt: new Date(),
+      });
+    }
+  }
 }
 
 async function handleTransactionRefunded(event: WebhookEvent): Promise<void> {
   console.log('Transacción reembolsada:', event.transactionId);
 
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Notificar al cliente
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para webhook refunded:', event.transactionId);
+    return;
+  }
+
+  await updateTransactionStatus(transaction.id, 'refunded', {
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
 }
 
 async function handleFraudAlert(event: WebhookEvent): Promise<void> {
-  console.error('⚠️ Alerta de fraude:', event);
+  console.error('Alerta de fraude:', {
+    transactionId: event.transactionId,
+    orderId: event.orderId,
+    amount: event.amount,
+    paymentMethod: event.paymentMethod,
+  });
 
-  // TODO: Implementar lógica de negocio
-  // 1. Registrar alerta
-  // 2. Notificar al equipo de seguridad
-  // 3. Considerar bloquear cliente/tarjeta
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para fraud alert:', event.transactionId);
+    return;
+  }
+
+  // Marcar transacción como error con metadata de fraude
+  await updateTransactionStatus(transaction.id, 'error', {
+    fraudAlert: true,
+    fraudAlertAt: new Date(),
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
+
+  // Suspender suscripción si existe
+  if (transaction.subscriptionId) {
+    const subscription = await getSubscription(transaction.subscriptionId);
+    if (subscription && subscription.status === 'active') {
+      await updateSubscriptionStatus(transaction.subscriptionId, 'paused', {
+        pausedReason: 'fraud_alert',
+        pausedAt: new Date(),
+      });
+    }
+  }
 }
 
 async function handleChargeback(event: WebhookEvent): Promise<void> {
-  console.error('⚠️ Contracargo recibido:', event);
+  console.error('Contracargo recibido:', {
+    transactionId: event.transactionId,
+    orderId: event.orderId,
+    amount: event.amount,
+  });
 
-  // TODO: Implementar lógica de negocio
-  // 1. Registrar contracargo
-  // 2. Notificar al equipo
-  // 3. Preparar documentación para disputa
+  const transaction = await findTransaction(event);
+  if (!transaction) {
+    console.warn('Transacción no encontrada en BD para chargeback:', event.transactionId);
+    return;
+  }
+
+  // Marcar transacción con metadata de contracargo
+  await updateTransactionStatus(transaction.id, 'refunded', {
+    chargeback: true,
+    chargebackAt: new Date(),
+    firstDataResponseCode: event.processor?.responseCode,
+    firstDataResponseMessage: event.processor?.responseMessage,
+  });
+
+  // Suspender suscripción
+  if (transaction.subscriptionId) {
+    const subscription = await getSubscription(transaction.subscriptionId);
+    if (subscription && subscription.status !== 'canceled') {
+      await updateSubscriptionStatus(transaction.subscriptionId, 'paused', {
+        pausedReason: 'chargeback',
+        pausedAt: new Date(),
+      });
+    }
+  }
 }
 
 // ============================================

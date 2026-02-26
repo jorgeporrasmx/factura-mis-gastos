@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createLead, type LeadData } from "@/lib/monday";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Tipos de formulario
 type FormType = "express" | "standard" | "corporate" | "callback";
@@ -45,6 +46,13 @@ function getOrigen(type: FormType): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 10 envíos por IP cada 15 minutos
+    const rateLimited = rateLimit(request, {
+      maxRequests: 10,
+      windowMs: 15 * 60 * 1000,
+      prefix: "leads",
+    });
+    if (rateLimited) return rateLimited;
     const body: LeadRequest = await request.json();
     const { type, data } = body;
 

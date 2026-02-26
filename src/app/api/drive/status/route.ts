@@ -1,8 +1,9 @@
 // API para verificar el estado de la conexión con Google Drive
-// GET /api/drive/status - Verificar configuración y conexión
+// GET /api/drive/status - Verificar configuración y conexión (requiere autenticación)
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { isDriveConfigured } from '@/lib/google-drive';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 
 interface DriveStatusResponse {
   configured: boolean;
@@ -14,7 +15,11 @@ interface DriveStatusResponse {
   testFolderId?: string;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authResult = await verifyAuthToken(request);
+  if (!authResult.success) {
+    return authErrorResponse(authResult);
+  }
   const status: DriveStatusResponse = {
     configured: false,
     connected: false,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirstDataClient, getErrorMessage } from '@/lib/firstdata';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 
 interface RouteParams {
   params: Promise<{ transactionId: string }>;
@@ -8,13 +9,18 @@ interface RouteParams {
 /**
  * GET /api/payments/[transactionId]
  *
- * Consulta el estado de una transacción
+ * Consulta el estado de una transacción (requiere autenticación)
  */
 export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ): Promise<NextResponse> {
   try {
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
+    }
+
     const { transactionId } = await params;
 
     if (!transactionId) {
@@ -69,12 +75,18 @@ export async function GET(
  * POST /api/payments/[transactionId]
  *
  * Realiza operaciones sobre una transacción existente (void/refund)
+ * Requiere autenticación
  */
 export async function POST(
   request: NextRequest,
   { params }: RouteParams
 ): Promise<NextResponse> {
   try {
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
+    }
+
     const { transactionId } = await params;
     const body = await request.json();
     const { action, amount } = body as { action: 'void' | 'refund'; amount?: number };

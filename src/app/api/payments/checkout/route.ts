@@ -20,6 +20,7 @@ import {
   createSubscription,
   createPaymentMethod,
 } from '@/lib/firebase/payments-admin';
+import { rateLimit } from '@/lib/rate-limit';
 
 /**
  * POST /api/payments/checkout
@@ -28,6 +29,13 @@ import {
  */
 export async function POST(request: NextRequest): Promise<NextResponse<CheckoutResponse>> {
   try {
+    // Rate limit: 5 intentos de pago por IP cada 15 minutos
+    const rateLimited = rateLimit(request, {
+      maxRequests: 5,
+      windowMs: 15 * 60 * 1000,
+      prefix: 'checkout',
+    });
+    if (rateLimited) return rateLimited as NextResponse<CheckoutResponse>;
     const body: CheckoutRequest = await request.json();
 
     // Validar campos requeridos

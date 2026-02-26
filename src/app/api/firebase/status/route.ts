@@ -1,8 +1,9 @@
 // API para verificar el estado de Firebase Admin SDK
-// GET /api/firebase/status - Verificar configuración y conexión a Firestore
+// GET /api/firebase/status - Verificar configuración y conexión a Firestore (requiere autenticación)
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore, isAdminConfigured } from '@/lib/firebase/admin';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 
 interface FirebaseStatusResponse {
   configured: boolean;
@@ -17,7 +18,11 @@ interface FirebaseStatusResponse {
   };
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const authResult = await verifyAuthToken(request);
+  if (!authResult.success) {
+    return authErrorResponse(authResult);
+  }
   const status: FirebaseStatusResponse = {
     configured: false,
     connected: false,

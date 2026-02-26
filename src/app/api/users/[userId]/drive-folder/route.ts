@@ -7,6 +7,7 @@ import {
   getCompanyByIdAdmin,
   updateUserProfileAdmin,
 } from '@/lib/firebase/firestore-admin';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 import {
   isDriveConfigured,
   createUserFolder,
@@ -28,10 +29,14 @@ export async function POST(
       );
     }
 
-    // Verificar autorización - el header debe coincidir con el userId
-    const requestingUid = request.headers.get('x-user-uid');
+    // Verificar autenticación
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
+    }
 
-    if (!requestingUid || requestingUid !== userId) {
+    // Verificar autorización - el uid debe coincidir con el userId
+    if (authResult.uid !== userId) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }

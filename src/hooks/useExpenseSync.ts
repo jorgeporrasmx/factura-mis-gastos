@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import type { MondayExpenseColumns } from '@/types/monday-expenses';
 
 interface SyncState {
@@ -47,11 +48,12 @@ export function useExpenseSync(): UseExpenseSyncResult {
       try {
         const body = columnMapping ? JSON.stringify({ columnMapping }) : undefined;
 
+        const authHeaders = await getAuthHeaders();
         const response = await fetch('/api/expenses/sync', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-user-uid': user.uid,
+            ...authHeaders,
           },
           body,
         });
@@ -119,10 +121,9 @@ export function useMondayBoardStatus() {
       try {
         // Esta verificación se haría a través de una API que llame a Monday
         // Por ahora, simulamos la llamada
+        const authHeaders = await getAuthHeaders();
         const response = await fetch(`/api/monday/verify?boardId=${boardId}`, {
-          headers: {
-            'x-user-uid': user.uid,
-          },
+          headers: authHeaders,
         });
 
         if (!response.ok) {

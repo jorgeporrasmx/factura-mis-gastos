@@ -294,8 +294,10 @@ export function PaymentForm({
             <div className="relative">
               <Input
                 id="cardNumber"
+                name="cardnumber"
                 type="text"
                 inputMode="numeric"
+                autoComplete="cc-number"
                 placeholder="1234 5678 9012 3456"
                 value={cardNumber}
                 onChange={handleCardNumberChange}
@@ -319,7 +321,9 @@ export function PaymentForm({
             </Label>
             <Input
               id="holderName"
+              name="ccname"
               type="text"
+              autoComplete="cc-name"
               placeholder="JUAN PEREZ"
               value={holderName}
               onChange={(e) => {
@@ -343,8 +347,10 @@ export function PaymentForm({
               </Label>
               <Input
                 id="expMonth"
+                name="cc-exp-month"
                 type="text"
                 inputMode="numeric"
+                autoComplete="cc-exp-month"
                 placeholder="MM"
                 value={expMonth}
                 onChange={handleExpMonthChange}
@@ -360,8 +366,10 @@ export function PaymentForm({
               </Label>
               <Input
                 id="expYear"
+                name="cc-exp-year"
                 type="text"
                 inputMode="numeric"
+                autoComplete="cc-exp-year"
                 placeholder="AA"
                 value={expYear}
                 onChange={handleExpYearChange}
@@ -380,8 +388,10 @@ export function PaymentForm({
               </Label>
               <Input
                 id="cvv"
+                name="cvc"
                 type="text"
                 inputMode="numeric"
+                autoComplete="cc-csc"
                 placeholder={cardBrand === 'amex' ? '1234' : '123'}
                 value={cvv}
                 onChange={handleCvvChange}

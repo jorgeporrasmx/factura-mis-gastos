@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import imageCompression from 'browser-image-compression';
 import { uploadFile, getStoragePath, type UploadProgress } from '@/lib/firebase/storage';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import {
   type UploadFile,
   type UploadConfig,
@@ -174,9 +175,10 @@ export function useFileUpload({
           const formData = new FormData();
           formData.append('file', compressedFile, uploadFile_.file.name);
 
+          const authHeaders = await getAuthHeaders();
           const response = await fetch('/api/upload/receipt', {
             method: 'POST',
-            headers: { 'x-user-uid': userId },
+            headers: authHeaders,
             body: formData,
           });
 
@@ -211,12 +213,10 @@ export function useFileUpload({
           // Simulate progress while uploading
           updateFile(fileId, { progress: 40 });
 
+          const csfAuthHeaders = await getAuthHeaders();
           const response = await fetch('/api/upload/csf', {
             method: 'POST',
-            headers: {
-              'x-user-uid': userId,
-              'x-user-email': userEmail || '',
-            },
+            headers: csfAuthHeaders,
             body: formData,
           });
 

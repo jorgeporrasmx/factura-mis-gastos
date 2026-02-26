@@ -8,6 +8,7 @@ import {
   updateUserProfileAdmin,
   createUserProfileAdmin,
 } from '@/lib/firebase/firestore-admin';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 import {
   uploadFile,
   createUserFolder,
@@ -35,16 +36,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener UID y email del header
-    const uid = request.headers.get('x-user-uid');
-    const userEmail = request.headers.get('x-user-email');
-
-    if (!uid) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+    // Verificar autenticación
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
     }
+    const uid = authResult.uid;
 
     // Obtener perfil del usuario usando Admin SDK, o crearlo si no existe
     let userProfile = await getUserProfileAdmin(uid);
@@ -53,8 +50,8 @@ export async function POST(request: NextRequest) {
       console.log('[API/upload/csf] Perfil no encontrado para UID:', uid);
 
       // Si tenemos el email, intentar crear perfil automáticamente
-      const emailToUse = userEmail && userEmail.trim() !== ''
-        ? userEmail
+      const emailToUse = authResult.email && authResult.email.trim() !== ''
+        ? authResult.email
         : null;
 
       if (!emailToUse) {

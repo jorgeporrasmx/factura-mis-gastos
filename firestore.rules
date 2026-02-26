@@ -1,0 +1,84 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isCompanyMember(companyId) {
+      return isAuthenticated() && getUserData().companyId == companyId;
+    }
+
+    function isCompanyAdmin(companyId) {
+      return isCompanyMember(companyId) && getUserData().role == 'admin';
+    }
+
+    // ============================================
+    // USERS COLLECTION
+    // ============================================
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // ============================================
+    // COMPANIES COLLECTION
+    // ============================================
+    match /companies/{companyId} {
+      allow read: if isCompanyMember(companyId);
+      allow create, update, delete: if false;
+
+      match /expenses/{expenseId} {
+        allow read: if isCompanyMember(companyId);
+        allow create, update, delete: if false;
+      }
+
+      match /sync_logs/{logId} {
+        allow read: if isCompanyAdmin(companyId);
+        allow create, update, delete: if false;
+      }
+    }
+
+    // ============================================
+    // PAYMENT COLLECTIONS (server-only via Admin SDK)
+    // ============================================
+    match /customers/{doc} {
+      allow read, write: if false;
+    }
+
+    match /transactions/{doc} {
+      allow read, write: if false;
+    }
+
+    match /subscriptions/{doc} {
+      allow read, write: if false;
+    }
+
+    match /paymentMethods/{doc} {
+      allow read, write: if false;
+    }
+
+    // ============================================
+    // DEFAULT: DENY ALL
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

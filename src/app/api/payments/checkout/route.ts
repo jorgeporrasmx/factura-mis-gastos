@@ -5,6 +5,7 @@ import {
   PlanId,
   CheckoutRequest,
   CheckoutResponse,
+  CardBrand,
   validateCardNumber,
   validateExpiry,
   validateCVV,
@@ -94,15 +95,63 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
     const subscriptionId = generateSubscriptionId();
     const paymentMethodId = `pm_${Date.now().toString(36)}${Math.random().toString(36).substring(2, 10)}`;
 
-    // Procesar el pago
-    const result = await client.purchase({
-      amount: plan.price,
-      currency: 'MXN',
-      card: body.card,
-      orderId: transactionId,
-      customerName: body.customer.name,
-      billingAddress: body.billingAddress,
-    });
+    // Extract minimal card metadata before any processing
+    const cardBrand = detectCardBrand(body.card.number);
+    const cardLast4 = body.card.number.replace(/\s/g, '').slice(-4);
+    const cardExpMonth = parseInt(body.card.expMonth, 10);
+    const cardExpYear = parseInt(body.card.expYear, 10);
+    const cardHolderName = body.card.holderName;
+
+    // Step 1: Tokenize first — reduces time card data is in memory
+    let tokenValue: string | undefined;
+    let tokenCardInfo: { brand: CardBrand; last4: string; expMonth: number; expYear: number } | undefined;
+
+    try {
+      const tokenResult = await client.tokenize(body.card);
+
+      // Clear raw card data from memory immediately after tokenization
+      body.card = { number: '', cvv: '', expMonth: '', expYear: '', holderName: '' };
+
+      if (tokenResult.success && tokenResult.token) {
+        tokenValue = tokenResult.token;
+        tokenCardInfo = {
+          brand: tokenResult.card?.brand || cardBrand,
+          last4: tokenResult.card?.last4 || cardLast4,
+          expMonth: tokenResult.card?.expMonth || cardExpMonth,
+          expYear: tokenResult.card?.expYear || cardExpYear,
+        };
+      } else {
+        console.warn('Tokenización falló:', tokenResult.errorMessage);
+      }
+    } catch (tokenError) {
+      // Clear card data even on error
+      body.card = { number: '', cvv: '', expMonth: '', expYear: '', holderName: '' };
+      console.error('Error tokenizando tarjeta:', tokenError);
+    }
+
+    // Step 2: Process payment using token (preferred) or fail if no token
+    let result;
+    if (tokenValue) {
+      result = await client.purchaseWithToken({
+        token: tokenValue,
+        amount: plan.price,
+        currency: 'MXN',
+        orderId: transactionId,
+      });
+    } else {
+      // No token available — cannot process payment without re-sending card data
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'No se pudo procesar el pago. Intenta de nuevo.',
+          error: {
+            code: 'TOKENIZATION_FAILED',
+            message: 'Error al preparar los datos de pago',
+          },
+        },
+        { status: 400 }
+      );
+    }
 
     if (result.success) {
       // 1. Crear/actualizar cliente en Firestore
@@ -116,32 +165,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         address: body.billingAddress,
       });
 
-      // 2. Tokenizar la tarjeta para pagos recurrentes
-      let tokenValue: string | undefined;
-      try {
-        const tokenResult = await client.tokenize(body.card);
-        if (tokenResult.success && tokenResult.token) {
-          tokenValue = tokenResult.token;
-          await createPaymentMethod({
-            id: paymentMethodId,
-            customerId,
-            card: {
-              brand: tokenResult.card?.brand || detectCardBrand(body.card.number),
-              last4: tokenResult.card?.last4 || body.card.number.replace(/\s/g, '').slice(-4),
-              expMonth: tokenResult.card?.expMonth || parseInt(body.card.expMonth, 10),
-              expYear: tokenResult.card?.expYear || parseInt(body.card.expYear, 10),
-              holderName: body.card.holderName,
-            },
-            token: tokenResult.token,
-            isDefault: true,
-          });
-        } else {
-          console.warn('Tokenización falló, continuando sin token:', tokenResult.errorMessage);
-        }
-      } catch (tokenError) {
-        // No fallar el checkout por error de tokenización
-        console.error('Error tokenizando tarjeta:', tokenError);
-      }
+      // 2. Store payment method for recurring payments
+      await createPaymentMethod({
+        id: paymentMethodId,
+        customerId,
+        card: {
+          brand: tokenCardInfo?.brand || cardBrand,
+          last4: tokenCardInfo?.last4 || cardLast4,
+          expMonth: tokenCardInfo?.expMonth || cardExpMonth,
+          expYear: tokenCardInfo?.expYear || cardExpYear,
+          holderName: cardHolderName,
+        },
+        token: tokenValue,
+        isDefault: true,
+      });
 
       // 3. Crear suscripción
       await createSubscription({
@@ -149,7 +186,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         customerId,
         planId: body.planId,
         status: 'active',
-        paymentMethodId: tokenValue ? paymentMethodId : '',
+        paymentMethodId,
       });
 
       // 4. Registrar transacción
@@ -157,7 +194,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         id: transactionId,
         customerId,
         subscriptionId,
-        paymentMethodId: tokenValue ? paymentMethodId : '',
+        paymentMethodId,
         type: 'purchase',
         status: 'approved',
         amount: plan.price,
@@ -205,7 +242,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
           customerId,
           type: 'purchase',
           status: 'declined',
-          paymentMethodId: '',
+          paymentMethodId,
           amount: plan.price,
           currency: 'MXN',
           description: `Intento fallido: plan ${plan.name}`,

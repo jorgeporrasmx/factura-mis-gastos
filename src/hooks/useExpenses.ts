@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import type {
   Expense,
   ExpenseFilters,
@@ -79,10 +80,9 @@ export function useExpenses(options: UseExpensesOptions = {}): UseExpensesResult
       setError(null);
 
       try {
+        const authHeaders = await getAuthHeaders();
         const response = await fetch(buildUrl(cursor), {
-          headers: {
-            'x-user-uid': user.uid,
-          },
+          headers: authHeaders,
         });
 
         const data = await response.json();
@@ -166,10 +166,9 @@ export function useExpenseSummary(userId?: string) {
 
     try {
       const params = userId ? `?userId=${userId}` : '';
+      const authHeaders = await getAuthHeaders();
       const response = await fetch(`/api/expenses/summary${params}`, {
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: authHeaders,
       });
 
       const data = await response.json();

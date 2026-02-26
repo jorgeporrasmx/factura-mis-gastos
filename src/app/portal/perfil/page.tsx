@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCompany } from '@/contexts/CompanyContext';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import { useRouter } from 'next/navigation';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
@@ -29,11 +30,10 @@ export default function PerfilPage() {
     setFolderMessage(null);
 
     try {
+      const authHeaders = await getAuthHeaders();
       const response = await fetch('/api/drive/create-folder', {
         method: 'POST',
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: authHeaders,
       });
 
       const data = await response.json();
@@ -70,11 +70,10 @@ export default function PerfilPage() {
     setFolderMessage(null);
 
     try {
+      const authHeaders2 = await getAuthHeaders();
       const response = await fetch(`/api/users/${user.uid}/drive-folder`, {
         method: 'POST',
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: authHeaders2,
       });
 
       const data = await response.json();

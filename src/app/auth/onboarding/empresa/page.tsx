@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import { Button } from '@/components/ui/button';
 import { Building2, Loader2, ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { extractDomainFromEmail } from '@/types/company';
@@ -86,15 +87,16 @@ export default function CreateCompanyPage() {
     setErrors({});
 
     try {
+      const authHeaders = await getAuthHeaders();
       const response = await fetch('/api/companies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...authHeaders,
         },
         body: JSON.stringify({
           name: formData.companyName.trim(),
           rfc: formData.rfc.toUpperCase().trim() || undefined,
-          adminUid: user.uid,
           adminEmail: user.email,
           adminName: user.displayName,
         }),

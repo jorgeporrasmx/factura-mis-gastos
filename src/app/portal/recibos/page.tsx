@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/firebase/token';
 import { getUserProfile, getUserReceipts, saveReceipt } from '@/lib/firebase/firestore';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ReceiptGrid } from '@/components/receipts/ReceiptGrid';
@@ -93,11 +94,10 @@ function RecibosContent() {
       formData.append('file', file);
 
       // Upload to Drive via API
+      const authHeaders = await getAuthHeaders();
       const response = await fetch('/api/upload/receipt', {
         method: 'POST',
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: authHeaders,
         body: formData,
       });
 

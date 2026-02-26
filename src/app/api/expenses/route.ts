@@ -7,19 +7,17 @@ import {
   getExpenses,
   getExpenseSummary,
 } from '@/lib/firebase/firestore';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 import type { ExpenseFilters, ExpenseSortOptions, ExpenseStatus, ExpenseCategory } from '@/types/expenses';
 
 export async function GET(request: NextRequest) {
   try {
-    // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
-
-    if (!uid) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+    // Verificar autenticación
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
     }
+    const uid = authResult.uid;
 
     // Obtener perfil del usuario
     const userProfile = await getUserProfile(uid);

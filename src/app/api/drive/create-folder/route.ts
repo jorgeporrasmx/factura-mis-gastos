@@ -7,6 +7,7 @@ import {
   getCompanyByIdAdmin,
   updateCompanyDriveFoldersAdmin,
 } from '@/lib/firebase/firestore-admin';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 import {
   isDriveConfigured,
   ensureCompanyDriveFolder,
@@ -23,15 +24,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
-
-    if (!uid) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
+    // Verificar autenticación
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
     }
+    const uid = authResult.uid;
 
     // Obtener perfil del usuario
     const userProfile = await getUserProfileAdmin(uid);

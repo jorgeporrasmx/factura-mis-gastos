@@ -21,19 +21,37 @@ import {
   isMondayBoardsConfigured,
 } from '@/lib/monday-boards';
 import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain } from '@/types/company';
+import { verifyAuthToken, authErrorResponse } from '@/lib/firebase/auth-admin';
 
 export async function POST(request: NextRequest) {
   console.log('[API/companies] POST iniciado');
   try {
-    const body = await request.json();
-    console.log('[API/companies] Body recibido:', { name: body.name, adminUid: body.adminUid, adminEmail: body.adminEmail });
+    // Verificar token de autenticación
+    const authResult = await verifyAuthToken(request);
+    if (!authResult.success) {
+      return authErrorResponse(authResult);
+    }
 
-    const { name, rfc, adminUid, adminEmail, adminName } = body;
+    const body = await request.json();
+    console.log('[API/companies] Body recibido:', { name: body.name, adminEmail: body.adminEmail });
+
+    const { name, rfc, adminName } = body;
+    // adminUid viene del token verificado, no del body
+    const adminUid = authResult.uid;
+    const adminEmail = body.adminEmail || authResult.email;
+
+    // Validar que el email del body coincide con el del token (si se proporcionó)
+    if (body.adminEmail && authResult.email && body.adminEmail !== authResult.email) {
+      return NextResponse.json(
+        { success: false, error: 'El email no coincide con el usuario autenticado' },
+        { status: 403 }
+      );
+    }
 
     // Validaciones
-    if (!name || !adminUid || !adminEmail) {
+    if (!name || !adminEmail) {
       return NextResponse.json(
-        { success: false, error: 'Faltan campos requeridos: name, adminUid, adminEmail' },
+        { success: false, error: 'Faltan campos requeridos: name, adminEmail' },
         { status: 400 }
       );
     }

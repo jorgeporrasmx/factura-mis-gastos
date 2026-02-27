@@ -28,11 +28,14 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
     });
   };
 
-  // Abrir link de Drive en nueva pestaña
-  const handleOpenDrive = (e: React.MouseEvent) => {
+  const isImage = receipt.mimeType?.startsWith('image/');
+  const isPDF = receipt.mimeType === 'application/pdf';
+
+  // Abrir en Drive (nueva pestaña)
+  const handleOpenInDrive = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (receipt.fileUrl) {
-      window.open(receipt.fileUrl, '_blank');
+      window.open(receipt.fileUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -41,9 +44,29 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
       onClick={onClick}
       className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
     >
-      {/* File icon placeholder instead of image */}
-      <div className="aspect-[4/3] bg-gray-50 relative flex items-center justify-center">
-        <FileText className="w-16 h-16 text-gray-300" />
+      {/* Drive link preview */}
+      <div className="aspect-[4/3] bg-gradient-to-br from-blue-50 to-blue-100 relative flex flex-col items-center justify-center p-4">
+        {/* Icon based on file type */}
+        <div className="w-12 h-12 bg-white rounded-lg shadow-sm flex items-center justify-center mb-2">
+          {isImage ? (
+            <FileText className="w-6 h-6 text-blue-500" />
+          ) : isPDF ? (
+            <FileText className="w-6 h-6 text-red-500" />
+          ) : (
+            <FileText className="w-6 h-6 text-gray-500" />
+          )}
+        </div>
+
+        {/* Open in Drive button */}
+        {receipt.fileUrl && (
+          <button
+            onClick={handleOpenInDrive}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Abrir en Drive
+          </button>
+        )}
 
         {/* Status badge */}
         <div className="absolute top-2 right-2">
@@ -58,17 +81,6 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
       <div className="p-3">
         <p className="text-sm text-gray-600 truncate">{receipt.fileName}</p>
         <p className="text-xs text-gray-400 mt-1">{formatDate(receipt.uploadedAt)}</p>
-        
-        {/* Link to Drive */}
-        {receipt.fileUrl && (
-          <button
-            onClick={handleOpenDrive}
-            className="mt-2 inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Ver en Drive
-          </button>
-        )}
       </div>
     </div>
   );

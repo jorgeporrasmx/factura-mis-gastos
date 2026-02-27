@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Building2, User, Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import { Building2, User, UserCircle, Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { extractDomainFromEmail } from '@/types/company';
 
-type AccountType = 'empresa' | 'empleado' | null;
+type AccountType = 'empresa' | 'empleado' | 'personal' | null;
 
 interface CompanyCheckResult {
   checking: boolean;
@@ -104,6 +104,39 @@ export default function OnboardingPage() {
     }
   }
 
+  async function handlePersonalAccount() {
+    if (!user) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/users/personal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        router.push('/portal?onboarding=completed');
+      } else {
+        setError(data.error || 'Error al crear cuenta personal');
+      }
+    } catch {
+      setError('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   // Redirigir si no está autenticado
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -134,7 +167,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Options */}
-        <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
           {/* Empresa */}
           <button
             onClick={() => setSelectedType('empresa')}
@@ -182,12 +215,40 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Soy empleado</h3>
-                <p className="text-sm text-gray-500">Usuario</p>
+                <p className="text-sm text-gray-500">Usuario corporativo</p>
               </div>
             </div>
             <p className="text-sm text-gray-600">
               Únete a tu empresa usando tu email corporativo. Podrás subir recibos y ver tus
               propios gastos.
+            </p>
+          </button>
+
+          {/* Uso Personal */}
+          <button
+            onClick={() => setSelectedType('personal')}
+            className={`p-6 rounded-xl border-2 transition-all text-left ${
+              selectedType === 'personal'
+                ? 'border-blue-600 bg-blue-50'
+                : 'border-gray-200 bg-white hover:border-blue-300'
+            }`}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div
+                className={`p-3 rounded-lg ${
+                  selectedType === 'personal' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                <UserCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">Uso personal</h3>
+                <p className="text-sm text-gray-500">Individual</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600">
+              Organiza tus gastos personales sin necesidad de una empresa. Ideal para
+              freelancers y profesionistas independientes.
             </p>
           </button>
         </div>
@@ -225,11 +286,36 @@ export default function OnboardingPage() {
                       className="text-blue-600 underline hover:text-blue-800"
                     >
                       registrar tu empresa
+                    </button>, o selecciona <button
+                      onClick={() => setSelectedType('personal')}
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      uso personal
                     </button>.
                   </p>
                 </div>
               </div>
             )}
+
+            {error && (
+              <div className="mt-4 text-red-600 bg-red-50 p-3 rounded-lg text-sm">{error}</div>
+            )}
+          </div>
+        )}
+
+        {/* Confirmación para uso personal */}
+        {selectedType === 'personal' && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-start gap-3 text-blue-600 bg-blue-50 p-4 rounded-lg">
+              <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Cuenta personal</p>
+                <p className="text-sm mt-1 text-gray-600">
+                  Podrás subir tus recibos y organizar tus gastos personales. En cualquier momento
+                  puedes crear o unirte a una empresa desde la configuración.
+                </p>
+              </div>
+            </div>
 
             {error && (
               <div className="mt-4 text-red-600 bg-red-50 p-3 rounded-lg text-sm">{error}</div>
@@ -265,6 +351,27 @@ export default function OnboardingPage() {
               ) : (
                 <>
                   Unirme a {companyCheck.companyName}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              )}
+            </Button>
+          )}
+
+          {selectedType === 'personal' && (
+            <Button
+              size="lg"
+              onClick={handlePersonalAccount}
+              disabled={isSubmitting}
+              className="min-w-[200px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creando cuenta...
+                </>
+              ) : (
+                <>
+                  Continuar como personal
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               )}

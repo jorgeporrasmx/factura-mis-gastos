@@ -8,6 +8,7 @@ import {
   updateCompanyDriveFoldersAdmin,
   updateCompanyAdmin,
   getUserProfileAdmin,
+  createUserProfileAdmin,
   linkUserToCompanyAdmin,
 } from '@/lib/firebase/firestore-admin';
 import {
@@ -57,15 +58,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el usuario existe
+    // Obtener o crear perfil del usuario (fix race condition)
     console.log('[API/companies] Buscando perfil de usuario:', adminUid);
-    const userProfile = await getUserProfileAdmin(adminUid);
+    let userProfile = await getUserProfileAdmin(adminUid);
     console.log('[API/companies] Perfil encontrado:', userProfile ? 'Sí' : 'No');
     if (!userProfile) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      // Crear perfil si no existe (puede pasar por timing en onboarding)
+      console.log('[API/companies] Creando perfil de usuario');
+      userProfile = await createUserProfileAdmin({
+        uid: adminUid,
+        email: adminEmail,
+        displayName: adminName || null,
+        photoURL: null,
+      });
     }
 
     // Verificar que el usuario no ya pertenezca a una empresa

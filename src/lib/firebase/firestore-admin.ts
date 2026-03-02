@@ -240,3 +240,17 @@ export async function linkUserToCompanyAdmin(
     accountType: role === 'admin' ? 'empresa' : 'empleado',
   });
 }
+
+/**
+ * Complete onboarding for a user (Admin)
+ */
+export async function completeOnboardingAdmin(
+  uid: string,
+  accountType: 'empresa' | 'empleado' | 'personal'
+): Promise<void> {
+  await updateUserProfileAdmin(uid, {
+    onboardingCompleted: true,
+    accountType,
+    status: 'active',
+  });
+}

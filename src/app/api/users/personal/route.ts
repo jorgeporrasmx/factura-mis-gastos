@@ -3,9 +3,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getUserProfile,
-  completeOnboarding,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  completeOnboardingAdmin,
+} from '@/lib/firebase/firestore-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const userProfile = await getUserProfile(uid);
+    const userProfile = await getUserProfileAdmin(uid);
     if (!userProfile) {
       return NextResponse.json(
         { success: false, error: 'Usuario no encontrado' },
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Completar onboarding como usuario personal
-    await completeOnboarding(uid, 'personal');
+    await completeOnboardingAdmin(uid, 'personal');
 
     return NextResponse.json({
       success: true,

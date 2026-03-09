@@ -165,7 +165,7 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     id: companyRef.id,
     name: data.name,
     domain: data.domain.toLowerCase(),
-    rfc: data.rfc || null,
+    rfc: data.rfc || undefined,
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],

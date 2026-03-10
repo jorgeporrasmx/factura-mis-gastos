@@ -165,7 +165,7 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     id: companyRef.id,
     name: data.name,
     domain: data.domain.toLowerCase(),
-    rfc: data.rfc || undefined,
+    ...(data.rfc ? { rfc: data.rfc } : {}),
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
@@ -176,8 +176,13 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     status: 'active',
   };
 
+  // Filter out undefined values before writing to Firestore
+  const firestoreData = Object.fromEntries(
+    Object.entries(company).filter(([, v]) => v !== undefined)
+  );
+
   await companyRef.set({
-    ...company,
+    ...firestoreData,
     createdAt: FieldValue.serverTimestamp(),
     updatedAt: FieldValue.serverTimestamp(),
   });

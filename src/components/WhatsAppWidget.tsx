@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, Calendar, ChevronDown, Bot, User } from 'lucide-react';
+import { MessageCircle, Calendar, ChevronDown, Bot, User } from 'lucide-react';
 import { WHATSAPP_NUMBER, CALENDLY_URL } from '@/lib/constants';
 
 interface Message {

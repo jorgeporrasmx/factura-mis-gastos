@@ -7,6 +7,7 @@ import { PaymentForm, PaymentFormData } from '@/components/PaymentForm';
 import { OrderSummary } from '@/components/OrderSummary';
 import { PLANS, PlanId, CheckoutRequest, CheckoutResponse } from '@/types/payments';
 import { ArrowLeft, Shield } from 'lucide-react';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 interface CheckoutPageProps {
   params: Promise<{ planId: string }>;
@@ -47,7 +48,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           </p>
           <div className="space-y-3">
             <Link
-              href="https://wa.me/5216144273301?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo"
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo`}
               target="_blank"
               className="block w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 font-medium transition-colors"
             >

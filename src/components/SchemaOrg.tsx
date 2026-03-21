@@ -25,9 +25,10 @@ export function SchemaOrg() {
       "availableLanguage": ["Spanish"]
     },
     "sameAs": [
-      "https://www.linkedin.com/company/facturamisgastos",
-      "https://twitter.com/facturamisgastos",
-      "https://www.facebook.com/facturamisgastos"
+      "https://www.facebook.com/people/Factura-Mis-Gastos/61588321863853/",
+      "https://www.instagram.com/facturamisgastos/",
+      "https://x.com/FactMisGastos",
+      "https://www.linkedin.com/company/factura-mis-gastos/"
     ]
   };
 

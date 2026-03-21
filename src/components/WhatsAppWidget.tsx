@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, Send, Calendar, ChevronDown, Bot, User } from 'lucide-react';
-
-const WHATSAPP_NUMBER = '5216144273301';
-const CALENDLY_URL = 'https://calendly.com/jorgeporras';
+import { WHATSAPP_NUMBER, CALENDLY_URL } from '@/lib/constants';
 
 interface Message {
   id: number;
@@ -57,19 +55,24 @@ export function WhatsAppWidget() {
     scrollToBottom();
   }, [messages]);
 
+  const innerTimerRef = useRef<NodeJS.Timeout>();
+
   useEffect(() => {
     if (hasInteracted) return;
 
     const timer = setTimeout(() => {
       setIsExpanded(true);
-      setTimeout(() => {
+      innerTimerRef.current = setTimeout(() => {
         if (!hasInteracted) {
           setIsExpanded(false);
         }
       }, 10000);
     }, 5000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(innerTimerRef.current);
+    };
   }, [hasInteracted]);
 
   useEffect(() => {
@@ -85,9 +88,11 @@ export function WhatsAppWidget() {
     }
   }, [isExpanded, messages.length]);
 
-  const addBotMessage = (text: string, options?: ChatOption[]) => {
+  const botTimerRef = useRef<NodeJS.Timeout>();
+
+  const addBotMessage = useCallback((text: string, options?: ChatOption[]) => {
     setIsTyping(true);
-    setTimeout(() => {
+    botTimerRef.current = setTimeout(() => {
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
@@ -99,7 +104,21 @@ export function WhatsAppWidget() {
         },
       ]);
     }, 800);
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(botTimerRef.current);
+    };
+  }, []);
+
+  const actionTimerRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(actionTimerRef.current);
+    };
+  }, []);
 
   const handleOptionClick = (option: ChatOption) => {
     setHasInteracted(true);
@@ -122,7 +141,7 @@ export function WhatsAppWidget() {
 
       case 'whatsapp':
         addBotMessage('Te redirijo a WhatsApp para que hables con nuestro equipo.');
-        setTimeout(() => {
+        actionTimerRef.current = setTimeout(() => {
           const message = encodeURIComponent(
             'Hola, me interesa Factura Mis Gastos. ¿Podrían darme más información?'
           );
@@ -132,7 +151,7 @@ export function WhatsAppWidget() {
 
       case 'calendar':
         addBotMessage('Te abro nuestro calendario para que agendes una cita con un asesor.');
-        setTimeout(() => {
+        actionTimerRef.current = setTimeout(() => {
           window.open(CALENDLY_URL, '_blank');
         }, 1000);
         break;
@@ -149,11 +168,25 @@ export function WhatsAppWidget() {
 
   const formatMessage = (text: string) => {
     return text.split('\n').map((line, i) => {
-      const formatted = line
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/^\d+\.\s/, (match) => `<span class="text-primary font-medium">${match}</span>`);
+      // Split by bold markers and render as React elements
+      const parts = line.split(/\*\*(.*?)\*\*/g);
+      const numberedMatch = line.match(/^(\d+\.\s)/);
+
       return (
-        <span key={i} dangerouslySetInnerHTML={{ __html: formatted }} className="block" />
+        <span key={i} className="block">
+          {numberedMatch && (
+            <span className="text-primary font-medium">{numberedMatch[1]}</span>
+          )}
+          {parts.map((part, j) => {
+            const content = j === 0 && numberedMatch ? part.slice(numberedMatch[1].length) : part;
+            // Odd indices are inside **bold** markers
+            return j % 2 === 1 ? (
+              <strong key={j}>{content}</strong>
+            ) : (
+              <span key={j}>{content}</span>
+            );
+          })}
+        </span>
       );
     });
   };

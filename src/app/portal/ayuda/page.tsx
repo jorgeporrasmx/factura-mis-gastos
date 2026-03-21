@@ -286,7 +286,7 @@ export default function AyudaPage() {
               soporte@facturamisgastos.com
             </a>
             <a
-              href="https://wa.me/521234567890"
+              href="https://wa.me/5216144273301"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 transition-colors"

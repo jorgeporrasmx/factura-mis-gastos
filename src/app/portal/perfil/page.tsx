@@ -388,7 +388,7 @@ export default function PerfilPage() {
         <div className="bg-gray-50 rounded-xl p-6 text-center">
           <p className="text-gray-600 mb-2">¿Necesitas ayuda?</p>
           <a
-            href="https://wa.me/521234567890"
+            href="https://wa.me/5216144273301"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-700 font-medium"

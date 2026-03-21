@@ -88,7 +88,7 @@ export function Header() {
                     Iniciar Sesión
                   </Button>
                 </Link>
-                <Link href="/auth/login">
+                <Link href="/comenzar">
                   <Button className="text-sm gradient-bg hover:opacity-90 transition-opacity">
                     Comenzar ahora
                   </Button>
@@ -100,7 +100,9 @@ export function Header() {
           <button
             className="md:hidden p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label="Abrir menú de navegación"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               {mobileMenuOpen ? (
@@ -113,7 +115,7 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div id="mobile-menu" className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => scrollToSection('como-funciona')}
@@ -175,7 +177,7 @@ export function Header() {
                         Iniciar Sesión
                       </Button>
                     </Link>
-                    <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                    <Link href="/comenzar" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button className="w-full gradient-bg">
                         Comenzar ahora
                       </Button>

@@ -7,26 +7,25 @@ import { TermsModal } from '@/components/TermsModal';
 
 const footerLinks = {
   producto: [
-    { label: "Características", href: "#" },
-    { label: "Precios", href: "#precios" },
-    { label: "Integraciones", href: "#integraciones" },
-    { label: "API", href: "#" },
+    { label: "Características", href: "/#caracteristicas" },
+    { label: "Precios", href: "/#precios" },
+    { label: "Integraciones", href: "/#integraciones" },
+    { label: "Preguntas frecuentes", href: "/#preguntas-frecuentes" },
   ],
   empresa: [
-    { label: "Acerca de", href: "#" },
+    { label: "Cómo funciona", href: "/#como-funciona" },
     { label: "Blog", href: "/blog" },
     { label: "Casos de éxito", href: "/blog/caso-exito-logistica" },
-    { label: "Contacto", href: "#" },
+    { label: "Contacto", href: "/#contacto" },
   ],
   recursos: [
-    { label: "Centro de ayuda", href: "#" },
-    { label: "Documentación", href: "#" },
-    { label: "Webinars", href: "#" },
-    { label: "Status", href: "#" },
+    { label: "Centro de ayuda", href: "/portal/ayuda" },
+    { label: "Comenzar", href: "/comenzar" },
+    { label: "Blog", href: "/blog" },
   ],
   legal: [
     { label: "Privacidad", href: "/privacidad" },
-    { label: "Cookies", href: "#" },
+    { label: "Cookies", href: "/cookies" },
   ],
 };
 

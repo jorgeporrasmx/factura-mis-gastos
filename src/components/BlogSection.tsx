@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -97,12 +98,14 @@ export function BlogSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button
-                variant="secondary"
-                className="bg-white text-primary hover:bg-blue-50 font-semibold"
-              >
-                Ver cómo funciona
-              </Button>
+              <Link href="/#como-funciona">
+                <Button
+                  variant="secondary"
+                  className="bg-white text-primary hover:bg-blue-50 font-semibold"
+                >
+                  Ver cómo funciona
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -110,8 +113,8 @@ export function BlogSection() {
         {/* Blog posts grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {blogPosts.map((post, index) => (
+            <Link key={index} href={`/blog/${post.slug}`}>
             <Card
-              key={index}
               className="bg-white border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer group overflow-hidden"
             >
               {/* Image placeholder */}
@@ -146,17 +149,20 @@ export function BlogSection() {
                 </div>
               </CardContent>
             </Card>
+            </Link>
           ))}
         </div>
 
         {/* View all link */}
         <div className="text-center">
-          <Button variant="outline" className="px-8">
-            Ver todos los artículos
-            <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </Button>
+          <Link href="/blog">
+            <Button variant="outline" className="px-8">
+              Ver todos los artículos
+              <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

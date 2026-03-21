@@ -166,7 +166,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>&copy; 2024 Factura Mis Gastos</span>
+              <span>&copy; {new Date().getFullYear()} Factura Mis Gastos</span>
               <Link href="/privacidad" className="hover:text-foreground">
                 Privacidad
               </Link>

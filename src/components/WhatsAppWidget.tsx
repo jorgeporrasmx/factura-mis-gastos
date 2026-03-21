@@ -55,7 +55,7 @@ export function WhatsAppWidget() {
     scrollToBottom();
   }, [messages]);
 
-  const innerTimerRef = useRef<NodeJS.Timeout>();
+  const innerTimerRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     if (hasInteracted) return;
@@ -88,7 +88,7 @@ export function WhatsAppWidget() {
     }
   }, [isExpanded, messages.length]);
 
-  const botTimerRef = useRef<NodeJS.Timeout>();
+  const botTimerRef = useRef<NodeJS.Timeout>(undefined);
 
   const addBotMessage = useCallback((text: string, options?: ChatOption[]) => {
     setIsTyping(true);
@@ -112,7 +112,7 @@ export function WhatsAppWidget() {
     };
   }, []);
 
-  const actionTimerRef = useRef<NodeJS.Timeout>();
+  const actionTimerRef = useRef<NodeJS.Timeout>(undefined);
 
   useEffect(() => {
     return () => {

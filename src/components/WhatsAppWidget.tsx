@@ -195,7 +195,7 @@ export function WhatsAppWidget() {
     return (
       <button
         onClick={handleToggle}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 gradient-bg hover:opacity-90 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
         aria-label="Abrir asistente virtual"
       >
         <Bot className="w-6 h-6 text-white" />
@@ -207,7 +207,7 @@ export function WhatsAppWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 duration-300 flex flex-col max-h-[500px]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      <div className="gradient-bg px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot className="w-5 h-5 text-white" />
@@ -234,7 +234,7 @@ export function WhatsAppWidget() {
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.isBot
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                    ? 'gradient-bg'
                     : 'bg-gray-200'
                 }`}
               >
@@ -283,7 +283,7 @@ export function WhatsAppWidget() {
         {isTyping && (
           <div className="flex justify-start">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full gradient-bg flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-2">

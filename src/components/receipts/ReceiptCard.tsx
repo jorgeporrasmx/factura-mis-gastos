@@ -28,7 +28,7 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
     });
   };
 
-  const isImage = receipt.mimeType.startsWith('image/');
+  const isImage = receipt.mimeType?.startsWith('image/');
   const isPDF = receipt.mimeType === 'application/pdf';
 
   // Abrir en Drive (nueva pestaña)
@@ -58,13 +58,15 @@ export function ReceiptCard({ receipt, onClick }: ReceiptCardProps) {
         </div>
 
         {/* Open in Drive button */}
-        <button
-          onClick={handleOpenInDrive}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Abrir en Drive
-        </button>
+        {receipt.fileUrl && (
+          <button
+            onClick={handleOpenInDrive}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-lg shadow-sm text-xs font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            Abrir en Drive
+          </button>
+        )}
 
         {/* Status badge */}
         <div className="absolute top-2 right-2">

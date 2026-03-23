@@ -3,10 +3,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getUserProfile,
-  getExpenses,
-  getExpenseSummary,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  getExpensesAdmin,
+  getExpenseSummaryAdmin,
+} from '@/lib/firebase/firestore-admin';
 import type { ExpenseFilters, ExpenseSortOptions, ExpenseStatus, ExpenseCategory } from '@/types/expenses';
 
 export async function GET(request: NextRequest) {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Obtener perfil del usuario
-    const userProfile = await getUserProfile(uid);
+    const userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
       return NextResponse.json(
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
     const cursor = searchParams.get('cursor') || undefined;
 
     // Obtener gastos
-    const { expenses, hasMore, lastId } = await getExpenses(
+    const { expenses, hasMore, lastId } = await getExpensesAdmin(
       userProfile.companyId,
       filters,
       sort,
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     // Obtener resumen (solo si es la primera página)
     let summary = null;
     if (!cursor) {
-      summary = await getExpenseSummary(
+      summary = await getExpenseSummaryAdmin(
         userProfile.companyId,
         userProfile.role !== 'admin' ? uid : filters.userId
       );

@@ -7,7 +7,7 @@ import { TermsModal } from '@/components/TermsModal';
 
 const footerLinks = {
   producto: [
-    { label: "Características", href: "#" },
+    { label: "Características", href: "#como-funciona" },
     { label: "Precios", href: "#precios" },
     { label: "Integraciones", href: "#integraciones" },
     { label: "API", href: "#" },
@@ -26,7 +26,7 @@ const footerLinks = {
   ],
   legal: [
     { label: "Privacidad", href: "/privacidad" },
-    { label: "Cookies", href: "#" },
+    { label: "Cookies", href: "/privacidad#cookies" },
   ],
 };
 

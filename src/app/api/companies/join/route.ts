@@ -6,6 +6,7 @@ import {
   getCompanyByDomain,
   getCompanyById,
   getUserProfile,
+  createUserProfile,
   linkUserToCompany,
 } from '@/lib/firebase/firestore';
 import {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { uid, email, displayName } = body;
+    const { uid, email, displayName, photoURL } = body;
 
     // Validaciones
     if (!uid || !email) {
@@ -29,13 +30,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el usuario existe
-    const userProfile = await getUserProfile(uid);
+    // Obtener o crear perfil del usuario (fix race condition)
+    let userProfile = await getUserProfile(uid);
     if (!userProfile) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      // Crear perfil si no existe (puede pasar por timing en onboarding)
+      userProfile = await createUserProfile({
+        uid,
+        email,
+        displayName: displayName || null,
+        photoURL: photoURL || null,
+      });
     }
 
     // Verificar que el usuario no ya pertenezca a una empresa

@@ -166,6 +166,7 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     name: data.name,
     domain: data.domain.toLowerCase(),
     ...(data.rfc ? { rfc: data.rfc } : {}),
+    ...(data.inviteCode ? { inviteCode: data.inviteCode } : {}),
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
@@ -188,6 +189,49 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
   });
 
   return company;
+}
+
+/**
+ * Get company by invite code (Admin)
+ */
+export async function getCompanyByInviteCodeAdmin(inviteCode: string): Promise<Company | null> {
+  const db = getAdminFirestore();
+  if (!db) {
+    console.error('Firestore Admin no disponible');
+    return null;
+  }
+
+  try {
+    const snapshot = await db
+      .collection('companies')
+      .where('inviteCode', '==', inviteCode.toLowerCase())
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) return null;
+
+    const docSnap = snapshot.docs[0];
+    const data = docSnap.data();
+
+    return {
+      ...data,
+      id: docSnap.id,
+      createdAt: data.createdAt?.toDate() ?? new Date(),
+      updatedAt: data.updatedAt?.toDate() ?? new Date(),
+    } as Company;
+  } catch (error) {
+    console.error('Error getting company by invite code (Admin):', error);
+    return null;
+  }
+}
+
+/**
+ * Check if invite code is available (Admin)
+ */
+export async function isInviteCodeAvailableAdmin(inviteCode: string): Promise<boolean> {
+  const company = await getCompanyByInviteCodeAdmin(inviteCode);
+  return company === null;
 }
 
 /**

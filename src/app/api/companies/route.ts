@@ -21,7 +21,8 @@ import {
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
-import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain } from '@/types/company';
+import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain, generateInviteCode } from '@/types/company';
+import { isInviteCodeAvailableAdmin } from '@/lib/firebase/firestore-admin';
 
 export async function POST(request: NextRequest) {
   console.log('[API/companies] POST iniciado');
@@ -92,6 +93,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generar código de invitación único
+    let inviteCode = generateInviteCode(name);
+    let codeIsAvailable = await isInviteCodeAvailableAdmin(inviteCode);
+    let suffix = 2;
+    while (!codeIsAvailable) {
+      inviteCode = `${generateInviteCode(name)}-${suffix}`;
+      codeIsAvailable = await isInviteCodeAvailableAdmin(inviteCode);
+      suffix++;
+    }
+    console.log('[API/companies] Código de invitación generado:', inviteCode);
+
     // Crear la empresa en Firestore (usando Admin SDK para bypass reglas de seguridad)
     console.log('[API/companies] Creando empresa en Firestore...');
     let company;
@@ -103,6 +115,7 @@ export async function POST(request: NextRequest) {
         adminEmail,
         adminUid,
         adminName: adminName || userProfile.displayName || 'Admin',
+        inviteCode,
       });
       console.log('[API/companies] Empresa creada:', company.id);
     } catch (firestoreError) {
@@ -213,6 +226,7 @@ export async function POST(request: NextRequest) {
         id: company.id,
         name: company.name,
         domain: company.domain,
+        inviteCode: company.inviteCode,
         driveFolderId: company.driveFolderId,
         mondayBoardId: mondayBoardInfo?.boardId,
         isPersonalAccount: isPublicEmail,

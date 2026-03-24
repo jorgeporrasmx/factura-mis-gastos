@@ -320,6 +320,7 @@ export async function getCompanyUsers(companyId: string): Promise<CompanyUser[]>
       role: data.role,
       status: data.status,
       driveFolderId: data.driveFolderId,
+      whatsappPhone: data.whatsappPhone,
       createdAt: timestampToDate(data.createdAt),
       lastLoginAt: timestampToDate(data.lastLoginAt),
     } as CompanyUser;

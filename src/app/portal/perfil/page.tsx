@@ -6,17 +6,18 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { useRouter } from 'next/navigation';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
-import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus } from 'lucide-react';
+import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Link2, Copy, Check, MessageCircle, Users } from 'lucide-react';
 import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 export default function PerfilPage() {
   const { user, signOut } = useAuth();
-  const { company, userProfile, isAdmin, refreshCompany } = useCompany();
+  const { company, userProfile, isAdmin, companyUsers, refreshCompany } = useCompany();
   const router = useRouter();
 
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [creatingUserFolder, setCreatingUserFolder] = useState(false);
   const [folderMessage, setFolderMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -243,6 +244,91 @@ export default function PerfilPage() {
               <Building2 className="w-4 h-4 mr-2" />
               Crear empresa
             </Button>
+          </div>
+        )}
+
+        {/* Invite employees section (admin only) */}
+        {company && isAdmin && company.inviteCode && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Invitar Empleados
+            </h3>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Comparte este enlace con tus empleados para que se registren y se unan a tu empresa.
+            </p>
+
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex-1 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 truncate">
+                {typeof window !== 'undefined'
+                  ? `${window.location.origin}/unirse/${company.inviteCode}`
+                  : `/unirse/${company.inviteCode}`}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const url = `${window.location.origin}/unirse/${company.inviteCode}`;
+                  navigator.clipboard.writeText(url);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                }}
+                className="flex-shrink-0"
+              >
+                {linkCopied ? (
+                  <><Check className="w-4 h-4 mr-1" /> Copiado</>
+                ) : (
+                  <><Copy className="w-4 h-4 mr-1" /> Copiar</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `Tu empresa ${company.name} te invita a unirte a Factura Mis Gastos. Regístrate aquí: ${typeof window !== 'undefined' ? window.location.origin : ''}/unirse/${company.inviteCode}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Compartir por WhatsApp
+              </a>
+            </div>
+
+            {/* Employee list */}
+            {companyUsers.length > 1 && (
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Empleados registrados ({companyUsers.filter(u => u.role === 'user').length})
+                </p>
+                <div className="space-y-2">
+                  {companyUsers
+                    .filter(u => u.role === 'user')
+                    .map(employee => (
+                      <div key={employee.uid} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-medium flex-shrink-0">
+                            {employee.displayName
+                              ? employee.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                              : employee.email.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {employee.displayName || employee.email}
+                            </p>
+                            {employee.whatsappPhone && (
+                              <p className="text-xs text-gray-500">{employee.whatsappPhone}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

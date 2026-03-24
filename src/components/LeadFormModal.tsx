@@ -35,8 +35,7 @@ interface FormData {
   cuando_llamar: string;
 }
 
-const WHATSAPP_NUMBER = '5216144273301';
-const CALENDLY_URL = 'https://calendly.com/jorgeporras';
+import { WHATSAPP_NUMBER, CALENDLY_URL } from '@/lib/constants';
 
 const initialFormData: FormData = {
   nombre: '',

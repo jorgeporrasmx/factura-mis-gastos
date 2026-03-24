@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ChevronDown, ChevronUp, FileImage, Clock, AlertCircle, CheckCircle, HelpCircle, Mail, MessageCircle, Calendar } from 'lucide-react';
 import { TermsModal } from '@/components/TermsModal';
+import { WHATSAPP_NUMBER, CALENDLY_URL } from '@/lib/constants';
 
 interface FAQItem {
   question: string;
@@ -286,7 +287,7 @@ export default function AyudaPage() {
               soporte@facturamisgastos.com
             </a>
             <a
-              href="https://wa.me/521234567890"
+              href={`https://wa.me/${WHATSAPP_NUMBER}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 rounded-lg text-sm font-medium text-white hover:bg-green-700 transition-colors"
@@ -295,7 +296,7 @@ export default function AyudaPage() {
               WhatsApp
             </a>
             <a
-              href="https://calendly.com/jorgeporras"
+              href={CALENDLY_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors"

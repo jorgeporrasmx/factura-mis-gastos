@@ -17,7 +17,10 @@ function LoginContent() {
   const { isAuthenticated, isLoading, error } = useAuth();
   const [activeTab, setActiveTab] = useState('sms');
 
-  const redirectTo = searchParams.get('redirect') || '/portal';
+  const rawRedirect = searchParams.get('redirect') || '/portal';
+  // Prevent open redirect: only allow relative paths starting with /, block // and backslash
+  const isSafeRedirect = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') && !rawRedirect.includes('\\');
+  const redirectTo = isSafeRedirect ? rawRedirect : '/portal';
 
   // Redirect if already authenticated
   useEffect(() => {

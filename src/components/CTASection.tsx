@@ -23,10 +23,10 @@ export function CTASection() {
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
           Deja de perder deducciones.<br />
-          <span className="text-blue-200">Empieza hoy.</span>
+          <span className="text-blue-50">Empieza hoy.</span>
         </h2>
 
-        <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+        <p className="text-lg sm:text-xl text-white/90 mb-10 max-w-2xl mx-auto">
           Tu equipo solo envía el recibo. Nosotros nos encargamos del resto.
         </p>
 

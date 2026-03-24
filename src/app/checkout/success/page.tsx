@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PLANS, PlanId } from '@/types/payments';
 import { useAuth } from '@/contexts/AuthContext';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 import {
   CheckCircle,
   ArrowRight,
@@ -234,7 +235,7 @@ function SuccessContent() {
           </Link>
 
           <Link
-            href="https://wa.me/5216144273301?text=Hola%2C%20acabo%20de%20suscribirme%20y%20tengo%20dudas"
+            href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola%2C%20acabo%20de%20suscribirme%20y%20tengo%20dudas`}
             target="_blank"
             className="block"
           >

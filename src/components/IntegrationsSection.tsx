@@ -1,13 +1,15 @@
+'use client';
+
 const integrations = [
-  { name: "Contalink", category: "Contabilidad" },
-  { name: "Aspel", category: "Contabilidad" },
-  { name: "Bind ERP", category: "Contabilidad" },
-  { name: "Odoo MX", category: "ERP" },
-  { name: "SAP B1", category: "ERP" },
-  { name: "Google Sheets", category: "Productividad" },
-  { name: "Zapier", category: "Automatización" },
-  { name: "Make", category: "Automatización" },
-  { name: "WhatsApp API", category: "Comunicación" }
+  { name: "Contalink", category: "Contabilidad", color: "from-emerald-400 to-emerald-600" },
+  { name: "Aspel", category: "Contabilidad", color: "from-red-400 to-red-600" },
+  { name: "Bind ERP", category: "Contabilidad", color: "from-blue-400 to-blue-600" },
+  { name: "Odoo MX", category: "ERP", color: "from-purple-400 to-purple-600" },
+  { name: "SAP B1", category: "ERP", color: "from-sky-400 to-sky-600" },
+  { name: "Google Sheets", category: "Productividad", color: "from-green-400 to-green-600" },
+  { name: "Zapier", category: "Automatización", color: "from-orange-400 to-orange-600" },
+  { name: "Make", category: "Automatización", color: "from-violet-400 to-violet-600" },
+  { name: "WhatsApp API", category: "Comunicación", color: "from-emerald-500 to-green-600" }
 ];
 
 export function IntegrationsSection() {
@@ -29,10 +31,10 @@ export function IntegrationsSection() {
             <div
               key={index}
               className="flex flex-col items-center justify-center p-4 bg-white rounded-xl hover:shadow-md transition-shadow group"
+              title={integration.name}
             >
-              {/* Placeholder for logo - using initials */}
-              <div className="w-14 h-14 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-3 group-hover:from-blue-50 group-hover:to-blue-100 transition-colors">
-                <span className="text-lg font-bold text-slate-500 group-hover:text-primary transition-colors">
+              <div className={`w-14 h-14 bg-gradient-to-br ${integration.color} rounded-xl flex items-center justify-center mb-3 shadow-sm`}>
+                <span className="text-lg font-bold text-white">
                   {integration.name.split(' ').map(w => w[0]).join('')}
                 </span>
               </div>
@@ -46,12 +48,18 @@ export function IntegrationsSection() {
           <p className="text-muted-foreground mb-4">
             ¿No ves tu sistema? <span className="text-primary font-medium">Probablemente ya lo soportamos.</span>
           </p>
-          <a href="#" className="inline-flex items-center text-primary font-medium hover:underline">
-            Ver todas las integraciones
+          <button
+            onClick={() => {
+              const section = document.getElementById('contacto');
+              section?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="inline-flex items-center text-primary font-medium hover:underline"
+          >
+            Contáctanos
             <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-          </a>
+          </button>
         </div>
       </div>
     </section>

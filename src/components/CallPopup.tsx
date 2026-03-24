@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { CALENDLY_URL } from '@/lib/constants';
 
 export function CallPopup() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +29,7 @@ export function CallPopup() {
   }, [isOpen, isMinimized]);
 
   const handleCall = () => {
-    window.open('https://calendly.com/jorgeporras', '_blank');
+    window.open(CALENDLY_URL, '_blank');
   };
 
   if (!isOpen) return null;

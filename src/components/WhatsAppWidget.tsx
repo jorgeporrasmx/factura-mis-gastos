@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, Calendar, ChevronDown, Bot, User } from 'lucide-react';
-
-const WHATSAPP_NUMBER = '5216144273301';
-const CALENDLY_URL = 'https://calendly.com/jorgeporras';
+import { MessageCircle, Calendar, ChevronDown, Bot, User } from 'lucide-react';
+import { WHATSAPP_NUMBER, CALENDLY_URL } from '@/lib/constants';
 
 interface Message {
   id: number;
@@ -57,19 +55,24 @@ export function WhatsAppWidget() {
     scrollToBottom();
   }, [messages]);
 
+  const innerTimerRef = useRef<NodeJS.Timeout>(undefined);
+
   useEffect(() => {
     if (hasInteracted) return;
 
     const timer = setTimeout(() => {
       setIsExpanded(true);
-      setTimeout(() => {
+      innerTimerRef.current = setTimeout(() => {
         if (!hasInteracted) {
           setIsExpanded(false);
         }
       }, 10000);
     }, 5000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(innerTimerRef.current);
+    };
   }, [hasInteracted]);
 
   useEffect(() => {
@@ -85,9 +88,11 @@ export function WhatsAppWidget() {
     }
   }, [isExpanded, messages.length]);
 
-  const addBotMessage = (text: string, options?: ChatOption[]) => {
+  const botTimerRef = useRef<NodeJS.Timeout>(undefined);
+
+  const addBotMessage = useCallback((text: string, options?: ChatOption[]) => {
     setIsTyping(true);
-    setTimeout(() => {
+    botTimerRef.current = setTimeout(() => {
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
@@ -99,7 +104,21 @@ export function WhatsAppWidget() {
         },
       ]);
     }, 800);
-  };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(botTimerRef.current);
+    };
+  }, []);
+
+  const actionTimerRef = useRef<NodeJS.Timeout>(undefined);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(actionTimerRef.current);
+    };
+  }, []);
 
   const handleOptionClick = (option: ChatOption) => {
     setHasInteracted(true);
@@ -122,7 +141,7 @@ export function WhatsAppWidget() {
 
       case 'whatsapp':
         addBotMessage('Te redirijo a WhatsApp para que hables con nuestro equipo.');
-        setTimeout(() => {
+        actionTimerRef.current = setTimeout(() => {
           const message = encodeURIComponent(
             'Hola, me interesa Factura Mis Gastos. ¿Podrían darme más información?'
           );
@@ -132,7 +151,7 @@ export function WhatsAppWidget() {
 
       case 'calendar':
         addBotMessage('Te abro nuestro calendario para que agendes una cita con un asesor.');
-        setTimeout(() => {
+        actionTimerRef.current = setTimeout(() => {
           window.open(CALENDLY_URL, '_blank');
         }, 1000);
         break;
@@ -149,11 +168,25 @@ export function WhatsAppWidget() {
 
   const formatMessage = (text: string) => {
     return text.split('\n').map((line, i) => {
-      const formatted = line
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/^\d+\.\s/, (match) => `<span class="text-primary font-medium">${match}</span>`);
+      // Split by bold markers and render as React elements
+      const parts = line.split(/\*\*(.*?)\*\*/g);
+      const numberedMatch = line.match(/^(\d+\.\s)/);
+
       return (
-        <span key={i} dangerouslySetInnerHTML={{ __html: formatted }} className="block" />
+        <span key={i} className="block">
+          {numberedMatch && (
+            <span className="text-primary font-medium">{numberedMatch[1]}</span>
+          )}
+          {parts.map((part, j) => {
+            const content = j === 0 && numberedMatch ? part.slice(numberedMatch[1].length) : part;
+            // Odd indices are inside **bold** markers
+            return j % 2 === 1 ? (
+              <strong key={j}>{content}</strong>
+            ) : (
+              <span key={j}>{content}</span>
+            );
+          })}
+        </span>
       );
     });
   };
@@ -162,7 +195,7 @@ export function WhatsAppWidget() {
     return (
       <button
         onClick={handleToggle}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 gradient-bg hover:opacity-90 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center group"
         aria-label="Abrir asistente virtual"
       >
         <Bot className="w-6 h-6 text-white" />
@@ -174,7 +207,7 @@ export function WhatsAppWidget() {
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 duration-300 flex flex-col max-h-[500px]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 flex items-center justify-between flex-shrink-0">
+      <div className="gradient-bg px-4 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
             <Bot className="w-5 h-5 text-white" />
@@ -201,7 +234,7 @@ export function WhatsAppWidget() {
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.isBot
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                    ? 'gradient-bg'
                     : 'bg-gray-200'
                 }`}
               >
@@ -250,7 +283,7 @@ export function WhatsAppWidget() {
         {isTyping && (
           <div className="flex justify-start">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full gradient-bg flex items-center justify-center">
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div className="bg-gray-100 rounded-2xl rounded-tl-none px-4 py-2">

@@ -7,6 +7,7 @@ import { PaymentForm, PaymentFormData } from '@/components/PaymentForm';
 import { OrderSummary } from '@/components/OrderSummary';
 import { PLANS, PlanId, CheckoutRequest, CheckoutResponse } from '@/types/payments';
 import { ArrowLeft, Shield } from 'lucide-react';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 interface CheckoutPageProps {
   params: Promise<{ planId: string }>;
@@ -47,7 +48,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           </p>
           <div className="space-y-3">
             <Link
-              href="https://wa.me/5216144273301?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo"
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola%2C%20me%20interesa%20el%20plan%20Corporativo`}
               target="_blank"
               className="block w-full bg-green-500 hover:bg-green-600 text-white rounded-lg py-3 px-4 font-medium transition-colors"
             >
@@ -166,7 +167,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
-              <span>&copy; 2024 Factura Mis Gastos</span>
+              <span>&copy; {new Date().getFullYear()} Factura Mis Gastos</span>
               <Link href="/privacidad" className="hover:text-foreground">
                 Privacidad
               </Link>

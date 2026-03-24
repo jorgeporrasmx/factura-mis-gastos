@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
 import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Link2, Copy, Check, MessageCircle, Users } from 'lucide-react';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 
 export default function PerfilPage() {
   const { user, signOut } = useAuth();
@@ -474,7 +475,7 @@ export default function PerfilPage() {
         <div className="bg-gray-50 rounded-xl p-6 text-center">
           <p className="text-gray-600 mb-2">¿Necesitas ayuda?</p>
           <a
-            href="https://wa.me/521234567890"
+            href={`https://wa.me/${WHATSAPP_NUMBER}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:text-blue-700 font-medium"

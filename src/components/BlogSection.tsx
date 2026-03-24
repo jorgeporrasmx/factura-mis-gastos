@@ -10,25 +10,28 @@ const blogPosts = [
     category: "Casos de éxito",
     title: "Cómo una empresa de logística recuperó $180,000 MXN en deducciones anuales",
     excerpt: "Descubre cómo esta empresa con 8 choferes logró facturar el 95% de sus gastos de combustible y casetas que antes se perdían.",
-    image: "/blog/logistics.jpg",
     readTime: "5 min",
-    slug: "caso-exito-logistica"
+    slug: "caso-exito-logistica",
+    gradient: "from-emerald-500 to-teal-600",
+    icon: "M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0",
   },
   {
     category: "Gastos de viaje",
     title: "Guía completa: Cómo gestionar viáticos de empleados sin perder deducciones",
     excerpt: "Los gastos de viaje son los más difíciles de facturar. Te explicamos cómo automatizar el proceso desde el hotel hasta el taxi.",
-    image: "/blog/travel.jpg",
     readTime: "7 min",
-    slug: "guia-viaticos-empleados"
+    slug: "guia-viaticos-empleados",
+    gradient: "from-blue-500 to-indigo-600",
+    icon: "M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
   },
   {
     category: "Para tu negocio",
     title: "5 señales de que tu empresa necesita un sistema de control de gastos",
     excerpt: "¿Tus empleados pierden recibos? ¿No sabes cuánto gasta cada departamento? Estas son las señales de alerta.",
-    image: "/blog/business.jpg",
     readTime: "4 min",
-    slug: "senales-sistema-control-gastos"
+    slug: "senales-sistema-control-gastos",
+    gradient: "from-amber-500 to-orange-600",
+    icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
   }
 ];
 
@@ -98,12 +101,14 @@ export function BlogSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button
-                variant="secondary"
-                className="bg-white text-primary hover:bg-blue-50 font-semibold"
-              >
-                Ver cómo funciona
-              </Button>
+              <Link href="/#como-funciona">
+                <Button
+                  variant="secondary"
+                  className="bg-white text-primary hover:bg-blue-50 font-semibold"
+                >
+                  Ver cómo funciona
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -115,11 +120,10 @@ export function BlogSection() {
               <Card
                 className="bg-white border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer group overflow-hidden h-full"
               >
-                {/* Image placeholder */}
-                <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <svg className="w-16 h-16 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                <div className={`h-48 bg-gradient-to-br ${post.gradient} relative overflow-hidden`}>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                    <svg className="w-32 h-32 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d={post.icon} />
                     </svg>
                   </div>
                   <Badge className="absolute top-4 left-4 bg-white text-foreground shadow-sm">

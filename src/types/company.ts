@@ -6,6 +6,8 @@ export type CompanyPlan = 'personal' | 'equipos' | 'empresa' | 'corporativo';
 // Estado de la empresa
 export type CompanyStatus = 'active' | 'suspended' | 'cancelled';
 
+export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'expired' | 'cancelled';
+
 // Roles de usuario dentro de una empresa
 export type UserRole = 'admin' | 'user';
 
@@ -32,6 +34,9 @@ export interface Company {
   csfDriveId?: string;             // ID del archivo CSF en Drive
   cedulaUrl?: string;              // URL de la Cédula fiscal en Drive
   cedulaDriveId?: string;          // ID del archivo Cédula en Drive
+
+  // Suscripción
+  subscriptionStatus: SubscriptionStatus;  // Estado de pago/suscripción
 
   // Metadatos
   createdAt: Date;

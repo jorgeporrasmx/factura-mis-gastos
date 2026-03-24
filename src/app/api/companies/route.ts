@@ -6,20 +6,21 @@ import {
   createCompanyAdmin,
   getCompanyByDomainAdmin,
   updateCompanyDriveFoldersAdmin,
+  updateCompanyAdmin,
   getUserProfileAdmin,
+  createUserProfileAdmin,
   linkUserToCompanyAdmin,
 } from '@/lib/firebase/firestore-admin';
+import {
+  duplicateBoardForCompany,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
 import {
   createCompanyFolderStructure,
   createUserFolder,
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
-import {
-  duplicateBoardForCompany,
-  createClientDashboardView,
-  isMondayBoardsConfigured,
-} from '@/lib/monday-boards';
 import { extractDomainFromEmail, isPublicEmailDomain, generateUniqueCompanyDomain } from '@/types/company';
 
 export async function POST(request: NextRequest) {
@@ -57,15 +58,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el usuario existe
+    // Obtener o crear perfil del usuario (fix race condition)
     console.log('[API/companies] Buscando perfil de usuario:', adminUid);
-    const userProfile = await getUserProfileAdmin(adminUid);
+    let userProfile = await getUserProfileAdmin(adminUid);
     console.log('[API/companies] Perfil encontrado:', userProfile ? 'Sí' : 'No');
     if (!userProfile) {
-      return NextResponse.json(
-        { success: false, error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      // Crear perfil si no existe (puede pasar por timing en onboarding)
+      console.log('[API/companies] Creando perfil de usuario');
+      userProfile = await createUserProfileAdmin({
+        uid: adminUid,
+        email: adminEmail,
+        displayName: adminName || null,
+        photoURL: null,
+      });
     }
 
     // Verificar que el usuario no ya pertenezca a una empresa
@@ -159,34 +164,30 @@ export async function POST(request: NextRequest) {
       console.log('[API/companies] Google Drive no configurado, omitiendo creación de carpetas');
     }
 
-    // Crear tablero de Monday para la empresa (si está configurado)
+    // Crear tablero de Monday (duplicar MACHOTE)
     let mondayBoardInfo = null;
-
     if (isMondayBoardsConfigured()) {
       try {
-        console.log('[API/companies] Creando tablero Monday para empresa:', name);
-
+        console.log('[API/companies] Duplicando tablero MACHOTE para empresa:', name);
         const boardResult = await duplicateBoardForCompany(name);
         
-        // Crear vista de cliente
-        const viewId = await createClientDashboardView(boardResult.boardId);
-
+        // Actualizar empresa con el ID del tablero
+        await updateCompanyAdmin(company.id, {
+          mondayBoardId: boardResult.boardId,
+        });
+        
         mondayBoardInfo = {
           boardId: boardResult.boardId,
           boardUrl: boardResult.boardUrl,
-          clientViewId: viewId,
         };
-
-        console.log('[API/companies] Tablero Monday creado:', mondayBoardInfo);
-
-        // TODO: Actualizar empresa con mondayBoardId en Firestore
-        // await updateCompanyMondayBoardAdmin(company.id, boardResult.boardId);
+        
+        console.log('[API/companies] Tablero de Monday creado:', mondayBoardInfo);
       } catch (mondayError) {
-        console.error('[API/companies] Error creando tablero Monday:', mondayError);
+        console.error('[API/companies] Error creando tablero de Monday:', mondayError);
         // Continuamos sin Monday, la empresa ya está creada
       }
     } else {
-      console.log('[API/companies] Monday API no configurada, omitiendo creación de tablero');
+      console.log('[API/companies] Monday.com no configurado, omitiendo creación de tablero');
     }
 
     // Vincular usuario a empresa como admin (con su carpeta personal si se creó)

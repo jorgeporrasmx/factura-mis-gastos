@@ -1,5 +1,5 @@
-// API para subir recibos a Google Drive
-// POST /api/upload/receipt - Subir recibo a carpeta del usuario
+// API para subir recibos a Google Drive + Monday
+// POST /api/upload/receipt - Subir recibo a carpeta del usuario y crear item en Monday
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
@@ -14,6 +14,7 @@ import {
   generateUniqueFileName,
   isDriveConfigured,
 } from '@/lib/google-drive';
+import { createExpenseItem, isMondayBoardsConfigured } from '@/lib/monday-boards';
 
 // Tipos MIME permitidos para recibos
 const ALLOWED_MIME_TYPES = [
@@ -140,6 +141,43 @@ export async function POST(request: NextRequest) {
       file.type
     );
 
+    // Crear item en Monday si está configurado y la empresa tiene tablero
+    let mondayItemId: string | null = null;
+    
+    if (isMondayBoardsConfigured() && company.mondayBoardId) {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const userName = userProfile.displayName || userProfile.email.split('@')[0];
+        
+        // Columnas del tablero MACHOTE
+        const columnValues: Record<string, unknown> = {
+          // Estado: NUEVO (index 5 en el tablero)
+          status: { index: 5 },
+          // Fecha de compra (hoy por defecto)
+          text_mkthrxct: today,
+          // Método: Web (index 3) - se puede cambiar si viene de WhatsApp
+          proyecto: { index: 3 },
+          // Link al archivo en Drive
+          text_mkqygzgk: uploadResult.webViewLink,
+          // Empleado (tag) - usar nombre del usuario
+          tag_mm063vts: { tag_ids: [] }, // Se puede mejorar para crear/buscar el tag
+        };
+
+        mondayItemId = await createExpenseItem(
+          company.mondayBoardId,
+          `Recibo - ${userName} - ${today}`, // Nombre del item
+          columnValues
+        );
+
+        console.log(`[MONDAY] Item creado: ${mondayItemId} en tablero ${company.mondayBoardId}`);
+      } catch (mondayError) {
+        // No fallar si Monday falla, el archivo ya está en Drive
+        console.error('[MONDAY] Error creando item:', mondayError);
+      }
+    } else {
+      console.log('[MONDAY] Skipped: No configurado o empresa sin tablero');
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Recibo subido exitosamente',
@@ -151,6 +189,7 @@ export async function POST(request: NextRequest) {
         mimeType: file.type,
         size: file.size,
       },
+      monday: mondayItemId ? { itemId: mondayItemId } : null,
     });
   } catch (error) {
     console.error('Error subiendo recibo:', error);

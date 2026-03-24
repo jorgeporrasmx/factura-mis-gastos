@@ -117,40 +117,40 @@ export function BlogSection() {
         <div className="grid md:grid-cols-3 gap-6 mb-10">
           {blogPosts.map((post, index) => (
             <Link key={index} href={`/blog/${post.slug}`}>
-            <Card
-              className="bg-white border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer group overflow-hidden"
-            >
-              <div className={`h-48 bg-gradient-to-br ${post.gradient} relative overflow-hidden`}>
-                <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                  <svg className="w-32 h-32 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d={post.icon} />
-                  </svg>
-                </div>
-                <Badge className="absolute top-4 left-4 bg-white text-foreground shadow-sm">
-                  {post.category}
-                </Badge>
-              </div>
-
-              <CardContent className="p-5">
-                <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                  {post.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {post.excerpt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <Card
+                className="bg-white border-0 shadow-sm hover:shadow-lg transition-all cursor-pointer group overflow-hidden h-full"
+              >
+                <div className={`h-48 bg-gradient-to-br ${post.gradient} relative overflow-hidden`}>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                    <svg className="w-32 h-32 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d={post.icon} />
                     </svg>
-                    {post.readTime} de lectura
-                  </span>
-                  <span className="text-sm font-medium text-primary group-hover:underline">
-                    Leer más →
-                  </span>
+                  </div>
+                  <Badge className="absolute top-4 left-4 bg-white text-foreground shadow-sm">
+                    {post.category}
+                  </Badge>
                 </div>
-              </CardContent>
-            </Card>
+
+                <CardContent className="p-5">
+                  <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {post.readTime} de lectura
+                    </span>
+                    <span className="text-sm font-medium text-primary group-hover:underline">
+                      Leer más →
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>

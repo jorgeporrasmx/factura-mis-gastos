@@ -113,6 +113,9 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <Providers>{children}</Providers>
+        {/* Metricool tracking pixel */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="https://tracker.metricool.com/c3po.jpg?hash=ba09c37d496414ea7995eae7eae89d95" alt="" width={1} height={1} style={{ position: "absolute", visibility: "hidden" }} />
       </body>
     </html>
   );

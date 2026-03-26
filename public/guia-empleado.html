@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guía del Empleado - Factura Mis Gastos</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #374151; line-height: 1.6; }
+    .container { max-width: 640px; margin: 0 auto; padding: 48px 32px; }
+
+    /* Print */
+    @media print {
+      .container { padding: 16px; }
+      .print-btn { display: none !important; }
+      .intro { background: #f3f4f6 !important; }
+      .method-card { background: #f9fafb !important; }
+      section { page-break-inside: avoid; }
+    }
+
+    .print-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 10;
+      padding: 10px 20px; background: #2563eb; color: #fff; border: none;
+      border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+    }
+    .print-btn:hover { background: #1d4ed8; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { font-size: 28px; color: #2563eb; margin-bottom: 4px; }
+    .header h2 { font-size: 20px; color: #4b5563; font-weight: 500; }
+    .header .line { width: 64px; height: 4px; background: #2563eb; margin: 16px auto 0; border-radius: 2px; }
+
+    /* Intro */
+    .intro {
+      background: #eff6ff; border-radius: 12px; padding: 20px; margin-bottom: 32px;
+    }
+    .intro p { font-size: 14px; color: #4b5563; }
+    .intro strong { color: #1e40af; }
+
+    /* Sections */
+    section { margin-bottom: 32px; }
+    .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .step-number {
+      width: 32px; height: 32px; border-radius: 50%; background: #2563eb; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section-header h3 { font-size: 18px; font-weight: 700; color: #111827; }
+
+    /* Check list */
+    .check-list { padding-left: 44px; }
+    .check-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+    .check-icon { color: #22c55e; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+
+    /* Method cards */
+    .method-card {
+      border-radius: 8px; padding: 16px; margin-bottom: 12px; margin-left: 44px;
+    }
+    .method-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .method-card ol { padding-left: 20px; font-size: 14px; }
+    .method-card ol li { margin-bottom: 4px; }
+
+    .whatsapp { background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .whatsapp h4 { color: #166534; }
+    .web { background: #eff6ff; border: 1px solid #bfdbfe; }
+    .web h4 { color: #1e40af; }
+    .email { background: #faf5ff; border: 1px solid #e9d5ff; }
+    .email h4 { color: #6b21a8; }
+
+    /* Photo grid */
+    .photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-left: 44px; }
+    .photo-item { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; }
+    .photo-icon { color: #3b82f6; flex-shrink: 0; margin-top: 2px; }
+
+    /* Info boxes */
+    .info-box { margin-left: 44px; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 14px; }
+    .info-amber { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .info-blue { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+    /* Time items */
+    .time-list { padding-left: 44px; }
+    .time-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .time-icon { color: #3b82f6; flex-shrink: 0; margin-top: 4px; font-size: 18px; }
+    .time-item .label { font-weight: 500; color: #111827; font-size: 14px; }
+    .time-item .desc { font-size: 14px; color: #4b5563; }
+
+    /* Special cases */
+    .special-list { padding-left: 44px; }
+    .special-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+    .warn-icon { color: #f59e0b; flex-shrink: 0; margin-top: 2px; }
+
+    /* Footer */
+    .footer { text-align: center; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+    .footer p { font-size: 14px; color: #9ca3af; }
+    .footer .url { font-size: 12px; color: #d1d5db; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Descargar / Imprimir PDF</button>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>Factura Mis Gastos</h1>
+      <h2>Guía Rápida del Empleado</h2>
+      <div class="line"></div>
+    </div>
+
+    <!-- Intro -->
+    <div class="intro">
+      <p>Tu empresa utiliza <strong>Factura Mis Gastos</strong> para gestionar la facturación de gastos.
+      Solo necesitas enviar una foto de tu recibo y nosotros nos encargamos de obtener la factura CFDI
+      con el proveedor. Esta guía te explica cómo hacerlo paso a paso.</p>
+    </div>
+
+    <!-- 1. Crea tu perfil -->
+    <section>
+      <div class="section-header">
+        <div class="step-number">1</div>
+        <h3>Crea tu perfil</h3>
+      </div>
+      <div class="check-list">
+        <div class="check-item"><span class="check-icon">&#10003;</span><p>Abre el enlace de invitación que te compartió tu empresa.</p></div>
+        <div class="check-item"><span class="check-icon">&#10003;</span><p>Regístrate con tu cuenta de Google, correo electrónico o teléfono.</p></div>
+        <div class="check-item"><span class="check-icon">&#10003;</span><p>Ingresa tu número de WhatsApp (10 dígitos). Se usará para que puedas enviar recibos.</p></div>
+        <div class="check-item"><span class="check-icon">&#10003;</span><p>Haz clic en "Unirme" y listo. Tu perfil quedará vinculado a tu empresa.</p></div>
+      </div>
+    </section>
+
+    <!-- 2. Envía tus recibos -->
+    <section>
+      <div class="section-header">
+        <div class="step-number">2</div>
+        <h3>Envía tus recibos</h3>
+      </div>
+
+      <div class="method-card whatsapp">
+        <h4>&#128172; Por WhatsApp</h4>
+        <ol>
+          <li>Toma una foto clara del recibo.</li>
+          <li>Envíala al número de WhatsApp de Factura Mis Gastos.</li>
+          <li>Envía <strong>UN recibo por mensaje</strong>.</li>
+          <li>Recibirás confirmación de recepción.</li>
+        </ol>
+      </div>
+
+      <div class="method-card web">
+        <h4>&#128187; Por la Plataforma Web</h4>
+        <ol>
+          <li>Inicia sesión en tu portal.</li>
+          <li>Ve a "Recibos" en el menú.</li>
+          <li>Haz clic en "Subir recibo".</li>
+          <li>Puedes subir varios recibos a la vez.</li>
+        </ol>
+      </div>
+
+      <div class="method-card email">
+        <h4>&#9993; Por Correo Electrónico</h4>
+        <ol>
+          <li>Envía un correo a la dirección indicada por tu empresa.</li>
+          <li>Adjunta las imágenes de los recibos (JPG o PNG).</li>
+          <li>Puedes adjuntar múltiples recibos como archivos independientes.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 3. Requisitos de la foto -->
+    <section>
+      <div class="section-header">
+        <div class="step-number">3</div>
+        <h3>Requisitos de la foto del recibo</h3>
+      </div>
+
+      <div class="photo-grid">
+        <div class="photo-item"><span class="photo-icon">&#128247;</span><span><strong>Formato:</strong> Solo JPG, JPEG o PNG. No PDF.</span></div>
+        <div class="photo-item"><span class="photo-icon">&#128247;</span><span><strong>Nitidez:</strong> Texto completamente legible.</span></div>
+        <div class="photo-item"><span class="photo-icon">&#128247;</span><span><strong>Sin sombras:</strong> Sin reflejos ni zonas oscuras.</span></div>
+        <div class="photo-item"><span class="photo-icon">&#128247;</span><span><strong>Completo:</strong> Todo el recibo visible, sin cortes.</span></div>
+      </div>
+
+      <div class="info-box info-amber">
+        <strong>Información visible requerida:</strong> Nombre del comercio, fecha, importe total,
+        concepto, y al menos un medio de contacto del comercio (web, email o teléfono).
+      </div>
+
+      <div class="info-box info-blue">
+        <strong>Código QR:</strong> Si tu recibo tiene un QR para facturar, toma UNA SOLA foto
+        que incluya el recibo completo y el QR visible.
+      </div>
+    </section>
+
+    <!-- 4. Tiempos importantes -->
+    <section>
+      <div class="section-header">
+        <div class="step-number">4</div>
+        <h3>Tiempos importantes</h3>
+      </div>
+
+      <div class="time-list">
+        <div class="time-item">
+          <span class="time-icon">&#9200;</span>
+          <div>
+            <p class="label">Envío del recibo</p>
+            <p class="desc">Envíalo el <strong>mismo día</strong> de la compra y dentro del <strong>mismo mes</strong>.</p>
+          </div>
+        </div>
+        <div class="time-item">
+          <span class="time-icon">&#9200;</span>
+          <div>
+            <p class="label">Tiempo de facturación</p>
+            <p class="desc">Generalmente <strong>24 a 48 horas hábiles</strong> después de recibir tu recibo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Casos especiales -->
+    <section>
+      <div class="section-header">
+        <div class="step-number">5</div>
+        <h3>Casos especiales</h3>
+      </div>
+
+      <div class="special-list">
+        <div class="special-item"><span class="warn-icon">&#9888;</span><p><strong>Gasolina:</strong> El ticket debe incluir los últimos 4 dígitos de la tarjeta o la placa del vehículo.</p></div>
+        <div class="special-item"><span class="warn-icon">&#9888;</span><p><strong>Casetas de peaje:</strong> Se requiere el ticket con número de plaza, carril y hora.</p></div>
+        <div class="special-item"><span class="warn-icon">&#9888;</span><p><strong>No facturables:</strong> Gastos en el extranjero, comercio informal, tickets sin datos fiscales.</p></div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>¿Tienes dudas? Contacta al administrador de tu empresa o escríbenos por WhatsApp.</p>
+      <p class="url">facturamisgastos.com</p>
+    </div>
+  </div>
+</body>
+</html>

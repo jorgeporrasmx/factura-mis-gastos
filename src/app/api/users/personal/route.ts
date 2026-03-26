@@ -3,10 +3,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getUserProfile,
-  createUserProfile,
-  completeOnboarding,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  createUserProfileAdmin,
+  completeOnboardingAdmin,
+} from '@/lib/firebase/firestore-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener o crear perfil del usuario (fix race condition)
-    let userProfile = await getUserProfile(uid);
+    let userProfile = await getUserProfileAdmin(uid);
     if (!userProfile) {
       // Crear perfil si no existe (puede pasar por timing en onboarding)
-      userProfile = await createUserProfile({
+      userProfile = await createUserProfileAdmin({
         uid,
         email,
         displayName: displayName || null,
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Completar onboarding como usuario personal
-    await completeOnboarding(uid, 'personal');
+    await completeOnboardingAdmin(uid, 'personal');
 
     return NextResponse.json({
       success: true,

@@ -20,6 +20,7 @@ export interface Company {
   name: string;                    // "Acme Corp"
   domain: string;                  // "acme.com" (para vinculación automática)
   rfc?: string;                    // RFC de la empresa
+  inviteCode?: string;             // Código de invitación legible (ej: "acme-corp")
 
   // Google Drive
   driveFolderId: string;           // ID carpeta raíz en Drive
@@ -51,6 +52,7 @@ export interface CreateCompanyData {
   name: string;
   domain: string;
   rfc?: string;
+  inviteCode?: string;
   adminEmail: string;
   adminUid: string;
   adminName: string;
@@ -77,6 +79,9 @@ export interface UserProfile {
   csfDriveId?: string;             // ID del archivo CSF en Google Drive (legacy)
   csfFileName?: string;            // Nombre original del archivo
   csfUploadedAt?: Date;            // Fecha de subida
+
+  // WhatsApp
+  whatsappPhone?: string;          // Número de WhatsApp del usuario (para automatizaciones)
 
   // Estado de onboarding
   onboardingCompleted: boolean;
@@ -113,6 +118,7 @@ export interface CompanyUser {
   role: UserRole;
   status: UserStatus;
   driveFolderId?: string;
+  whatsappPhone?: string;
   createdAt: Date;
   lastLoginAt: Date;
 }
@@ -150,6 +156,17 @@ export function isPublicEmailDomain(domain: string): boolean {
 export function canAutoJoinCompany(email: string): boolean {
   const domain = extractDomainFromEmail(email);
   return !isPublicEmailDomain(domain);
+}
+
+// Generar un código de invitación legible a partir del nombre de la empresa
+export function generateInviteCode(companyName: string): string {
+  return companyName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 // Generar un dominio único para empresas con emails públicos

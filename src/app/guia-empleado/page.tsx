@@ -1,9 +1,5 @@
 import { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-
-const GuiaEmpleadoContent = dynamic(() => import('./GuiaEmpleadoContent'), {
-  ssr: false,
-});
+import GuiaEmpleadoContent from './GuiaEmpleadoContent';
 
 export const metadata: Metadata = {
   title: 'Guía del Empleado - Factura Mis Gastos',

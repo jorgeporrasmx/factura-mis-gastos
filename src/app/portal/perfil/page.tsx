@@ -226,7 +226,7 @@ export default function PerfilPage() {
               )}
             </div>
           </div>
-        ) : (
+        ) : userProfile?.accountType !== 'personal' ? (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <Building2 className="w-5 h-5 text-amber-600" />
@@ -244,7 +244,7 @@ export default function PerfilPage() {
               Crear empresa
             </Button>
           </div>
-        )}
+        ) : null}
 
         {/* Invite employees section (admin only) */}
         {company && isAdmin && company.inviteCode && (

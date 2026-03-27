@@ -94,20 +94,26 @@ export async function POST(request: NextRequest) {
       email: userProfile.email,
     });
 
-    // Verificar que tiene empresa
-    if (!userProfile.companyId) {
-      return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa para subir tu CSF' },
-        { status: 400 }
-      );
-    }
+    // Determinar carpeta raíz según tipo de cuenta
+    let parentFolderId: string | null = null;
 
-    // Obtener empresa (usando Admin SDK)
-    const company = await getCompanyByIdAdmin(userProfile.companyId);
-
-    if (!company || !company.driveFolderId) {
+    if (userProfile.companyId) {
+      // Usuario con empresa: usar carpeta de la empresa
+      const company = await getCompanyByIdAdmin(userProfile.companyId);
+      if (!company || !company.driveFolderId) {
+        return NextResponse.json(
+          { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+          { status: 400 }
+        );
+      }
+      parentFolderId = company.driveFolderId;
+    } else if ((userProfile as { accountType?: string }).accountType === 'personal') {
+      // Usuario personal: usar carpeta raíz de Drive configurada en el servidor
+      const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || null;
+      parentFolderId = rootFolderId;
+    } else {
       return NextResponse.json(
-        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+        { success: false, error: 'Debes pertenecer a una empresa o tener una cuenta personal para subir tu CSF' },
         { status: 400 }
       );
     }
@@ -151,7 +157,7 @@ export async function POST(request: NextRequest) {
     if (!userFolderId) {
       // Crear carpeta del usuario si no existe
       const userName = userProfile.displayName || userProfile.email.split('@')[0];
-      const userFolder = await createUserFolder(company.driveFolderId, userName);
+      const userFolder = await createUserFolder(parentFolderId!, userName);
       userFolderId = userFolder.folderId;
 
       // Compartir carpeta con el usuario

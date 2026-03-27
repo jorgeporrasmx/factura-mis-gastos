@@ -59,20 +59,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que tiene empresa
-    if (!userProfile.companyId) {
-      return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa para subir recibos' },
-        { status: 400 }
-      );
-    }
+    // Determinar carpeta raíz según tipo de cuenta
+    let parentFolderId: string | null = null;
+    let company: Awaited<ReturnType<typeof getCompanyByIdAdmin>> | null = null;
 
-    // Obtener empresa (usando Admin SDK)
-    const company = await getCompanyByIdAdmin(userProfile.companyId);
-
-    if (!company || !company.driveFolderId) {
+    if (userProfile.companyId) {
+      // Usuario con empresa: usar carpeta de la empresa
+      company = await getCompanyByIdAdmin(userProfile.companyId);
+      if (!company || !company.driveFolderId) {
+        return NextResponse.json(
+          { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+          { status: 400 }
+        );
+      }
+      parentFolderId = company.driveFolderId;
+    } else if ((userProfile as { accountType?: string }).accountType === 'personal') {
+      // Usuario personal: usar carpeta raíz de Drive configurada en el servidor
+      parentFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || null;
+    } else {
       return NextResponse.json(
-        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+        { success: false, error: 'Debes pertenecer a una empresa o tener una cuenta personal para subir recibos' },
         { status: 400 }
       );
     }
@@ -116,7 +122,7 @@ export async function POST(request: NextRequest) {
     if (!userFolderId) {
       // Crear carpeta del usuario si no existe
       const userName = userProfile.displayName || userProfile.email.split('@')[0];
-      const userFolder = await createUserFolder(company.driveFolderId, userName);
+      const userFolder = await createUserFolder(parentFolderId!, userName);
       userFolderId = userFolder.folderId;
 
       // Compartir carpeta con el usuario
@@ -144,7 +150,7 @@ export async function POST(request: NextRequest) {
     // Crear item en Monday si está configurado y la empresa tiene tablero
     let mondayItemId: string | null = null;
     
-    if (isMondayBoardsConfigured() && company.mondayBoardId) {
+    if (isMondayBoardsConfigured() && company?.mondayBoardId) {
       try {
         const today = new Date().toISOString().split('T')[0];
         const userName = userProfile.displayName || userProfile.email.split('@')[0];
@@ -164,12 +170,12 @@ export async function POST(request: NextRequest) {
         };
 
         mondayItemId = await createExpenseItem(
-          company.mondayBoardId,
+          company!.mondayBoardId,
           `Recibo - ${userName} - ${today}`, // Nombre del item
           columnValues
         );
 
-        console.log(`[MONDAY] Item creado: ${mondayItemId} en tablero ${company.mondayBoardId}`);
+        console.log(`[MONDAY] Item creado: ${mondayItemId} en tablero ${company!.mondayBoardId}`);
       } catch (mondayError) {
         // No fallar si Monday falla, el archivo ya está en Drive
         console.error('[MONDAY] Error creando item:', mondayError);

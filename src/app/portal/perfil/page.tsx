@@ -6,7 +6,7 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { useRouter } from 'next/navigation';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
-import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Link2, Copy, Check, MessageCircle, Users } from 'lucide-react';
+import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Link2, Copy, Check, MessageCircle, Users, Phone, Pencil } from 'lucide-react';
 
 export default function PerfilPage() {
   const { user, signOut } = useAuth();
@@ -17,6 +17,12 @@ export default function PerfilPage() {
   const [creatingUserFolder, setCreatingUserFolder] = useState(false);
   const [folderMessage, setFolderMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // WhatsApp state
+  const [editingWhatsapp, setEditingWhatsapp] = useState(false);
+  const [whatsappInput, setWhatsappInput] = useState('');
+  const [savingWhatsapp, setSavingWhatsapp] = useState(false);
+  const [whatsappMessage, setWhatsappMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -105,6 +111,34 @@ export default function PerfilPage() {
     }
   };
 
+  const handleSaveWhatsapp = async () => {
+    if (!user?.uid || !whatsappInput.trim()) return;
+    setSavingWhatsapp(true);
+    setWhatsappMessage(null);
+    try {
+      const res = await fetch(`/api/users/${user.uid}/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-uid': user.uid,
+        },
+        body: JSON.stringify({ whatsappPhone: whatsappInput.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWhatsappMessage({ type: 'success', text: 'Número guardado correctamente.' });
+        setEditingWhatsapp(false);
+        await refreshCompany();
+      } else {
+        setWhatsappMessage({ type: 'error', text: data.error || 'Error al guardar el número.' });
+      }
+    } catch {
+      setWhatsappMessage({ type: 'error', text: 'Error de conexión. Intenta de nuevo.' });
+    } finally {
+      setSavingWhatsapp(false);
+    }
+  };
+
   if (!user) return null;
 
   // Construir enlaces de Drive
@@ -184,6 +218,79 @@ export default function PerfilPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* WhatsApp section */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <MessageCircle className="w-5 h-5 text-green-500" />
+            WhatsApp
+          </h3>
+
+          {whatsappMessage && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${whatsappMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+              {whatsappMessage.text}
+            </div>
+          )}
+
+          {userProfile?.whatsappPhone && !editingWhatsapp ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-500">Número configurado</p>
+                  <p className="text-gray-900 font-medium">{userProfile.whatsappPhone}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setWhatsappInput(userProfile.whatsappPhone || ''); setEditingWhatsapp(true); setWhatsappMessage(null); }}
+                className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700"
+              >
+                <Pencil className="w-4 h-4" />
+                Editar
+              </button>
+            </div>
+          ) : editingWhatsapp ? (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Número de WhatsApp
+                </label>
+                <input
+                  type="tel"
+                  value={whatsappInput}
+                  onChange={(e) => setWhatsappInput(e.target.value)}
+                  placeholder="+52 55 1234 5678"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Incluye código de país. Ej: +52 para México.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleSaveWhatsapp} disabled={savingWhatsapp || !whatsappInput.trim()} size="sm">
+                  {savingWhatsapp ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                  Guardar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setEditingWhatsapp(false); setWhatsappMessage(null); }}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-600">
+                Configura tu número para enviar fotos de recibos por WhatsApp y que se registren automáticamente.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setWhatsappInput(''); setEditingWhatsapp(true); setWhatsappMessage(null); }}
+                className="flex items-center gap-2"
+              >
+                <Phone className="w-4 h-4" />
+                Agregar número
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Company section */}

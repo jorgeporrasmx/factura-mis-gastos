@@ -71,7 +71,10 @@ export interface UserProfile {
   role: UserRole;
 
   // Google Drive
-  driveFolderId?: string;          // Carpeta personal dentro de la empresa
+  driveFolderId?: string;          // Carpeta personal dentro de la empresa (o carpeta raíz para personales)
+
+  // Monday.com (solo para cuentas personales — las empresas lo guardan en Company)
+  mondayBoardId?: string;          // Board de gastos personal
 
   // Constancia de Situación Fiscal (CSF) - para freelancers/personales
   csfUrl?: string;                 // URL del archivo (Firebase Storage o Google Drive)

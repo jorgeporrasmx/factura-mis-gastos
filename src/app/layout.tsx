@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales",
     description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI.",
     images: ["/og-image.png"],
-    creator: "@facturamisgastos",
+    creator: "@FactMisGastos",
   },
   alternates: {
     canonical: "https://facturamisgastos.com",

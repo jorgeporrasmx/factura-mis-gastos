@@ -208,3 +208,220 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* ============================================================
+   Blog article: fixed decorative background + readable card
+   ------------------------------------------------------------
+   The background stays static while the article scrolls, so the
+   reader is never distracted by moving elements behind the text.
+   ============================================================ */
+
+.blog-fixed-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blog-fixed-bg__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 45%, #f8fafc 100%);
+}
+
+.blog-fixed-bg__blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(96px);
+  opacity: 0.55;
+}
+
+.blog-fixed-bg__blob--1 {
+  top: -6rem;
+  left: -4rem;
+  width: 28rem;
+  height: 28rem;
+  background: rgba(191, 219, 254, 0.55);
+}
+
+.blog-fixed-bg__blob--2 {
+  bottom: -8rem;
+  right: -6rem;
+  width: 34rem;
+  height: 34rem;
+  background: rgba(199, 210, 254, 0.5);
+}
+
+.blog-fixed-bg__blob--3 {
+  top: 40%;
+  left: 50%;
+  width: 30rem;
+  height: 30rem;
+  transform: translate(-50%, -50%);
+  background: rgba(219, 234, 254, 0.4);
+}
+
+/* Readable content card layered above the fixed background. */
+.article-card {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 1.25rem;
+  box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.18), 0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  padding: 2rem 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .article-card {
+    padding: 3rem 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .article-card {
+    padding: 3.5rem 4rem;
+  }
+}
+
+/* ============================================================
+   Article typography
+   ============================================================ */
+
+.article-content {
+  color: #334155;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.article-content > * + * {
+  margin-top: 1.25em;
+}
+
+.article-content h2 {
+  color: #0f172a;
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-top: 2.25em;
+  margin-bottom: 0.75em;
+  padding-top: 0.25em;
+}
+
+.article-content h3 {
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-top: 1.75em;
+  margin-bottom: 0.5em;
+}
+
+.article-content h2:first-child,
+.article-content h3:first-child {
+  margin-top: 0;
+}
+
+.article-content p {
+  color: #334155;
+}
+
+.article-content strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.article-content a {
+  color: #1d4ed8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-content a:hover {
+  color: #1e3a8a;
+}
+
+.article-content ul,
+.article-content ol {
+  padding-left: 1.5rem;
+}
+
+.article-content ul {
+  list-style: disc;
+}
+
+.article-content ol {
+  list-style: decimal;
+}
+
+.article-content li {
+  margin-top: 0.5em;
+}
+
+.article-content li::marker {
+  color: #2563eb;
+}
+
+.article-content blockquote {
+  margin: 2em 0;
+  padding: 1rem 1.25rem 1rem 1.5rem;
+  border-left: 4px solid #3b82f6;
+  background: rgba(239, 246, 255, 0.7);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #1e293b;
+  font-style: italic;
+}
+
+.article-content blockquote p {
+  margin: 0;
+  color: #1e293b;
+}
+
+.article-content blockquote p + p {
+  margin-top: 0.75em;
+}
+
+.article-content hr {
+  margin: 2.5em 0;
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.article-table-wrap {
+  margin: 2em 0;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.article-content thead {
+  background: #f8fafc;
+}
+
+.article-content th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: #0f172a;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.article-content td {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: top;
+}
+
+.article-content tbody tr:hover {
+  background: #f8fafc;
+}

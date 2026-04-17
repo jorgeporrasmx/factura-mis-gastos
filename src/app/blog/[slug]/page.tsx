@@ -41,7 +41,7 @@ Implementamos Factura Mis Gastos con un proceso simple:
 ## Testimonio
 
 > "Antes era un caos. Ahora los muchachos mandan la foto y se olvidan. Nosotros recibimos todo organizado."
-> 
+>
 > — María González, Directora Administrativa
 
 ## ¿Quieres resultados similares?
@@ -188,12 +188,12 @@ Con Factura Mis Gastos, el proceso es:
 
 ## Qué Buscar en un Sistema
 
-✅ Captura fácil (WhatsApp, correo, app)
-✅ Validación automática de CFDI
-✅ Reglas de aprobación
-✅ Reportes en tiempo real
-✅ Integración contable
-✅ Soporte en español
+- Captura fácil (WhatsApp, correo, app)
+- Validación automática de CFDI
+- Reglas de aprobación
+- Reportes en tiempo real
+- Integración contable
+- Soporte en español
 
 ---
 
@@ -206,6 +206,159 @@ Sin apps complicadas. Sin capacitaciones largas. Solo WhatsApp.
   },
 };
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function inline(s: string): string {
+  return escapeHtml(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[\s(])\*(?!\s)([^*]+?)\*(?=[\s.,;:)!?]|$)/g, '$1<em>$2</em>');
+}
+
+function renderMarkdown(md: string): string {
+  const lines = md.split('\n');
+  const out: string[] = [];
+  let i = 0;
+  let paragraph: string[] = [];
+  let inList = false;
+  let listTag: 'ul' | 'ol' | null = null;
+  let inBlockquote = false;
+
+  const flushParagraph = () => {
+    if (paragraph.length) {
+      out.push(`<p>${inline(paragraph.join(' '))}</p>`);
+      paragraph = [];
+    }
+  };
+  const closeList = () => {
+    if (inList && listTag) {
+      out.push(`</${listTag}>`);
+      inList = false;
+      listTag = null;
+    }
+  };
+  const closeBlockquote = () => {
+    if (inBlockquote) {
+      out.push('</blockquote>');
+      inBlockquote = false;
+    }
+  };
+  const closeAll = () => {
+    flushParagraph();
+    closeList();
+    closeBlockquote();
+  };
+
+  while (i < lines.length) {
+    const raw = lines[i];
+    const line = raw.trim();
+
+    if (line === '') {
+      closeAll();
+      i++;
+      continue;
+    }
+
+    if (line === '---') {
+      closeAll();
+      out.push('<hr />');
+      i++;
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      closeAll();
+      out.push(`<h3>${inline(line.slice(4))}</h3>`);
+      i++;
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      closeAll();
+      out.push(`<h2>${inline(line.slice(3))}</h2>`);
+      i++;
+      continue;
+    }
+
+    if (line.startsWith('> ')) {
+      flushParagraph();
+      closeList();
+      if (!inBlockquote) {
+        out.push('<blockquote>');
+        inBlockquote = true;
+      }
+      const content = line.slice(2).trim();
+      if (content !== '') {
+        out.push(`<p>${inline(content)}</p>`);
+      }
+      i++;
+      continue;
+    }
+
+    if (line.startsWith('|') && line.endsWith('|') && lines[i + 1]) {
+      const sep = lines[i + 1].trim();
+      if (/^\|[\s:|-]+\|$/.test(sep) && sep.includes('-')) {
+        closeAll();
+        const headers = line.slice(1, -1).split('|').map((c) => c.trim());
+        const rows: string[][] = [];
+        i += 2;
+        while (i < lines.length) {
+          const rowLine = lines[i].trim();
+          if (!rowLine.startsWith('|') || !rowLine.endsWith('|')) break;
+          rows.push(rowLine.slice(1, -1).split('|').map((c) => c.trim()));
+          i++;
+        }
+        const thead = `<thead><tr>${headers.map((h) => `<th>${inline(h)}</th>`).join('')}</tr></thead>`;
+        const tbody = `<tbody>${rows
+          .map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`)
+          .join('')}</tbody>`;
+        out.push(`<div class="article-table-wrap"><table>${thead}${tbody}</table></div>`);
+        continue;
+      }
+    }
+
+    if (line.startsWith('- ')) {
+      flushParagraph();
+      closeBlockquote();
+      if (!inList || listTag !== 'ul') {
+        closeList();
+        out.push('<ul>');
+        inList = true;
+        listTag = 'ul';
+      }
+      out.push(`<li>${inline(line.slice(2))}</li>`);
+      i++;
+      continue;
+    }
+
+    const ol = line.match(/^(\d+)\.\s+(.+)/);
+    if (ol) {
+      flushParagraph();
+      closeBlockquote();
+      if (!inList || listTag !== 'ol') {
+        closeList();
+        out.push('<ol>');
+        inList = true;
+        listTag = 'ol';
+      }
+      out.push(`<li>${inline(ol[2])}</li>`);
+      i++;
+      continue;
+    }
+
+    closeList();
+    closeBlockquote();
+    paragraph.push(line);
+    i++;
+  }
+
+  closeAll();
+  return out.join('\n');
+}
+
 export function generateStaticParams() {
   return Object.keys(articles).map((slug) => ({ slug }));
 }
@@ -213,55 +366,88 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }) {
   const article = articles[params.slug];
   if (!article) return { title: 'Artículo no encontrado' };
+  const plain = article.content.replace(/[#*>|`-]/g, ' ').replace(/\s+/g, ' ').trim();
   return {
     title: `${article.title} | Blog Factura Mis Gastos`,
-    description: article.content.substring(0, 160),
+    description: plain.substring(0, 160),
   };
 }
 
 export default function ArticlePage({ params }: { params: { slug: string } }) {
   const article = articles[params.slug];
-  
+
   if (!article) {
     notFound();
   }
 
+  const html = renderMarkdown(article.content);
+
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gray-50 py-12">
+
+      <div aria-hidden="true" className="blog-fixed-bg">
+        <div className="blog-fixed-bg__gradient" />
+        <div className="blog-fixed-bg__blob blog-fixed-bg__blob--1" />
+        <div className="blog-fixed-bg__blob blog-fixed-bg__blob--2" />
+        <div className="blog-fixed-bg__blob blog-fixed-bg__blob--3" />
+      </div>
+
+      <main className="relative min-h-screen pt-24 pb-20 sm:pt-28">
         <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <div className="mb-6">
-              <Link href="/blog" className="text-blue-600 hover:underline">← Volver al blog</Link>
-            </div>
-            
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-sm font-medium text-blue-600 bg-blue-100 px-3 py-1 rounded">{article.category}</span>
-              <span className="text-sm text-gray-500">{article.readTime} de lectura</span>
-            </div>
-            
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{article.title}</h1>
-            
-            <p className="text-gray-500 mb-8">
-              {new Date(article.date).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-            
-            <div 
-              className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-blue-600"
-              dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br/>').replace(/## /g, '</p><h2>').replace(/### /g, '</p><h3>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }}
-            />
-            
-            <div className="mt-12 p-6 bg-blue-50 rounded-lg">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">¿Listo para optimizar tus gastos?</h3>
-              <p className="text-gray-700 mb-4">Agenda una llamada de 15 minutos y te mostramos cómo funciona.</p>
-              <Link href="/comenzar" className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700">
+          <div className="mb-6">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+            >
+              <span aria-hidden="true">←</span> Volver al blog
+            </Link>
+          </div>
+
+          <div className="article-card">
+            <header className="mb-8 pb-6 border-b border-slate-200">
+              <div className="flex items-center gap-3 mb-5 flex-wrap text-sm">
+                <span className="font-medium text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                  {article.category}
+                </span>
+                <span className="text-slate-400" aria-hidden="true">·</span>
+                <time className="text-slate-600" dateTime={article.date}>
+                  {new Date(article.date).toLocaleDateString('es-MX', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </time>
+                <span className="text-slate-400" aria-hidden="true">·</span>
+                <span className="text-slate-600">{article.readTime} de lectura</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight tracking-tight">
+                {article.title}
+              </h1>
+            </header>
+
+            <div className="article-content" dangerouslySetInnerHTML={{ __html: html }} />
+
+            <div className="mt-12 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
+              <h2 className="text-xl sm:text-2xl font-semibold text-slate-900 mb-2">
+                ¿Listo para optimizar tus gastos?
+              </h2>
+              <p className="text-slate-700 mb-5">
+                Agenda una llamada de 15 minutos y te mostramos cómo funciona.
+              </p>
+              <Link
+                href="/comenzar"
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm"
+              >
                 Agendar Llamada
+                <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>
         </article>
       </main>
+
       <Footer />
     </>
   );

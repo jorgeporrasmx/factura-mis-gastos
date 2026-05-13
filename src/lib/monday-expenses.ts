@@ -1,6 +1,7 @@
 // Monday.com API Client para Gastos/Facturas
 // Lee items de tableros de gastos y los transforma a nuestro modelo
 
+import { MONDAY_STATUS_MAP, MONDAY_CATEGORY_MAP } from '@/types/monday-expenses';
 import type {
   MondayExpenseColumns,
   MondayExpenseItem,
@@ -9,11 +10,6 @@ import type {
   MondayBoardData,
   MondayColumnInfo,
   BoardVerificationResult,
-  MondayItemsPageResponse,
-  MONDAY_STATUS_MAP,
-  MONDAY_CATEGORY_MAP,
-  detectColumnMapping,
-  validateColumnMapping,
 } from '@/types/monday-expenses';
 import type { Expense, ExpenseStatus, ExpenseCategory } from '@/types/expenses';
 
@@ -270,7 +266,6 @@ function parseColumnValue(column: MondayColumnValue): string | number | null {
 function mapEstado(mondayStatus: string | null): ExpenseStatus {
   if (!mondayStatus) return 'pendiente';
 
-  const { MONDAY_STATUS_MAP } = require('@/types/monday-expenses');
   const normalized = mondayStatus.toLowerCase().trim();
   return (MONDAY_STATUS_MAP[normalized] as ExpenseStatus) || 'pendiente';
 }
@@ -281,7 +276,6 @@ function mapEstado(mondayStatus: string | null): ExpenseStatus {
 function mapCategoria(mondayCategoria: string | null): ExpenseCategory {
   if (!mondayCategoria) return 'otros';
 
-  const { MONDAY_CATEGORY_MAP } = require('@/types/monday-expenses');
   const normalized = mondayCategoria.toLowerCase().trim();
   return (MONDAY_CATEGORY_MAP[normalized] as ExpenseCategory) || 'otros';
 }

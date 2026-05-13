@@ -48,17 +48,17 @@ export const MONDAY_CONFIG = {
     },
     origen: {
       "cta_comenzar": "CTA Comenzar",
-      "cta_asesor": "CTA Asesor",
-      "plan_corporativo": "Plan Corporativo",
+      "diagnostico": "Diagnóstico",
+      "piloto_fmg": "Piloto FMG",
+      "fmg_empresa": "FMG Empresa",
       "widget_whatsapp": "Widget WhatsApp",
       "calendly": "Calendly",
       "organico": "Orgánico",
     },
     plan_interes: {
-      "personal": "Personal",
-      "equipos": "Equipos",
-      "empresa": "Empresa",
-      "corporativo": "Corporativo",
+      "diagnostico": "Diagnóstico de deducciones perdidas",
+      "piloto": "Piloto FMG",
+      "empresa": "FMG Empresa",
     },
   },
 } as const;

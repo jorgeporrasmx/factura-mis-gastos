@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LeadFormModal, FormType } from './LeadFormModal';
 
-type PlanId = 'personal' | 'equipos' | 'empresa' | 'corporativo';
+type PlanId = 'diagnostico' | 'piloto' | 'empresa';
 
 interface PlanConfig {
   id: PlanId;
@@ -24,78 +23,60 @@ interface PlanConfig {
 
 const plans: PlanConfig[] = [
   {
-    id: 'personal',
-    name: "Personal",
-    tagline: "Ideal para freelancers y negocios pequenos.",
-    price: "$10",
-    unit: "MXN/recibo",
-    description: "Hasta 50 recibos al mes.",
+    id: 'diagnostico',
+    name: "Diagnóstico de deducciones perdidas",
+    tagline: "Para saber cuánto control estás dejando sobre la mesa.",
+    price: "$999",
+    unit: "MXN una vez",
+    description: "Revisión inicial de tu flujo de comprobantes y gastos.",
     features: [
-      "Hasta 50 recibos mensuales",
-      "1 usuario",
-      "Reporte mensual incluido",
-      "Envio por WhatsApp o correo",
-      "Soporte por correo"
+      "Mapeo de cómo hoy recibes tickets y facturas",
+      "Estimación de fugas por comprobantes perdidos",
+      "Recomendación concreta de implementación",
+      "Checklist para tu equipo y contador",
+      "Entregable accionable en máximo 48 horas"
     ],
-    cta: "Comenzar ahora",
+    cta: "Agendar diagnóstico",
     popular: false,
     isCustom: false
   },
   {
-    id: 'equipos',
-    name: "Equipos",
-    tagline: "Para empresas con gastos recurrentes.",
-    price: "$1,299",
+    id: 'piloto',
+    name: "Piloto FMG",
+    tagline: "MVP asistido para validar con tu operación real.",
+    price: "$1,499",
     unit: "MXN/mes",
-    description: "Hasta 150 recibos y 3 usuarios.",
+    description: "Hasta 3 usuarios y 100 comprobantes al mes.",
     features: [
-      "150 recibos mensuales",
+      "Onboarding asistido para tu empresa",
       "Hasta 3 usuarios",
-      "Reportes por persona",
-      "Reglas de aprobacion",
-      "Dashboard de control",
-      "Soporte prioritario"
+      "Hasta 100 comprobantes mensuales",
+      "Orden por persona, empresa y mes",
+      "Reporte mensual listo para revisar con tu contador",
+      "Soporte operativo durante el piloto"
     ],
-    cta: "Comenzar ahora",
-    popular: false,
-    isCustom: false
-  },
-  {
-    id: 'empresa',
-    name: "Empresa",
-    tagline: "Control total para operaciones continuas.",
-    price: "$2,499",
-    unit: "MXN/mes",
-    description: "Hasta 300 recibos y 8 usuarios.",
-    features: [
-      "300 recibos mensuales",
-      "Hasta 8 usuarios",
-      "Reportes por departamento",
-      "Reportes de impuestos",
-      "Integracion contable",
-      "Soporte dedicado"
-    ],
-    cta: "Comenzar ahora",
+    cta: "Solicitar piloto",
     popular: true,
     isCustom: false
   },
   {
-    id: 'corporativo',
-    name: "Corporativo",
-    tagline: "Solucion a la medida de tu operacion.",
-    price: "A tu medida",
-    unit: "",
-    description: "Para grandes operaciones.",
+    id: 'empresa',
+    name: "FMG Empresa",
+    tagline: "Para equipos que ya generan gastos todos los meses.",
+    price: "$2,499",
+    unit: "MXN/mes",
+    description: "Hasta 8 usuarios y 300 comprobantes al mes.",
     features: [
-      "Usuarios ilimitados",
-      "Facturas ilimitadas",
-      "API disponible",
-      "Soporte dedicado",
-      "Configuracion a la medida"
+      "Hasta 8 usuarios",
+      "Hasta 300 comprobantes mensuales",
+      "Reporte por persona",
+      "Carpeta documental ordenada",
+      "Seguimiento mensual de comprobantes faltantes",
+      "Preparación del paquete mensual para contador"
     ],
-    cta: "Solicitar cotizacion",
+    cta: "Solicitar piloto empresa",
     popular: false,
-    isCustom: true
+    isCustom: false
   }
 ];
 
@@ -121,7 +102,7 @@ export function PricingSection() {
             <span className="gradient-text">claros y simples.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Elige el plan que se ajuste al tamaño de tu equipo. Sin sorpresas.
+            Empieza con un piloto acompañado. Validamos el flujo con tu equipo antes de automatizar de más.
           </p>
         </div>
 
@@ -187,22 +168,21 @@ export function PricingSection() {
                     {plan.cta}
                   </Button>
                 ) : (
-                  <Link href={`/checkout/${plan.id}`}>
-                    <Button
-                      className={`w-full transition-all ${
-                        plan.popular
-                          ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
-                          : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
-                    >
-                      {plan.cta}
-                      {plan.popular && (
-                        <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      )}
-                    </Button>
-                  </Link>
+                  <Button
+                    onClick={() => openModal(plan.id === 'empresa' ? 'corporate' : plan.id === 'diagnostico' ? 'standard' : 'pilot')}
+                    className={`w-full transition-all ${
+                      plan.popular
+                        ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                        : 'bg-slate-800 hover:bg-slate-700'
+                    }`}
+                  >
+                    {plan.cta}
+                    {plan.popular && (
+                      <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    )}
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -226,6 +206,13 @@ export function PricingSection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
+        planInterest={
+          formType === 'corporate'
+            ? 'FMG Empresa'
+            : formType === 'pilot'
+              ? 'Piloto FMG'
+              : 'Diagnóstico de deducciones perdidas'
+        }
       />
     </section>
   );

@@ -4,7 +4,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getCompanyByDomain,
-  getCompanyById,
   getUserProfile,
   createUserProfile,
   linkUserToCompany,

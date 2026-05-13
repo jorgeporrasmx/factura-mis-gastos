@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LeadFormModal } from './LeadFormModal';
 
@@ -34,6 +33,12 @@ const trustBadges = [
 
 export function HeroSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formType, setFormType] = useState<'standard' | 'pilot'>('pilot');
+
+  const openModal = (type: 'standard' | 'pilot') => {
+    setFormType(type);
+    setIsModalOpen(true);
+  };
 
   return (
     <section
@@ -56,43 +61,42 @@ export function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-primary mb-6 animate-fade-in">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Control de gastos empresariales en México
+              Piloto asistido para empresas mexicanas
             </div>
 
             {/* Main headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up leading-tight">
-              <span className="text-foreground">Tu equipo envía el recibo,</span>{' '}
-              <span className="text-primary">nosotros lo facturamos,</span>{' '}
-              <span className="gradient-text">tú tienes un reporte completo.</span>
+              <span className="text-foreground">Deja de perder deducciones</span>{' '}
+              <span className="text-primary">por recibos desordenados.</span>{' '}
+              <span className="gradient-text">Centraliza, ordena y reporta.</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in-up delay-100">
-              Olvídate de gastos sin facturar. Tu equipo manda el recibo por WhatsApp y tú recibes reportes claros.</p>
+              Tu equipo sube sus comprobantes; FMG los ordena por persona, empresa y mes para entregarte un reporte mensual listo para revisar con tu contador.</p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
-              <Link href="/auth/login">
-                <Button
-                  size="lg"
-                  className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
-                >
-                  Comenzar ahora
-                  <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                onClick={() => openModal('pilot')}
+                className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
+              >
+                Solicitar piloto
+                <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Button>
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => openModal('standard')}
                 className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
               >
                 <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Solicitar demo
+                Agendar diagnóstico
               </Button>
             </div>
 
@@ -140,7 +144,7 @@ export function HeroSection() {
                     {/* Bot response */}
                     <div className="flex justify-start">
                       <div className="bg-white rounded-lg px-3 py-2 max-w-[220px] shadow">
-                        <p className="text-sm text-slate-800">✅ ¡Recibido! Procesando tu factura...</p>
+                        <p className="text-sm text-slate-800">✅ ¡Recibido! Lo guardamos para tu corte mensual.</p>
                         <p className="text-xs text-slate-500 mt-1">10:30</p>
                       </div>
                     </div>
@@ -148,9 +152,9 @@ export function HeroSection() {
                     {/* Success message */}
                     <div className="flex justify-start">
                       <div className="bg-white rounded-lg px-3 py-2 max-w-[220px] shadow">
-                        <p className="text-sm text-slate-800">🎉 <strong>¡Factura lista!</strong></p>
-                        <p className="text-sm text-slate-600 mt-1">RFC: XAXX010101000</p>
-                        <p className="text-sm text-slate-600">Total: $152.00 MXN</p>
+                        <p className="text-sm text-slate-800">📁 <strong>Comprobante ordenado</strong></p>
+                        <p className="text-sm text-slate-600 mt-1">Empleado: Ventas Norte</p>
+                        <p className="text-sm text-slate-600">Mes: Mayo 2026</p>
                         <p className="text-xs text-slate-500 mt-1">10:31</p>
                       </div>
                     </div>
@@ -171,11 +175,11 @@ export function HeroSection() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-slate-500">Este mes</span>
-                    <span className="font-semibold text-slate-800">47 facturas</span>
+                    <span className="font-semibold text-slate-800">47 comprobantes</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-slate-500">Deducible</span>
-                    <span className="font-semibold text-green-600">$12,450</span>
+                    <span className="font-semibold text-green-600">Listo para revisar</span>
                   </div>
                 </div>
               </div>
@@ -187,7 +191,8 @@ export function HeroSection() {
       <LeadFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        formType="standard"
+        formType={formType}
+        planInterest={formType === 'pilot' ? 'Piloto FMG' : 'Diagnóstico de deducciones perdidas'}
       />
     </section>
   );

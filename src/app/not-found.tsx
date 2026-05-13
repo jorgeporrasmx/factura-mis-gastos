@@ -44,7 +44,7 @@ export default function NotFound() {
           </Link>
           <Link href="/comenzar">
             <Button variant="outline" className="w-full sm:w-auto">
-              Comenzar ahora
+              Solicitar piloto
             </Button>
           </Link>
         </div>

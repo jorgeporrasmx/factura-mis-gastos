@@ -24,38 +24,38 @@ interface PlanConfig {
 const plans: PlanConfig[] = [
   {
     id: 'diagnostico',
-    name: "Diagnóstico de deducciones perdidas",
-    tagline: "Para saber cuánto control estás dejando sobre la mesa.",
+    name: "Primer lote de recibos",
+    tagline: "Para probar FMG con tus tickets reales.",
     price: "$999",
-    unit: "MXN una vez",
-    description: "Revisión inicial de tu flujo de comprobantes y gastos.",
+    unit: "MXN/mes",
+    description: "Ideal para negocios chicos con hasta 30 recibos mensuales.",
     features: [
-      "Mapeo de cómo hoy recibes tickets y facturas",
-      "Estimación de fugas por comprobantes perdidos",
-      "Recomendación concreta de implementación",
-      "Checklist para tu equipo y contador",
-      "Entregable accionable en máximo 48 horas"
+      "Recepción de fotos de recibos y tickets",
+      "Revisión de cuáles pueden facturarse",
+      "Orden en Drive por mes",
+      "Control básico para tu contador",
+      "Activación incluida para clientes fundadores"
     ],
-    cta: "Agendar diagnóstico",
+    cta: "Enviar mi primer recibo",
     popular: false,
     isCustom: false
   },
   {
     id: 'piloto',
-    name: "Control Mensual FMG",
-    tagline: "MVP asistido para validar con tu operación real.",
+    name: "FMG Recibo a Factura",
+    tagline: "Para dejar de perder deducciones por tickets olvidados.",
     price: "$1,499",
     unit: "MXN/mes",
-    description: "Hasta 3 usuarios y 100 comprobantes al mes.",
+    description: "Hasta 75 recibos/tickets al mes.",
     features: [
-      "Onboarding asistido para tu empresa",
-      "Hasta 3 usuarios",
-      "Hasta 100 comprobantes mensuales",
-      "Orden por persona, empresa y mes",
-      "Reporte mensual listo para revisar con tu contador",
-      "Soporte operativo durante el servicio"
+      "Manda foto de tus recibos",
+      "Revisión y seguimiento de facturación cuando aplica",
+      "Hasta 75 comprobantes mensuales",
+      "Orden en Drive por negocio y mes",
+      "Control mensual listo para revisar con tu contador",
+      "Acompañamiento inicial incluido"
     ],
-    cta: "Ordenar mis comprobantes",
+    cta: "Quiero facturar mis recibos",
     popular: true,
     isCustom: false
   },
@@ -65,13 +65,13 @@ const plans: PlanConfig[] = [
     tagline: "Para equipos que ya generan gastos todos los meses.",
     price: "$2,499",
     unit: "MXN/mes",
-    description: "Hasta 8 usuarios y 300 comprobantes al mes.",
+    description: "Hasta 300 recibos/tickets al mes.",
     features: [
       "Hasta 8 usuarios",
       "Hasta 300 comprobantes mensuales",
-      "Reporte por persona",
+      "Control por persona o sucursal",
       "Carpeta documental ordenada",
-      "Seguimiento mensual de comprobantes faltantes",
+      "Seguimiento mensual de recibos por facturar",
       "Preparación del paquete mensual para contador"
     ],
     cta: "Solicitar plan empresa",
@@ -210,8 +210,8 @@ export function PricingSection() {
           formType === 'corporate'
             ? 'FMG Empresa'
             : formType === 'pilot'
-              ? 'Control Mensual FMG'
-              : 'Diagnóstico de deducciones perdidas'
+              ? 'FMG Recibo a Factura'
+              : 'Primer lote de recibos'
         }
       />
     </section>

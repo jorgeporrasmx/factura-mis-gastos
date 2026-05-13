@@ -39,7 +39,7 @@ export function Header() {
           <Link href="/" className="hover:opacity-90 transition-opacity flex items-center gap-3">
             <Logo size="sm" />
             <span className="hidden lg:inline text-xs text-muted-foreground border-l border-slate-200 pl-3 max-w-[180px] leading-snug">
-              Control de comprobantes para empresas
+              Recibos, facturas y deducciones
             </span>
           </Link>
 
@@ -97,7 +97,7 @@ export function Header() {
                   className="text-sm gradient-bg hover:opacity-90 transition-opacity"
                   onClick={() => setIsLeadModalOpen(true)}
                 >
-                  Ordenar mis comprobantes
+                  Enviar recibo
                 </Button>
               </>
             )}
@@ -188,7 +188,7 @@ export function Header() {
                         setIsLeadModalOpen(true);
                       }}
                     >
-                      Ordenar mis comprobantes
+                      Enviar recibo
                     </Button>
                   </>
                 )}
@@ -202,7 +202,7 @@ export function Header() {
         isOpen={isLeadModalOpen}
         onClose={() => setIsLeadModalOpen(false)}
         formType="pilot"
-        planInterest="Control Mensual FMG"
+        planInterest="FMG Recibo a Factura"
       />
     </header>
   );

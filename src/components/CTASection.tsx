@@ -27,12 +27,12 @@ export function CTASection() {
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
-          Deja de perder deducciones.<br />
-          <span className="text-blue-200">Empieza hoy.</span>
+          Mándanos foto de tu recibo.<br />
+          <span className="text-blue-200">Nosotros lo ordenamos.</span>
         </h2>
 
         <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          Empieza con control real: comprobantes centralizados, ordenados por persona y mes, y un corte claro para revisar con tu contador.
+          Revisamos si se puede facturar, lo guardamos en Drive y dejamos el gasto listo para que tu contador pueda deducir todo lo posible.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -41,7 +41,7 @@ export function CTASection() {
             onClick={() => openModal('pilot')}
             className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"
           >
-            Ordenar mis comprobantes
+            Enviar mi primer recibo
             <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -55,7 +55,7 @@ export function CTASection() {
             <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Agendar diagnóstico
+            Ver si aplica para mi negocio
           </Button>
         </div>
       </div>
@@ -64,7 +64,7 @@ export function CTASection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'Control Mensual FMG' : 'Diagnóstico de deducciones perdidas'}
+        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos deducibles'}
       />
     </section>
   );

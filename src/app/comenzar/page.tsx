@@ -11,46 +11,46 @@ const CALENDLY_URL = 'https://calendly.com/jorgeporras';
 
 const offers = [
   {
-    id: 'diagnostico',
-    name: 'Diagnóstico de deducciones perdidas',
-    price: '$999 MXN',
-    description: 'Una revisión puntual para detectar dónde se están perdiendo comprobantes y cómo corregirlo.',
+    id: 'primer-lote',
+    name: 'Primer lote de recibos',
+    price: '$999 MXN/mes',
+    description: 'Para negocios chicos que quieren probar FMG con tickets reales.',
     bullets: [
-      'Mapeo del flujo actual',
-      'Detección de fugas documentales',
-      'Checklist para equipo y contador',
-      'Entregable accionable en 48 horas',
+      'Hasta 30 recibos al mes',
+      'Revisión de cuáles pueden facturarse',
+      'Orden mensual en Drive',
+      'Control básico para contador',
     ],
     formType: 'standard' as FormType,
-    planInterest: 'Diagnóstico de deducciones perdidas',
-    cta: 'Agendar diagnóstico',
+    planInterest: 'Primer lote de recibos',
+    cta: 'Enviar mi primer recibo',
   },
   {
-    id: 'piloto',
-    name: 'Control Mensual FMG',
+    id: 'recibo-factura',
+    name: 'FMG Recibo a Factura',
     price: '$1,499 MXN/mes',
-    description: 'La opción para empezar hoy con una operación pequeña y acompañada.',
+    description: 'La opción recomendada para dejar de perder deducciones por tickets olvidados.',
     bullets: [
-      'Hasta 3 usuarios',
-      'Hasta 100 comprobantes al mes',
-      'Onboarding asistido',
-      'Reporte mensual listo para contador',
+      'Hasta 75 recibos/tickets al mes',
+      'Seguimiento de facturación cuando aplica',
+      'Drive ordenado por negocio y mes',
+      'Corte mensual listo para tu contador',
     ],
     formType: 'pilot' as FormType,
-    planInterest: 'Control Mensual FMG',
-    cta: 'Ordenar mis comprobantes',
+    planInterest: 'FMG Recibo a Factura',
+    cta: 'Quiero facturar mis recibos',
     featured: true,
   },
   {
     id: 'empresa',
     name: 'FMG Empresa',
     price: '$2,499 MXN/mes',
-    description: 'Para equipos con más movimiento y necesidad de control por persona.',
+    description: 'Para equipos con más movimiento y necesidad de control por persona o sucursal.',
     bullets: [
       'Hasta 8 usuarios',
       'Hasta 300 comprobantes al mes',
-      'Reporte por persona',
-      'Carpeta documental ordenada',
+      'Control por persona o sucursal',
+      'Paquete mensual para contador',
     ],
     formType: 'corporate' as FormType,
     planInterest: 'FMG Empresa',
@@ -61,7 +61,7 @@ const offers = [
 export default function ComenzarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formType, setFormType] = useState<FormType>('pilot');
-  const [planInterest, setPlanInterest] = useState('Control Mensual FMG');
+  const [planInterest, setPlanInterest] = useState('FMG Recibo a Factura');
 
   const openLeadModal = (nextFormType: FormType, nextPlanInterest: string) => {
     setFormType(nextFormType);
@@ -91,12 +91,12 @@ export default function ComenzarPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <section className="text-center mb-12">
-          <Badge className="mb-4 gradient-bg">Control mensual</Badge>
+          <Badge className="mb-4 gradient-bg">Recibo → factura → deducción posible</Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Empieza con una operación clara, no con otro sistema abandonado.
+            Mándanos foto de tus recibos. Nosotros los facturamos cuando sea posible y ordenamos tus gastos.
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            FMG centraliza comprobantes, los ordena por persona y mes, y prepara un corte mensual listo para revisar con tu contador.
+            FMG está diseñado para que los tickets no se pierdan en WhatsApp, cajones o fotos sueltas. Dejamos el mes ordenado para que tu contador pueda deducir todo lo posible.
           </p>
         </section>
 
@@ -141,31 +141,31 @@ export default function ComenzarPage() {
         <section className="grid lg:grid-cols-2 gap-6">
           <Card className="bg-white border-border">
             <CardHeader>
-              <h2 className="text-xl font-bold text-foreground">Qué pasa después de solicitarlo</h2>
+              <h2 className="text-xl font-bold text-foreground">Qué pasa después</h2>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>1. Revisamos tu volumen, equipo y dolor principal.</p>
-              <p>2. Definimos si conviene diagnóstico o control mensual.</p>
-              <p>3. Acordamos onboarding y forma de pago manual.</p>
-              <p>4. Activamos la empresa y hacemos la primera prueba de carga.</p>
-              <p>5. Cerramos el primer corte mensual contigo.</p>
+              <p>1. Mandas tus datos y tu primer recibo por WhatsApp.</p>
+              <p>2. Revisamos si puede facturarse y qué datos faltan.</p>
+              <p>3. Lo guardamos en Drive y queda registrado en control mensual.</p>
+              <p>4. Repetimos el flujo durante el mes con tus nuevos recibos.</p>
+              <p>5. Tu contador recibe el paquete ordenado para revisar deducciones.</p>
             </CardContent>
           </Card>
 
           <Card className="bg-slate-900 text-white border-slate-900">
             <CardHeader>
-              <h2 className="text-xl font-bold">¿Prefieres hablar primero?</h2>
+              <h2 className="text-xl font-bold">¿No sabes si tus tickets aplican?</h2>
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-slate-200">
               <p>
-                Si todavía no sabes qué plan aplica, agendamos un diagnóstico corto y te decimos si FMG vale la pena para tu operación hoy.
+                No todo recibo se puede facturar, pero casi todo se puede ordenar. Revisamos tu caso antes de activar el servicio.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   className="bg-white text-slate-900 hover:bg-slate-100"
-                  onClick={() => openLeadModal('standard', 'Diagnóstico de deducciones perdidas')}
+                  onClick={() => openLeadModal('standard', 'Revisión de recibos deducibles')}
                 >
-                  Agendar diagnóstico
+                  Revisar mi caso
                 </Button>
                 <Button
                   variant="outline"

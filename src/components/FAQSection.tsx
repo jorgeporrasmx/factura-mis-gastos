@@ -6,43 +6,35 @@ import { LeadFormModal } from './LeadFormModal';
 const faqs = [
   {
     question: "¿Qué es Factura Mis Gastos?",
-    answer: "Factura Mis Gastos es un servicio asistido para empresas mexicanas que necesitan dejar de perder deducciones por comprobantes desordenados. Centralizamos recibos y facturas, los ordenamos por persona, empresa y mes, y cerramos con un reporte listo para revisar con tu contador."
+    answer: "Factura Mis Gastos es un servicio asistido para negocios mexicanos que tienen tickets y recibos desordenados. Mandas foto del recibo, revisamos si se puede facturar, lo guardamos y dejamos el control mensual listo para tu contador."
   },
   {
     question: "¿Cómo funciona el servicio?",
-    answer: "El proceso es simple: 1) tu equipo sube tickets, recibos o facturas, 2) FMG los concentra y ordena por usuario y periodo, 3) hacemos seguimiento de faltantes, y 4) entregamos un corte mensual con carpeta documental y reporte de revisión."
+    answer: "El flujo es simple: 1) mandas foto del recibo o ticket, 2) revisamos si puede convertirse en factura, 3) lo ordenamos en Drive, y 4) queda registrado para tu corte mensual."
   },
   {
     question: "¿Cuánto cuesta el servicio?",
-    answer: "Hoy manejamos tres ofertas: Diagnóstico de deducciones perdidas por $999 MXN una vez, Control Mensual FMG por $1,499 MXN/mes (hasta 3 usuarios y 100 comprobantes), y FMG Empresa por $2,499 MXN/mes (hasta 8 usuarios y 300 comprobantes)."
+    answer: "Tenemos plan fundador desde $999 MXN/mes para hasta 30 recibos y FMG Recibo a Factura por $1,499 MXN/mes para hasta 75 recibos. FMG Empresa inicia en $2,499 MXN/mes para mayor volumen."
   },
   {
-    question: "¿Para qué tipo de empresas es ideal?",
-    answer: "Factura Mis Gastos es perfecto para empresas mexicanas con 3 a 15 empleados que generan gastos frecuentes: empresas de logística y transporte, equipos de ventas en campo, constructoras, consultorías, empresas de tecnología, y cualquier negocio con empleados que viajan o hacen compras para la empresa."
+    question: "¿Para qué tipo de negocios es ideal?",
+    answer: "Es ideal para negocios chicos y medianos con gastos frecuentes: restaurantes, talleres, gimnasios, servicios técnicos, construcción, consultorios, agencias, eventos, inmobiliarias y equipos comerciales."
   },
   {
-    question: "¿El proceso es automático o hay verificación humana?",
-    answer: "Nuestro servicio incluye verificación humana en cada factura. A diferencia de sistemas 100% automatizados, nuestro equipo se asegura de que cada CFDI sea correcto y válido antes de entregarla. Esto garantiza que ningún gasto se quede sin facturar y que todas las facturas cumplan con los requisitos del SAT."
+    question: "¿Garantizan que todo recibo se puede facturar?",
+    answer: "No. No todo ticket puede convertirse en factura deducible. Lo que sí hacemos es revisar cada recibo, ordenar el comprobante y dar seguimiento cuando la facturación sea posible. Tu contador siempre debe validar el tratamiento fiscal final."
   },
   {
-    question: "¿Puedo establecer límites de gasto y reglas de aprobación?",
-    answer: "Sí. Puedes definir límites de gasto por empleado o categoría. Si un gasto excede el límite que defines, te notificamos para que lo apruebes antes de solicitar la factura. También puedes establecer categorías permitidas y cualquier política interna que necesites."
+    question: "¿Sustituyen a mi contador?",
+    answer: "No. FMG no sustituye a tu contador. Le entregamos un paquete más ordenado para que pueda revisar deducciones y trabajar con mejor información."
   },
   {
-    question: "¿Se integra con mi sistema contable?",
-    answer: "Todavía no. En este MVP no prometemos integración contable avanzada. Para el servicio entregamos carpeta documental ordenada y reporte mensual para que tu contador lo revise más fácil."
+    question: "¿Qué necesito para empezar?",
+    answer: "Solo necesitas mandar tus datos y tu primer recibo. Si aplica para tu negocio, activamos el flujo mensual y te damos instrucciones para enviar nuevos tickets durante el mes."
   },
   {
-    question: "¿Cuánto tiempo tarda en generarse una factura?",
-    answer: "El objetivo del servicio no es prometer facturación automática con el proveedor, sino orden operativo. Normalmente hacemos onboarding rápido y el primer corte mensual se define contigo desde el inicio para que el contador reciba la información a tiempo."
-  },
-  {
-    question: "¿Es útil para gastos de viaje y viáticos?",
-    answer: "¡Absolutamente! Los gastos de viaje (hoteles, vuelos, taxis, comidas) son los más difíciles de facturar porque el empleado está fuera de la oficina. Con Factura Mis Gastos, tu equipo solo envía el recibo desde donde esté y nosotros nos encargamos de conseguir la factura."
-  },
-  {
-    question: "¿Cómo empiezo a usar el servicio?",
-    answer: "Es muy fácil: 1) Elige el plan que mejor se adapte a tu empresa, 2) Completa el registro y proporciona los datos de facturación (RFC), 3) Comparte el número de WhatsApp o correo con tus empleados, 4) Comienza a recibir facturas organizadas. Puedes empezar hoy mismo."
+    question: "¿Por qué puede pagarse solo?",
+    answer: "Porque muchos negocios ya hicieron el gasto, pero pierden la deducción por no facturar u ordenar a tiempo. Si FMG ayuda a recuperar comprobantes que antes se perdían, el servicio puede costar menos que el dinero que dejas fuera."
   }
 ];
 
@@ -113,7 +105,7 @@ export function FAQSection() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Agendar diagnóstico
+            Revisar mi caso
           </button>
         </div>
       </div>

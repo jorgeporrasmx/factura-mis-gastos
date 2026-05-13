@@ -21,23 +21,23 @@ interface ChatOption {
 }
 
 const FAQ_RESPONSES: Record<string, string> = {
-  'que-es': '**Factura Mis Gastos** es un servicio asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
-  'como-funciona': 'Así funciona:\n1. Tu equipo sube comprobantes\n2. FMG los ordena por persona, empresa y mes\n3. Damos seguimiento a faltantes\n4. Recibes un reporte mensual listo para revisar con tu contador',
-  'precios': 'Hoy tenemos **Diagnóstico por $999**, **Control Mensual FMG por $1,499/mes** y **FMG Empresa por $2,499/mes**.',
-  'tiempo': 'El onboarding es asistido. Definimos contigo el primer corte mensual para que el contador reciba la información ordenada a tiempo.',
-  'tickets': 'El servicio sirve para tickets, recibos y facturas que hoy tu equipo manda por WhatsApp, correo o fotos sueltas y luego se pierden en el cierre mensual.',
+  'que-es': '**Factura Mis Gastos** convierte recibos y tickets en un flujo ordenado: revisamos si se pueden facturar, los guardamos y dejamos el control listo para tu contador.',
+  'como-funciona': 'Así funciona:\n1. Mandas foto de tu recibo\n2. Revisamos si se puede facturar\n3. Lo ordenamos en Drive\n4. Dejamos el gasto registrado para tu corte mensual',
+  'precios': 'Tenemos plan fundador desde **$999/mes** para negocios chicos y **$1,499/mes** para mayor volumen. La meta es que FMG pueda pagarse solo con deducciones que hoy se pierden.',
+  'tiempo': 'Puedes empezar con tu primer recibo hoy. El corte mensual queda ordenado para que tu contador lo revise.',
+  'tickets': 'Sirve para tickets, recibos y facturas que hoy se quedan en WhatsApp, correo, fotos sueltas o papel. No todo ticket es facturable, pero sí puede ordenarse y revisarse.',
 };
 
 const INITIAL_OPTIONS: ChatOption[] = [
-  { label: '¿Qué es Factura Mis Gastos?', action: 'faq', value: 'que-es' },
+  { label: 'Quiero mandar un recibo', action: 'whatsapp', value: '' },
   { label: '¿Cómo funciona?', action: 'faq', value: 'como-funciona' },
   { label: '¿Cuáles son los precios?', action: 'faq', value: 'precios' },
-  { label: 'Hablar por WhatsApp', action: 'whatsapp', value: '' },
+  { label: '¿Qué tickets puedo facturar?', action: 'faq', value: 'tickets' },
 ];
 
 const SECONDARY_OPTIONS: ChatOption[] = [
-  { label: '¿Cuánto tarda una factura?', action: 'faq', value: 'tiempo' },
-  { label: '¿Qué tickets puedo facturar?', action: 'faq', value: 'tickets' },
+  { label: 'Mando mi primer recibo', action: 'whatsapp', value: '' },
+  { label: '¿Cuánto tarda?', action: 'faq', value: 'tiempo' },
   { label: 'Agendar una cita', action: 'calendar', value: '' },
   { label: 'Hablar por WhatsApp', action: 'whatsapp', value: '' },
 ];
@@ -48,7 +48,7 @@ export function WhatsAppWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: '¡Hola! Soy el asistente de Factura Mis Gastos. ¿Quieres revisar si un servicio asistido aplica para tu empresa?',
+      text: '¡Hola! ¿Tienes tickets que normalmente no facturas? Mándanos foto de un recibo y revisamos si puede convertirse en factura deducible.',
       isBot: true,
       options: INITIAL_OPTIONS,
     },
@@ -118,7 +118,7 @@ export function WhatsAppWidget() {
         addBotMessage('Te redirijo a WhatsApp para que hables con nuestro equipo.');
         setTimeout(() => {
           const message = encodeURIComponent(
-            'Hola, me interesa el servicio de Factura Mis Gastos. ¿Podrían darme más información?'
+            'Hola, me interesa FMG. Quiero mandar foto de un recibo para revisar si se puede facturar y ordenar para mi contador.'
           );
           window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
         }, 1000);
@@ -174,8 +174,8 @@ export function WhatsAppWidget() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">Control Mensual FMG</p>
-            <p className="text-blue-100 text-xs">Resuelvo dudas y agendo diagnóstico</p>
+            <p className="text-white text-sm font-semibold">FMG Recibo a Factura</p>
+            <p className="text-blue-100 text-xs">Manda un recibo y revisamos</p>
           </div>
         </div>
         <button

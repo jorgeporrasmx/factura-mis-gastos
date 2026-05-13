@@ -44,7 +44,7 @@ export default function NotFound() {
           </Link>
           <Link href="/comenzar">
             <Button variant="outline" className="w-full sm:w-auto">
-              Ordenar mis comprobantes
+Enviar mi primer recibo
             </Button>
           </Link>
         </div>

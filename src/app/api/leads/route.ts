@@ -60,8 +60,8 @@ function isValidPhone(phone: string): boolean {
 function getOrigen(type: FormType): string {
   const origenes: Record<FormType, string> = {
     express: "CTA Comenzar",
-    standard: "Diagnóstico",
-    pilot: "Control Mensual FMG",
+    standard: "Revisión de recibos",
+    pilot: "FMG Recibo a Factura",
     corporate: "FMG Empresa",
     callback: "Widget WhatsApp",
   };
@@ -114,6 +114,9 @@ export async function POST(request: NextRequest) {
 
     // Preparar notas adicionales
     let notas = data.notas || "";
+    if (data.plan_interes) {
+      notas = `Oferta solicitada: ${data.plan_interes}${notas ? `\n${notas}` : ""}`;
+    }
     if (data.problema_principal) {
       notas = `Problema principal: ${data.problema_principal}${notas ? `\n${notas}` : ""}`;
     }
@@ -132,7 +135,7 @@ export async function POST(request: NextRequest) {
       empleados: data.empleados,
       integraciones: data.integraciones,
       origen: getOrigen(type),
-      plan_interes: data.plan_interes || (type === "pilot" ? "Control Mensual FMG" : type === "standard" ? "Diagnóstico de deducciones perdidas" : type === "corporate" ? "FMG Empresa" : undefined),
+      plan_interes: data.plan_interes || (type === "pilot" ? "FMG Recibo a Factura" : type === "standard" ? "Primer lote de recibos" : type === "corporate" ? "FMG Empresa" : undefined),
       notas: notas || undefined,
     };
 

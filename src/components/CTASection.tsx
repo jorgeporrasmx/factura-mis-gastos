@@ -32,7 +32,7 @@ export function CTASection() {
         </h2>
 
         <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          Revisamos si se puede facturar, lo guardamos en Drive y dejamos el gasto listo para que tu contador pueda deducir todo lo posible.
+          Lo facturamos, lo guardamos en Drive y dejamos el gasto listo para tu contador.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -64,7 +64,7 @@ export function CTASection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos deducibles'}
+        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos'}
       />
     </section>
   );

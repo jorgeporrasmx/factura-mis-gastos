@@ -31,7 +31,7 @@ const plans: PlanConfig[] = [
     description: "Ideal para negocios chicos con hasta 30 recibos mensuales.",
     features: [
       "Recepción de fotos de recibos y tickets",
-      "Revisión de cuáles pueden facturarse",
+      "Facturación y orden del lote",
       "Orden en Drive por mes",
       "Control básico para tu contador",
       "Activación incluida para clientes fundadores"
@@ -49,10 +49,10 @@ const plans: PlanConfig[] = [
     description: "Hasta 75 recibos/tickets al mes.",
     features: [
       "Manda foto de tus recibos",
-      "Revisión y seguimiento de facturación cuando aplica",
+      "Facturación y seguimiento mensual",
       "Hasta 75 comprobantes mensuales",
       "Orden en Drive por negocio y mes",
-      "Control mensual listo para revisar con tu contador",
+      "Control mensual para tu contador",
       "Acompañamiento inicial incluido"
     ],
     cta: "Quiero facturar mis recibos",

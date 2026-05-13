@@ -6,21 +6,21 @@ Pantalla: landing de FMG + portal/flujo de recibos.
 
 Voz:
 
-Cada mes muchos negocios pierden deducciones por una razón muy simple: los tickets se quedan en WhatsApp, en fotos sueltas o en una caja.
+Cada mes muchos negocios pierden deducciones por una razón simple: los tickets se quedan en WhatsApp, fotos o cajones.
 
 Factura Mis Gastos resuelve ese flujo.
 
-El usuario manda o sube foto de su recibo. El sistema lo guarda en Drive, crea el registro de control y deja el comprobante listo para seguimiento: recibido, facturado cuando aplica, o pendiente.
+El usuario manda foto de su recibo. El sistema lo guarda en Drive, crea el registro y deja el comprobante listo para seguimiento: recibido, facturado o pendiente de datos.
 
-La meta es que tu contador no tenga que perseguirte al cierre del mes, y que tú no dejes dinero en la mesa por comprobantes perdidos.
+Tu contador recibe el mes ordenado y tú dejas de perder comprobantes.
 
-Estamos activando 5 clientes fundadores. Mándanos foto de un recibo y revisamos si se puede convertir en factura deducible.
+Estamos activando 5 clientes fundadores. Mándanos foto de un recibo y te mostramos cómo queda facturado y ordenado.
 
 ## Mensaje para contactos tibios — requiere aprobación antes de enviar
 
 Estoy lanzando Factura Mis Gastos con 5 clientes fundadores.
 
-La idea es simple: tú mandas foto de tus recibos/tickets; nosotros revisamos si se pueden facturar, los ordenamos en Drive y dejamos el control mensual listo para tu contador.
+La idea es simple: tú mandas foto de tus recibos; nosotros los facturamos, los ordenamos en Drive y cerramos el mes para tu contador.
 
 Sirve para negocios que cada mes pierden comprobantes o terminan buscando tickets en WhatsApp.
 
@@ -30,7 +30,7 @@ La activación va incluida para los primeros 5. Si quieres probarlo, mándame un
 
 Estoy activando 5 clientes fundadores para Factura Mis Gastos.
 
-Mándanos foto de tus recibos. Nosotros revisamos si se pueden facturar, los ordenamos y te ayudamos a deducir todo lo posible con tu contador.
+Mándanos foto de tus recibos. Nosotros los facturamos, ordenamos tus gastos y dejamos todo listo para tu contador.
 
 Desde $999/mes. Si quieres probarlo, mándame un recibo y te digo cómo quedaría en el sistema.
 
@@ -41,7 +41,7 @@ Cada ticket que se queda en WhatsApp puede ser una deducción perdida.
 El problema no siempre es fiscal. Muchas veces es operativo: compras algo, tomas foto del recibo, lo mandas por chat… y al cierre del mes nadie sabe dónde quedó.
 
 Factura Mis Gastos convierte ese caos en flujo:
-foto del recibo → factura cuando aplica → Drive → control mensual para tu contador.
+foto del recibo → factura → Drive → control mensual para tu contador.
 
 Estamos activando 5 clientes fundadores.
 
@@ -51,7 +51,7 @@ Tu contador no puede deducir lo que nunca le entregas.
 
 Y tú no puedes entregarle bien lo que vive repartido entre tickets físicos, fotos, WhatsApp y correos.
 
-FMG existe para ordenar ese flujo: recibes/compras, mandas foto, nosotros revisamos si se puede facturar y dejamos todo organizado para el cierre.
+FMG ordena ese flujo: compras, mandas foto, facturamos y dejamos todo organizado para el cierre.
 
 ## Post 3
 
@@ -88,9 +88,9 @@ Oferta fundador: activación incluida y precio preferente por 3 meses.
 Texto:
 ¿Tienes tickets que nunca facturas?
 
-Mándanos foto de tus recibos. En Factura Mis Gastos revisamos si se pueden facturar, los ordenamos en Drive y dejamos el control mensual listo para tu contador.
+Mándanos foto de tus recibos. En Factura Mis Gastos los facturamos, los ordenamos en Drive y cerramos el mes para tu contador.
 
-La meta: que dejes de perder deducciones posibles por comprobantes olvidados.
+Deja de perder gastos por comprobantes olvidados.
 
 Primeros 5 clientes fundadores con activación incluida.
 
@@ -105,7 +105,7 @@ Enviar WhatsApp
 Texto:
 Si cada cierre de mes empiezas a buscar tickets en WhatsApp, FMG es para ti.
 
-Sube o envía foto de tus recibos. Nosotros los ordenamos, damos seguimiento a la facturación cuando aplica y dejamos todo listo para revisión de tu contador.
+Sube o envía foto de tus recibos. Nosotros los facturamos, los ordenamos y dejamos todo listo para tu contador.
 
 Desde $999/mes.
 

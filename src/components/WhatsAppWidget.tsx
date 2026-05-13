@@ -21,11 +21,11 @@ interface ChatOption {
 }
 
 const FAQ_RESPONSES: Record<string, string> = {
-  'que-es': '**Factura Mis Gastos** convierte recibos y tickets en un flujo ordenado: revisamos si se pueden facturar, los guardamos y dejamos el control listo para tu contador.',
-  'como-funciona': 'Así funciona:\n1. Mandas foto de tu recibo\n2. Revisamos si se puede facturar\n3. Lo ordenamos en Drive\n4. Dejamos el gasto registrado para tu corte mensual',
-  'precios': 'Tenemos plan fundador desde **$999/mes** para negocios chicos y **$1,499/mes** para mayor volumen. La meta es que FMG pueda pagarse solo con deducciones que hoy se pierden.',
+  'que-es': '**Factura Mis Gastos** convierte recibos y tickets en un flujo ordenado: los facturamos, los guardamos y dejamos el control listo para tu contador.',
+  'como-funciona': 'Así funciona:\n1. Mandas foto de tu recibo\n2. Lo facturamos\n3. Lo ordenamos en Drive\n4. Dejamos el gasto registrado para tu corte mensual',
+  'precios': 'Tenemos plan fundador desde **$999/mes** para negocios chicos y **$1,499/mes** para mayor volumen. FMG recupera orden donde hoy se pierden deducciones.',
   'tiempo': 'Puedes empezar con tu primer recibo hoy. El corte mensual queda ordenado para que tu contador lo revise.',
-  'tickets': 'Sirve para tickets, recibos y facturas que hoy se quedan en WhatsApp, correo, fotos sueltas o papel. No todo ticket es facturable, pero sí puede ordenarse y revisarse.',
+  'tickets': 'Sirve para tickets, recibos y facturas que hoy se quedan en WhatsApp, correo, fotos o papel. Si falta un dato fiscal, lo marcamos para seguimiento.',
 };
 
 const INITIAL_OPTIONS: ChatOption[] = [
@@ -48,7 +48,7 @@ export function WhatsAppWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: '¡Hola! ¿Tienes tickets que normalmente no facturas? Mándanos foto de un recibo y revisamos si puede convertirse en factura deducible.',
+      text: '¡Hola! ¿Tienes tickets sin facturar? Mándanos foto de un recibo y lo ordenamos para tu contador.',
       isBot: true,
       options: INITIAL_OPTIONS,
     },

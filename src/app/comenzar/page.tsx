@@ -27,7 +27,7 @@ const offers = [
   },
   {
     id: 'piloto',
-    name: 'Piloto FMG',
+    name: 'Control Mensual FMG',
     price: '$1,499 MXN/mes',
     description: 'La opción para empezar hoy con una operación pequeña y acompañada.',
     bullets: [
@@ -37,8 +37,8 @@ const offers = [
       'Reporte mensual listo para contador',
     ],
     formType: 'pilot' as FormType,
-    planInterest: 'Piloto FMG',
-    cta: 'Solicitar piloto',
+    planInterest: 'Control Mensual FMG',
+    cta: 'Ordenar mis comprobantes',
     featured: true,
   },
   {
@@ -54,14 +54,14 @@ const offers = [
     ],
     formType: 'corporate' as FormType,
     planInterest: 'FMG Empresa',
-    cta: 'Solicitar piloto empresa',
+    cta: 'Solicitar plan empresa',
   },
 ];
 
 export default function ComenzarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formType, setFormType] = useState<FormType>('pilot');
-  const [planInterest, setPlanInterest] = useState('Piloto FMG');
+  const [planInterest, setPlanInterest] = useState('Control Mensual FMG');
 
   const openLeadModal = (nextFormType: FormType, nextPlanInterest: string) => {
     setFormType(nextFormType);
@@ -91,12 +91,12 @@ export default function ComenzarPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <section className="text-center mb-12">
-          <Badge className="mb-4 gradient-bg">Piloto asistido</Badge>
+          <Badge className="mb-4 gradient-bg">Control mensual</Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Empezar no significa pagar un checkout automático.
+            Empieza con una operación clara, no con otro sistema abandonado.
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Hoy FMG se vende como servicio asistido: validamos tu operación, hacemos onboarding manual y arrancamos con un flujo controlado para que no pierdas comprobantes ni tiempo con tu contador.
+            FMG centraliza comprobantes, los ordena por persona y mes, y prepara un corte mensual listo para revisar con tu contador.
           </p>
         </section>
 
@@ -145,7 +145,7 @@ export default function ComenzarPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>1. Revisamos tu volumen, equipo y dolor principal.</p>
-              <p>2. Definimos si conviene diagnóstico o piloto mensual.</p>
+              <p>2. Definimos si conviene diagnóstico o control mensual.</p>
               <p>3. Acordamos onboarding y forma de pago manual.</p>
               <p>4. Activamos la empresa y hacemos la primera prueba de carga.</p>
               <p>5. Cerramos el primer corte mensual contigo.</p>

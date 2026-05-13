@@ -42,7 +42,7 @@ const plans: PlanConfig[] = [
   },
   {
     id: 'piloto',
-    name: "Piloto FMG",
+    name: "Control Mensual FMG",
     tagline: "MVP asistido para validar con tu operación real.",
     price: "$1,499",
     unit: "MXN/mes",
@@ -53,9 +53,9 @@ const plans: PlanConfig[] = [
       "Hasta 100 comprobantes mensuales",
       "Orden por persona, empresa y mes",
       "Reporte mensual listo para revisar con tu contador",
-      "Soporte operativo durante el piloto"
+      "Soporte operativo durante el servicio"
     ],
-    cta: "Solicitar piloto",
+    cta: "Ordenar mis comprobantes",
     popular: true,
     isCustom: false
   },
@@ -74,7 +74,7 @@ const plans: PlanConfig[] = [
       "Seguimiento mensual de comprobantes faltantes",
       "Preparación del paquete mensual para contador"
     ],
-    cta: "Solicitar piloto empresa",
+    cta: "Solicitar plan empresa",
     popular: false,
     isCustom: false
   }
@@ -102,7 +102,7 @@ export function PricingSection() {
             <span className="gradient-text">claros y simples.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Empieza con un piloto acompañado. Validamos el flujo con tu equipo antes de automatizar de más.
+            Empieza con un servicio acompañado. Validamos el flujo con tu equipo antes de automatizar de más.
           </p>
         </div>
 
@@ -210,7 +210,7 @@ export function PricingSection() {
           formType === 'corporate'
             ? 'FMG Empresa'
             : formType === 'pilot'
-              ? 'Piloto FMG'
+              ? 'Control Mensual FMG'
               : 'Diagnóstico de deducciones perdidas'
         }
       />

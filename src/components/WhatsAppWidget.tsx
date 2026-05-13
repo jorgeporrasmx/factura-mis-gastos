@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Send, Calendar, ChevronDown, Bot, User } from 'lucide-react';
+import { MessageCircle, Calendar, ChevronDown, Bot, User } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '5216144273301';
 const CALENDLY_URL = 'https://calendly.com/jorgeporras';
@@ -21,11 +21,11 @@ interface ChatOption {
 }
 
 const FAQ_RESPONSES: Record<string, string> = {
-  'que-es': '**Factura Mis Gastos** es un piloto asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
+  'que-es': '**Factura Mis Gastos** es un servicio asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
   'como-funciona': 'Así funciona:\n1. Tu equipo sube comprobantes\n2. FMG los ordena por persona, empresa y mes\n3. Damos seguimiento a faltantes\n4. Recibes un reporte mensual listo para revisar con tu contador',
-  'precios': 'Hoy tenemos **Diagnóstico por $999**, **Piloto FMG por $1,499/mes** y **FMG Empresa por $2,499/mes**.',
+  'precios': 'Hoy tenemos **Diagnóstico por $999**, **Control Mensual FMG por $1,499/mes** y **FMG Empresa por $2,499/mes**.',
   'tiempo': 'El onboarding es asistido. Definimos contigo el primer corte mensual para que el contador reciba la información ordenada a tiempo.',
-  'tickets': 'El piloto sirve para tickets, recibos y facturas que hoy tu equipo manda por WhatsApp, correo o fotos sueltas y luego se pierden en el cierre mensual.',
+  'tickets': 'El servicio sirve para tickets, recibos y facturas que hoy tu equipo manda por WhatsApp, correo o fotos sueltas y luego se pierden en el cierre mensual.',
 };
 
 const INITIAL_OPTIONS: ChatOption[] = [
@@ -45,7 +45,14 @@ const SECONDARY_OPTIONS: ChatOption[] = [
 export function WhatsAppWidget() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      text: '¡Hola! Soy el asistente de Factura Mis Gastos. ¿Quieres revisar si un servicio asistido aplica para tu empresa?',
+      isBot: true,
+      options: INITIAL_OPTIONS,
+    },
+  ]);
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -71,19 +78,6 @@ export function WhatsAppWidget() {
 
     return () => clearTimeout(timer);
   }, [hasInteracted]);
-
-  useEffect(() => {
-    if (isExpanded && messages.length === 0) {
-      setMessages([
-        {
-          id: 1,
-          text: '¡Hola! Soy el asistente de Factura Mis Gastos. ¿Quieres revisar si un piloto asistido aplica para tu empresa?',
-          isBot: true,
-          options: INITIAL_OPTIONS,
-        },
-      ]);
-    }
-  }, [isExpanded, messages.length]);
 
   const addBotMessage = (text: string, options?: ChatOption[]) => {
     setIsTyping(true);
@@ -124,7 +118,7 @@ export function WhatsAppWidget() {
         addBotMessage('Te redirijo a WhatsApp para que hables con nuestro equipo.');
         setTimeout(() => {
           const message = encodeURIComponent(
-            'Hola, me interesa el piloto de Factura Mis Gastos. ¿Podrían darme más información?'
+            'Hola, me interesa el servicio de Factura Mis Gastos. ¿Podrían darme más información?'
           );
           window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
         }, 1000);
@@ -180,7 +174,7 @@ export function WhatsAppWidget() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">Piloto FMG</p>
+            <p className="text-white text-sm font-semibold">Control Mensual FMG</p>
             <p className="text-blue-100 text-xs">Resuelvo dudas y agendo diagnóstico</p>
           </div>
         </div>

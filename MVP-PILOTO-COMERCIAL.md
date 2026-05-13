@@ -1,8 +1,8 @@
-# Factura Mis Gastos — MVP piloto comercial
+# Factura Mis Gastos — MVP oferta comercial
 
 ## Objetivo vendible hoy
 
-Vender Factura Mis Gastos como piloto asistido para empresas mexicanas que pierden deducciones por comprobantes desordenados.
+Vender Factura Mis Gastos como servicio asistido para empresas mexicanas que pierden deducciones por comprobantes desordenados.
 
 Promesa comercial:
 
@@ -15,7 +15,7 @@ Promesa comercial:
 - Orden documental por persona/empresa/mes.
 - Seguimiento básico de comprobantes recibidos.
 - Reporte mensual operativo para revisión con contador.
-- Soporte manual durante el piloto.
+- Soporte manual durante el servicio.
 - Registro de leads desde la landing, con fallback en Firestore si Monday falla.
 
 ## Qué no incluye todavía
@@ -41,7 +41,7 @@ Incluye:
 - Checklist de mejora para equipo y contador.
 - Recomendación de implementación.
 
-### 2. Piloto FMG — $1,499 MXN/mes
+### 2. Control Mensual FMG — $1,499 MXN/mes
 
 Para validar el sistema con una operación pequeña.
 
@@ -51,7 +51,7 @@ Incluye:
 - Onboarding asistido.
 - Orden por persona, empresa y mes.
 - Reporte mensual listo para contador.
-- Soporte operativo durante el piloto.
+- Soporte operativo durante el servicio.
 
 ### 3. FMG Empresa — $2,499 MXN/mes
 
@@ -71,7 +71,7 @@ Incluye:
 2. Crear o validar cuenta admin.
 3. Crear empresa en el portal.
 4. Verificar carpeta documental.
-5. Invitar usuarios piloto.
+5. Invitar usuarios iniciales.
 6. Enviar instrucciones de uso:
    - subir recibo/factura,
    - identificar gasto,
@@ -81,7 +81,7 @@ Incluye:
 9. Entregar reporte mensual y aprendizajes.
 10. Decidir si pasa a plan mensual, ajuste de flujo o baja.
 
-## Checklist por cliente piloto
+## Checklist por cliente inicial
 
 - [ ] Lead recibido en Monday o fallback Firestore.
 - [ ] Responsable contactado.
@@ -89,7 +89,7 @@ Incluye:
 - [ ] Plan propuesto.
 - [ ] Pago manual/transferencia acordado.
 - [ ] Empresa creada.
-- [ ] Usuarios piloto definidos.
+- [ ] Usuarios iniciales definidos.
 - [ ] Carpeta documental validada.
 - [ ] Prueba de subida realizada.
 - [ ] Primer comprobante visible en portal.
@@ -97,11 +97,21 @@ Incluye:
 - [ ] Reporte mensual entregado.
 - [ ] Feedback documentado.
 
+## Estado verificado hoy
+
+- `npm run lint` ✅ pasa con warnings heredados, sin errores bloqueantes.
+- `npm run build` ✅ compila correctamente en local.
+- `GET /` ✅ responde 200.
+- `GET /comenzar` ✅ responde 200.
+- `POST /api/leads` ✅ valida payload y responde 400 cuando faltan campos requeridos.
+- `GET /api/drive/status` ⚠️ hoy reporta falta de `GOOGLE_SERVICE_ACCOUNT_EMAIL` y `GOOGLE_PRIVATE_KEY` en local.
+
 ## Riesgos técnicos actuales
 
-- Google Drive puede depender de que el folder raíz exista y esté compartido con la service account. Si `/api/drive/status` falla por permisos o folder ID, el piloto debe operar con carpeta manual validada antes de onboarding.
+- Google Drive no quedó operativo en este entorno local porque faltan credenciales de service account. El endpoint `/api/drive/status` ya devuelve diagnóstico y bypass operativo.
+- Incluso con credenciales, el folder raíz debe existir y estar compartido con la service account; si no, aparecerá el error tipo `File not found`.
 - Pagos automáticos están fuera del MVP. Cobrar por transferencia/SPEI mientras se valida demanda.
-- Monday debe ser canal principal de seguimiento de leads, pero el endpoint ya debe guardar fallback interno si Monday falla.
+- Monday debe ser canal principal de seguimiento de leads, pero el endpoint guarda fallback interno en `leads_fmg` si Monday falla.
 - No prometer cumplimiento fiscal autónomo hasta validar el flujo documental y definir alcance fiscal/legal.
 
 ## Entrega mensual al cliente
@@ -119,21 +129,21 @@ Formato mínimo:
 
 ### WhatsApp corto
 
-Hola, soy Jorge de Factura Mis Gastos. Estamos abriendo pilotos para empresas que pierden deducciones porque los recibos de empleados llegan tarde, incompletos o desordenados. FMG centraliza esos comprobantes y entrega un reporte mensual listo para revisar con tu contador. ¿Quieres que hagamos un diagnóstico rápido de tu flujo actual?
+Hola, soy Jorge de Factura Mis Gastos. Estamos abriendo implementaciones guiadas para empresas que pierden deducciones porque los recibos de empleados llegan tarde, incompletos o desordenados. FMG centraliza esos comprobantes y entrega un reporte mensual listo para revisar con tu contador. ¿Quieres que hagamos un diagnóstico rápido de tu flujo actual?
 
 ### Email corto
 
-Asunto: Piloto para ordenar comprobantes y recuperar deducciones
+Asunto: Ordena comprobantes y recupera deducciones
 
 Hola, {{nombre}}.
 
-Estamos lanzando un piloto de Factura Mis Gastos para empresas que manejan gastos de empleados y quieren dejar de perder comprobantes deducibles.
+Estamos abriendo una implementación guiada de Factura Mis Gastos para empresas que manejan gastos de empleados y quieren dejar de perder comprobantes deducibles.
 
-El piloto centraliza recibos/facturas, los ordena por persona y mes, y entrega un reporte mensual listo para revisar con el contador.
+El servicio centraliza recibos/facturas, los ordena por persona y mes, y entrega un reporte mensual listo para revisar con el contador.
 
 Tenemos dos opciones iniciales:
 - Diagnóstico de deducciones perdidas: $999 MXN.
-- Piloto FMG: $1,499 MXN/mes.
+- Control Mensual FMG: $1,499 MXN/mes.
 
 ¿Te interesa revisar si esto aplica para tu operación?
 
@@ -145,18 +155,18 @@ Tenemos dos opciones iniciales:
 4. ¿El contador recibe todo ordenado al cierre de mes?
 5. ¿Cuántos empleados generan gastos?
 6. ¿Cuántos comprobantes calculas al mes?
-7. Propuesta: iniciar piloto de 30 días con hasta 3 usuarios y 100 comprobantes.
+7. Propuesta: iniciar servicio de 30 días con hasta 3 usuarios y 100 comprobantes.
 
 ### Objeciones
 
 **Ya tengo contador.**
-Perfecto. FMG no lo reemplaza en el piloto; le entrega mejor información para que no persiga documentos al cierre.
+Perfecto. FMG no lo reemplaza en esta etapa; le entrega mejor información para que no persiga documentos al cierre.
 
 **Mis empleados mandan todo por WhatsApp.**
 Ese es justo el problema: WhatsApp sirve para mandar, pero no para ordenar, medir ni cerrar mes.
 
 **No quiero otro sistema complicado.**
-El piloto es asistido. Empezamos con pocos usuarios, medimos el flujo real y solo automatizamos lo que demuestre valor.
+El servicio es asistido. Empezamos con pocos usuarios, medimos el flujo real y solo automatizamos lo que demuestre valor.
 
 **¿Ya presenta impuestos?**
 Todavía no prometemos presentación automática. Este MVP resuelve la base: comprobantes completos, ordenados y reportables.
@@ -171,4 +181,6 @@ Todavía no prometemos presentación automática. Este MVP resuelve la base: com
 
 ## Próximo paso comercial
 
-Contactar 20 prospectos cercanos y ofrecer diagnóstico o piloto. Meta del primer ciclo: 5 conversaciones, 2 pilotos pagados, 1 aprendizaje claro sobre qué dolor compra mejor.
+1. Cargar credenciales reales de Drive y validar carpeta raíz o carpeta manual compartida para el primer cliente.
+2. Contactar 20 prospectos cercanos y ofrecer diagnóstico o Control Mensual FMG.
+3. Meta del primer ciclo: 5 conversaciones, 2 servicios pagados, 1 aprendizaje claro sobre qué dolor compra mejor.

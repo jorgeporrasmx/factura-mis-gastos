@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://facturamisgastos.com"),
   title: {
-    default: "Factura Mis Gastos | Piloto asistido para ordenar comprobantes empresariales",
+    default: "Factura Mis Gastos | Control de comprobantes y deducciones para empresas",
     template: "%s | Factura Mis Gastos",
   },
-  description: "Piloto asistido para empresas mexicanas: centraliza comprobantes, ordénalos por persona y mes, y recibe un reporte mensual listo para revisar con tu contador.",
+  description: "Control mensual de comprobantes: centraliza comprobantes, ordénalos por persona y mes, y recibe un reporte mensual listo para revisar con tu contador.",
   keywords: [
     "gestión de gastos empresariales México",
     "control de gastos por empleado",
@@ -54,20 +54,20 @@ export const metadata: Metadata = {
     locale: "es_MX",
     siteName: "Factura Mis Gastos",
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
-    description: "Piloto asistido para centralizar comprobantes, ordenarlos por persona y mes, y entregar un reporte mensual listo para contador.",
+    description: "Servicio asistido para centralizar comprobantes, ordenarlos por persona y mes, y entregar un reporte mensual listo para contador.",
     url: "https://facturamisgastos.com",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Factura Mis Gastos - Piloto asistido para ordenar comprobantes empresariales",
+        alt: "Factura Mis Gastos - Control de comprobantes y deducciones para empresas",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Factura Mis Gastos | Piloto asistido para empresas mexicanas",
+    title: "Factura Mis Gastos | Control mensual de comprobantes",
     description: "Centraliza comprobantes y recibe un reporte mensual listo para revisar con tu contador.",
     images: ["/og-image.png"],
     creator: "@FactMisGastos",

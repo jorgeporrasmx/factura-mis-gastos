@@ -36,8 +36,11 @@ export function Header() {
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
       >
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="hover:opacity-90 transition-opacity">
+          <Link href="/" className="hover:opacity-90 transition-opacity flex items-center gap-3">
             <Logo size="sm" />
+            <span className="hidden lg:inline text-xs text-muted-foreground border-l border-slate-200 pl-3 max-w-[180px] leading-snug">
+              Control de comprobantes para empresas
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -51,7 +54,7 @@ export function Header() {
               onClick={() => scrollToSection('precios')}
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
-              Precios
+              Planes
             </button>
             <Link
               href="/blog"
@@ -87,14 +90,14 @@ export function Header() {
               <>
                 <Link href="/auth/login">
                   <Button variant="ghost" className="text-sm">
-                    Iniciar Sesión
+                    Acceder
                   </Button>
                 </Link>
                 <Button
                   className="text-sm gradient-bg hover:opacity-90 transition-opacity"
                   onClick={() => setIsLeadModalOpen(true)}
                 >
-                  Solicitar piloto
+                  Ordenar mis comprobantes
                 </Button>
               </>
             )}
@@ -128,7 +131,7 @@ export function Header() {
                 onClick={() => scrollToSection('precios')}
                 className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
               >
-                Precios
+                Planes
               </button>
               <Link
                 href="/blog"
@@ -175,7 +178,7 @@ export function Header() {
                   <>
                     <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" className="w-full justify-center">
-                        Iniciar Sesión
+                        Acceder
                       </Button>
                     </Link>
                     <Button
@@ -185,7 +188,7 @@ export function Header() {
                         setIsLeadModalOpen(true);
                       }}
                     >
-                      Solicitar piloto
+                      Ordenar mis comprobantes
                     </Button>
                   </>
                 )}
@@ -199,7 +202,7 @@ export function Header() {
         isOpen={isLeadModalOpen}
         onClose={() => setIsLeadModalOpen(false)}
         formType="pilot"
-        planInterest="Piloto FMG"
+        planInterest="Control Mensual FMG"
       />
     </header>
   );

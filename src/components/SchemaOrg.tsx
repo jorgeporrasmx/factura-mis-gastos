@@ -6,7 +6,7 @@ export function SchemaOrg() {
     url: 'https://facturamisgastos.com',
     logo: 'https://facturamisgastos.com/logo.png',
     description:
-      'Piloto asistido para empresas mexicanas que necesitan ordenar comprobantes y cerrar cada mes con mejor control documental.',
+      'Control mensual de comprobantes que necesitan ordenar comprobantes y cerrar cada mes con mejor control documental.',
     foundingDate: '2024',
     contactPoint: {
       '@type': 'ContactPoint',
@@ -45,7 +45,7 @@ export function SchemaOrg() {
       },
       {
         '@type': 'Offer',
-        name: 'Piloto FMG',
+        name: 'Control Mensual FMG',
         price: '1499',
         priceCurrency: 'MXN',
       },
@@ -67,7 +67,7 @@ export function SchemaOrg() {
         name: '¿Qué es Factura Mis Gastos?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Es un piloto asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
+          text: 'Es un servicio asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
         },
       },
       {
@@ -83,7 +83,7 @@ export function SchemaOrg() {
         name: '¿Cuánto cuesta el servicio?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Hoy ofrecemos Diagnóstico por $999 MXN, Piloto FMG por $1,499 MXN al mes y FMG Empresa por $2,499 MXN al mes.',
+          text: 'Hoy ofrecemos Diagnóstico por $999 MXN, Control Mensual FMG por $1,499 MXN al mes y FMG Empresa por $2,499 MXN al mes.',
         },
       },
     ],

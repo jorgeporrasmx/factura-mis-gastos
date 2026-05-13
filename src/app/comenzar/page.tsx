@@ -17,7 +17,7 @@ const offers = [
     description: 'Para negocios chicos que quieren probar FMG con tickets reales.',
     bullets: [
       'Hasta 30 recibos al mes',
-      'Revisión de cuáles pueden facturarse',
+      'Facturación y orden del lote',
       'Orden mensual en Drive',
       'Control básico para contador',
     ],
@@ -29,12 +29,12 @@ const offers = [
     id: 'recibo-factura',
     name: 'FMG Recibo a Factura',
     price: '$1,499 MXN/mes',
-    description: 'La opción recomendada para dejar de perder deducciones por tickets olvidados.',
+    description: 'La opción recomendada para cerrar el mes sin tickets perdidos.',
     bullets: [
       'Hasta 75 recibos/tickets al mes',
-      'Seguimiento de facturación cuando aplica',
+      'Seguimiento mensual de facturación',
       'Drive ordenado por negocio y mes',
-      'Corte mensual listo para tu contador',
+      'Corte mensual para tu contador',
     ],
     formType: 'pilot' as FormType,
     planInterest: 'FMG Recibo a Factura',
@@ -91,12 +91,12 @@ export default function ComenzarPage() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <section className="text-center mb-12">
-          <Badge className="mb-4 gradient-bg">Recibo → factura → deducción posible</Badge>
+          <Badge className="mb-4 gradient-bg">Recibo → factura → contador</Badge>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-            Mándanos foto de tus recibos. Nosotros los facturamos cuando sea posible y ordenamos tus gastos.
+            Mándanos foto de tus recibos. Nosotros los facturamos y ordenamos tus gastos.
           </h1>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            FMG está diseñado para que los tickets no se pierdan en WhatsApp, cajones o fotos sueltas. Dejamos el mes ordenado para que tu contador pueda deducir todo lo posible.
+            FMG evita que tus tickets se pierdan en WhatsApp, cajones o fotos. Cerramos el mes ordenado para tu contador.
           </p>
         </section>
 
@@ -145,10 +145,10 @@ export default function ComenzarPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>1. Mandas tus datos y tu primer recibo por WhatsApp.</p>
-              <p>2. Revisamos si puede facturarse y qué datos faltan.</p>
+              <p>2. Lo facturamos o te decimos qué dato falta.</p>
               <p>3. Lo guardamos en Drive y queda registrado en control mensual.</p>
               <p>4. Repetimos el flujo durante el mes con tus nuevos recibos.</p>
-              <p>5. Tu contador recibe el paquete ordenado para revisar deducciones.</p>
+              <p>5. Tu contador recibe el paquete ordenado para el cierre.</p>
             </CardContent>
           </Card>
 
@@ -158,12 +158,12 @@ export default function ComenzarPage() {
             </CardHeader>
             <CardContent className="space-y-4 text-sm text-slate-200">
               <p>
-                No todo recibo se puede facturar, pero casi todo se puede ordenar. Revisamos tu caso antes de activar el servicio.
+                Si a un recibo le falta algún dato fiscal, lo marcamos y lo dejamos en seguimiento antes de cerrar el mes.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   className="bg-white text-slate-900 hover:bg-slate-100"
-                  onClick={() => openLeadModal('standard', 'Revisión de recibos deducibles')}
+                  onClick={() => openLeadModal('standard', 'Revisión de recibos')}
                 >
                   Revisar mi caso
                 </Button>

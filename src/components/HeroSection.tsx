@@ -73,7 +73,7 @@ export function HeroSection() {
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in-up delay-100">
-              Mándanos foto de tus tickets. Revisamos si se pueden facturar, los guardamos en Drive y dejamos el control mensual listo para tu contador.</p>
+              Mándanos foto de tus tickets. Los facturamos, los guardamos en Drive y cerramos el mes para tu contador.</p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
@@ -144,7 +144,7 @@ export function HeroSection() {
                     {/* Bot response */}
                     <div className="flex justify-start">
                       <div className="bg-white rounded-lg px-3 py-2 max-w-[220px] shadow">
-                        <p className="text-sm text-slate-800">✅ ¡Recibido! Revisamos si se puede facturar.</p>
+                        <p className="text-sm text-slate-800">✅ ¡Recibido! Lo ordenamos para tu contador.</p>
                         <p className="text-xs text-slate-500 mt-1">10:30</p>
                       </div>
                     </div>
@@ -192,7 +192,7 @@ export function HeroSection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos deducibles'}
+        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos'}
       />
     </section>
   );

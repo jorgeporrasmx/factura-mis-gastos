@@ -6,7 +6,7 @@ export function SchemaOrg() {
     url: 'https://facturamisgastos.com',
     logo: 'https://facturamisgastos.com/logo.png',
     description:
-      'Servicio asistido para convertir recibos y tickets en gastos ordenados, con seguimiento de facturación cuando aplica y corte mensual para contador.',
+      'Facturamos recibos, ordenamos gastos y entregamos un corte mensual al contador.',
     foundingDate: '2024',
     contactPoint: {
       '@type': 'ContactPoint',
@@ -35,7 +35,7 @@ export function SchemaOrg() {
       name: 'México',
     },
     description:
-      'Recibimos fotos de tickets y recibos, revisamos si pueden facturarse, los ordenamos en Drive y entregamos un control mensual listo para revisar con el contador.',
+      'Recibimos fotos de tickets y recibos, los facturamos, los ordenamos en Drive y entregamos un corte mensual al contador.',
     offers: [
       {
         '@type': 'Offer',
@@ -67,7 +67,7 @@ export function SchemaOrg() {
         name: '¿Qué es Factura Mis Gastos?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Es un servicio asistido para negocios mexicanos que quieren convertir recibos y tickets en gastos ordenados para su contador.',
+          text: 'Facturamos recibos y tickets, los ordenamos y preparamos el corte mensual para tu contador.',
         },
       },
       {
@@ -75,7 +75,7 @@ export function SchemaOrg() {
         name: '¿Cómo funciona el servicio?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Mandas foto de tus recibos, FMG revisa si pueden facturarse, los ordena en Drive y deja un corte mensual listo para tu contador.',
+          text: 'Mandas foto de tus recibos; FMG los factura, los ordena en Drive y deja un corte mensual para tu contador.',
         },
       },
       {

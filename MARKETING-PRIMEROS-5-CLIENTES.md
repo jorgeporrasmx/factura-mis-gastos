@@ -4,12 +4,12 @@
 Conseguir 5 clientes fundadores con inversión mínima, bajo esfuerzo de producción y funnel lo más automatizable posible.
 
 ## Oferta central
-**Envía foto de tu recibo. Nosotros lo facturamos cuando sea posible, ordenamos tus gastos y te ayudamos a deducir todo lo posible.**
+**Envía foto de tu recibo. Nosotros lo facturamos, ordenamos tus gastos y dejamos todo listo para tu contador.**
 
 Promesa comercial segura:
-- Muchos negocios pierden deducciones porque los tickets se quedan en WhatsApp, cajones o fotos sueltas.
+- Muchos negocios pierden deducciones porque los tickets se quedan en WhatsApp, cajones o fotos.
 - FMG convierte ese desorden en un flujo: recibo recibido → factura solicitada/validada → archivo ordenado → registro para contador.
-- La meta es que el servicio pueda pagarse solo con deducciones que hoy se están perdiendo.
+- FMG busca recuperar gastos que hoy quedan fuera del cierre mensual.
 
 No prometer:
 - “Garantizamos X ahorro”.
@@ -17,7 +17,7 @@ No prometer:
 - “Sustituimos a tu contador”.
 
 Sí prometer:
-- “Revisamos si se puede facturar”.
+- “Facturamos y ordenamos tus recibos”.
 - “Ordenamos y registramos tus comprobantes”.
 - “Te entregamos control mensual para tu contador”.
 
@@ -45,7 +45,7 @@ Sectores:
 
 Incluye:
 - recepción de recibos/fotos/comprobantes
-- solicitud o guía de facturación cuando sea posible
+- facturación o guía cuando falten datos
 - almacenamiento ordenado en Drive
 - registro automático en Monday/control interno
 - corte mensual para contador
@@ -61,7 +61,7 @@ Oferta primeros 5:
 - precio fundador por 3 meses
 
 ## CTA principal
-**Mándanos foto de tu primer recibo. Te decimos si se puede convertir en factura deducible.**
+**Mándanos tu primer recibo. Te mostramos cómo queda facturado y ordenado.**
 
 CTA secundario:
 **Quiero ordenar mis gastos este mes.**
@@ -80,14 +80,14 @@ CTA secundario:
 6. Después de pago, onboarding automático.
 
 ## Mensaje WhatsApp inicial
-Hola, soy Juan de FMG. Mándame foto de un recibo que normalmente se te perdería y revisamos si se puede convertir en factura y dejar ordenado para tu contador.
+Hola, soy Juan de FMG. Mándame foto de un recibo que normalmente se te perdería y te enseño cómo lo facturamos y ordenamos para tu contador.
 
 ## Secuencia automática
 
 ### Día 0 — respuesta inmediata
 Recibimos tu interés en FMG.
 
-La idea es simple: tú mandas foto de tus recibos; nosotros revisamos si se pueden facturar, ordenamos los comprobantes y dejamos el mes listo para tu contador.
+La idea es simple: tú mandas foto de tus recibos; nosotros los facturamos, ordenamos los comprobantes y dejamos el mes listo para tu contador.
 
 Para decirte si aplica, responde:
 1. ¿Qué tipo de negocio tienes?
@@ -99,7 +99,7 @@ Ayer te escribimos por FMG.
 
 El problema más común no es pagar de más por impuestos: es perder deducciones porque los tickets nunca se facturan o se quedan enterrados en WhatsApp.
 
-FMG organiza el flujo completo: recibo → factura cuando aplica → Drive → control mensual.
+FMG organiza el flujo completo: recibo → factura → Drive → control mensual.
 
 Si quieres, mándanos 1 recibo y te enseñamos cómo entraría al sistema.
 
@@ -115,7 +115,7 @@ Estamos activando 5 clientes fundadores con setup incluido. Si quieres entrar, r
 
 Si este mes tienes tickets que probablemente no vas a facturar, ahí puede estar el costo real del desorden.
 
-FMG cuesta desde $999/mes y está pensado para pagarse con el dinero que hoy dejas fuera de deducciones posibles.
+FMG cuesta desde $999/mes y está pensado para recuperar gastos que hoy se quedan fuera del cierre mensual.
 
 Si quieres probarlo con tu primer lote de recibos, responde “recibos”.
 
@@ -125,7 +125,7 @@ Si quieres probarlo con tu primer lote de recibos, responde “recibos”.
 Texto:
 ¿Tu contador te pide facturas cada mes y tú tienes tickets regados en WhatsApp, cajones o fotos?
 
-Mándanos foto de tus recibos. En FMG revisamos si se pueden facturar, los ordenamos y te dejamos el mes listo para tu contador.
+Mándanos foto de tus recibos. En FMG los facturamos, los ordenamos y dejamos el mes listo para tu contador.
 
 Primeros 5 clientes fundadores con activación incluida.
 
@@ -136,7 +136,7 @@ CTA: Enviar WhatsApp
 Texto:
 Cada ticket que no facturas puede ser una deducción perdida.
 
-FMG te ayuda a convertir recibos en comprobantes ordenados: foto del recibo → factura cuando aplica → Drive → control mensual para contador.
+FMG convierte recibos en comprobantes ordenados: foto del recibo → factura → Drive → control mensual para contador.
 
 Desde $999/mes.
 
@@ -148,7 +148,7 @@ Texto:
 No necesitas otro Excel.
 No necesitas perseguir tickets al cierre.
 
-Solo manda foto de tus recibos. Nosotros los facturamos cuando sea posible y ordenamos tus gastos para que tu contador tenga todo claro.
+Solo manda foto de tus recibos. Nosotros los facturamos y ordenamos tus gastos para que tu contador tenga todo claro.
 
 Título: Manda foto. Nosotros ordenamos.
 CTA: Enviar WhatsApp
@@ -161,11 +161,11 @@ CTA: Enviar WhatsApp
 
 3. Un recibo en foto no sirve de mucho si nadie lo factura, lo guarda y lo manda al contador.
 
-4. FMG existe para una cosa: que cada gasto posible termine en el lugar correcto antes del cierre.
+4. FMG existe para una cosa: que cada gasto llegue al lugar correcto antes del cierre.
 
 5. Si cada mes tu contador te pide facturas y tú empiezas a buscar en chats, el problema no es fiscal. Es operativo.
 
-6. El flujo ideal: compras → foto del recibo → factura cuando aplica → Drive → control mensual → contador.
+6. El flujo ideal: compras → foto del recibo → factura → Drive → control mensual → contador.
 
 7. No prometemos magia fiscal. Prometemos orden, seguimiento y menos comprobantes perdidos.
 
@@ -173,7 +173,7 @@ CTA: Enviar WhatsApp
 
 9. Buscamos 5 clientes fundadores para FMG. Activación incluida, precio fundador y acompañamiento inicial.
 
-10. Mándanos foto de un recibo que normalmente perderías. Te decimos si se puede convertir en factura y cómo quedaría ordenado.
+10. Mándanos foto de un recibo que normalmente perderías. Te mostramos cómo quedaría facturado y ordenado.
 
 ## Lista de acciones de bajo esfuerzo
 - Cambiar landing y CTA.

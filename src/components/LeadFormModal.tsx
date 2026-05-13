@@ -66,7 +66,7 @@ const formConfig = {
   },
   standard: {
     title: 'Revisar si aplica para mi negocio',
-    description: 'Cuéntanos cuántos recibos pierdes al mes y vemos si FMG puede ayudarte a recuperar más deducciones posibles.',
+    description: 'Cuéntanos cuántos recibos pierdes al mes y te mostramos cómo FMG los convierte en control para tu contador.',
     fields: ['nombre', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'problema_principal'] as const,
     submitText: 'Revisar mi caso',
     successTitle: '¡Solicitud recibida!',
@@ -74,7 +74,7 @@ const formConfig = {
   },
   pilot: {
     title: 'Envía tu primer recibo',
-    description: 'Mándanos tus datos y te diremos cómo enviar una foto de recibo para revisar si puede convertirse en factura deducible.',
+    description: 'Mándanos tus datos y te diremos cómo enviar tu primer recibo para facturarlo y ordenarlo.',
     fields: ['nombre', 'whatsapp', 'email', 'empresa', 'recibos_mes', 'problema_principal'] as const,
     submitText: 'Quiero facturar y ordenar mis recibos',
     successTitle: '¡Recibimos tu solicitud!',
@@ -82,7 +82,7 @@ const formConfig = {
   },
   corporate: {
     title: 'Solicitar FMG Empresa',
-    description: 'Cuéntanos sobre tu operación y armamos un servicio asistido para tu equipo.',
+    description: 'Cuéntanos sobre tu operación y armamos el flujo para tu equipo.',
     fields: ['nombre', 'cargo', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'integraciones', 'notas'] as const,
     submitText: 'Solicitar plan empresa',
     successTitle: '¡Solicitud recibida!',

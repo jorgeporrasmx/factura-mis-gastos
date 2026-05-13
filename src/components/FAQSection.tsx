@@ -6,11 +6,11 @@ import { LeadFormModal } from './LeadFormModal';
 const faqs = [
   {
     question: "¿Qué es Factura Mis Gastos?",
-    answer: "Factura Mis Gastos es un servicio asistido para negocios mexicanos que tienen tickets y recibos desordenados. Mandas foto del recibo, revisamos si se puede facturar, lo guardamos y dejamos el control mensual listo para tu contador."
+    answer: "Factura Mis Gastos es para negocios con tickets y recibos desordenados. Mandas foto del recibo; lo facturamos, lo guardamos y cerramos el mes para tu contador."
   },
   {
     question: "¿Cómo funciona el servicio?",
-    answer: "El flujo es simple: 1) mandas foto del recibo o ticket, 2) revisamos si puede convertirse en factura, 3) lo ordenamos en Drive, y 4) queda registrado para tu corte mensual."
+    answer: "El flujo es simple: 1) mandas foto del recibo, 2) lo facturamos, 3) lo ordenamos en Drive y 4) queda registrado para tu corte mensual."
   },
   {
     question: "¿Cuánto cuesta el servicio?",
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     question: "¿Garantizan que todo recibo se puede facturar?",
-    answer: "No. No todo ticket puede convertirse en factura deducible. Lo que sí hacemos es revisar cada recibo, ordenar el comprobante y dar seguimiento cuando la facturación sea posible. Tu contador siempre debe validar el tratamiento fiscal final."
+    answer: "No. Algunos tickets no cumplen requisitos fiscales. En esos casos dejamos el comprobante ordenado y señalado para que tu contador decida el tratamiento correcto."
   },
   {
     question: "¿Sustituyen a mi contador?",

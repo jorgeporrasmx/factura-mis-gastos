@@ -6,8 +6,8 @@ const MONDAY_API_URL = 'https://api.monday.com/v2';
 // ID del tablero MACHOTE (template)
 const TEMPLATE_BOARD_ID = '18398058025';
 
-// Workspace ID donde crear los tableros
-const WORKSPACE_ID = process.env.MONDAY_WORKSPACE_ID || '7660065';
+// Workspace ID donde crear los tableros (Factura Mis Gastos)
+const WORKSPACE_ID = process.env.MONDAY_WORKSPACE_ID || '10710743';
 
 /**
  * Ejecutar mutation GraphQL a Monday
@@ -55,12 +55,12 @@ export async function duplicateBoardForCompany(companyName: string): Promise<{
   console.log(`[Monday] Duplicando tablero MACHOTE para empresa: ${companyName}`);
 
   const query = `
-    mutation {
+    mutation ($boardId: ID!, $boardName: String!, $workspaceId: ID!) {
       duplicate_board(
-        board_id: ${TEMPLATE_BOARD_ID},
+        board_id: $boardId,
         duplicate_type: duplicate_board_with_structure,
-        board_name: "${boardName}",
-        workspace_id: ${WORKSPACE_ID}
+        board_name: $boardName,
+        workspace_id: $workspaceId
       ) {
         board {
           id
@@ -78,7 +78,11 @@ export async function duplicateBoardForCompany(companyName: string): Promise<{
           name: string;
         };
       };
-    }>(query);
+    }>(query, {
+      boardId: TEMPLATE_BOARD_ID,
+      boardName,
+      workspaceId: WORKSPACE_ID,
+    });
 
     const newBoardId = result.duplicate_board.board.id;
     const boardUrl = `https://sutilde.monday.com/boards/${newBoardId}`;

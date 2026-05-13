@@ -95,13 +95,17 @@ function normalizeDropdownValue(
   }
 
   if (type === 'origen') {
+    if (normalized.includes('recibo')) return 'Diagnóstico';
     if (normalized.includes('diagn')) return 'Diagnóstico';
     if (normalized.includes('piloto')) return 'Control Mensual FMG';
+    if (normalized.includes('factura')) return 'Control Mensual FMG';
     if (normalized.includes('empresa')) return 'FMG Empresa';
     if (normalized.includes('whatsapp')) return 'Widget WhatsApp';
   }
 
   if (type === 'plan_interes') {
+    if (normalized.includes('primer lote')) return 'Diagnóstico de deducciones perdidas';
+    if (normalized.includes('recibo') || normalized.includes('factura')) return 'Control Mensual FMG';
     if (normalized.includes('diagn')) return 'Diagnóstico de deducciones perdidas';
     if (normalized.includes('piloto')) return 'Control Mensual FMG';
     if (normalized.includes('empresa')) return 'FMG Empresa';

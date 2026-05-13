@@ -6,7 +6,7 @@ export function SchemaOrg() {
     url: 'https://facturamisgastos.com',
     logo: 'https://facturamisgastos.com/logo.png',
     description:
-      'Control mensual de comprobantes que necesitan ordenar comprobantes y cerrar cada mes con mejor control documental.',
+      'Servicio asistido para convertir recibos y tickets en gastos ordenados, con seguimiento de facturación cuando aplica y corte mensual para contador.',
     foundingDate: '2024',
     contactPoint: {
       '@type': 'ContactPoint',
@@ -25,7 +25,7 @@ export function SchemaOrg() {
   const serviceSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
-    serviceType: 'Orden documental de comprobantes empresariales',
+    serviceType: 'Facturación y orden mensual de recibos empresariales',
     provider: {
       '@type': 'Organization',
       name: 'Factura Mis Gastos',
@@ -35,17 +35,17 @@ export function SchemaOrg() {
       name: 'México',
     },
     description:
-      'Centralizamos comprobantes de empleados, los ordenamos por persona, empresa y mes, y entregamos un reporte mensual listo para revisar con el contador.',
+      'Recibimos fotos de tickets y recibos, revisamos si pueden facturarse, los ordenamos en Drive y entregamos un control mensual listo para revisar con el contador.',
     offers: [
       {
         '@type': 'Offer',
-        name: 'Diagnóstico de deducciones perdidas',
+        name: 'Primer lote de recibos',
         price: '999',
         priceCurrency: 'MXN',
       },
       {
         '@type': 'Offer',
-        name: 'Control Mensual FMG',
+        name: 'FMG Recibo a Factura',
         price: '1499',
         priceCurrency: 'MXN',
       },
@@ -67,7 +67,7 @@ export function SchemaOrg() {
         name: '¿Qué es Factura Mis Gastos?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Es un servicio asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
+          text: 'Es un servicio asistido para negocios mexicanos que quieren convertir recibos y tickets en gastos ordenados para su contador.',
         },
       },
       {
@@ -75,7 +75,7 @@ export function SchemaOrg() {
         name: '¿Cómo funciona el servicio?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Tu equipo sube comprobantes, FMG los ordena por persona y mes, y te entregamos un corte mensual listo para revisar con tu contador.',
+          text: 'Mandas foto de tus recibos, FMG revisa si pueden facturarse, los ordena en Drive y deja un corte mensual listo para tu contador.',
         },
       },
       {
@@ -83,7 +83,7 @@ export function SchemaOrg() {
         name: '¿Cuánto cuesta el servicio?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Hoy ofrecemos Diagnóstico por $999 MXN, Control Mensual FMG por $1,499 MXN al mes y FMG Empresa por $2,499 MXN al mes.',
+          text: 'Hoy ofrecemos Primer lote de recibos por $999 MXN al mes, FMG Recibo a Factura por $1,499 MXN al mes y FMG Empresa por $2,499 MXN al mes.'
         },
       },
     ],

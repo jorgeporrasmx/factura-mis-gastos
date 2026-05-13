@@ -61,19 +61,19 @@ export function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-primary mb-6 animate-fade-in">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Control mensual de comprobantes
+              Envía foto de tu recibo
             </div>
 
             {/* Main headline */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up leading-tight">
-              <span className="text-foreground">Deja de perder deducciones</span>{' '}
-              <span className="text-primary">por recibos desordenados.</span>{' '}
-              <span className="gradient-text">Centraliza, ordena y reporta.</span>
+              <span className="text-foreground">Convierte tus recibos</span>{' '}
+              <span className="text-primary">en gastos ordenados.</span>{' '}
+              <span className="gradient-text">Factura más, pierde menos.</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-base sm:text-lg lg:text-xl text-muted-foreground mb-8 leading-relaxed animate-fade-in-up delay-100">
-              Tu equipo sube sus comprobantes; FMG los ordena por persona, empresa y mes para entregarte un reporte mensual listo para revisar con tu contador.</p>
+              Mándanos foto de tus tickets. Revisamos si se pueden facturar, los guardamos en Drive y dejamos el control mensual listo para tu contador.</p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
@@ -82,7 +82,7 @@ export function HeroSection() {
                 onClick={() => openModal('pilot')}
                 className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
               >
-                Ordenar mis comprobantes
+                Enviar mi primer recibo
                 <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -96,7 +96,7 @@ export function HeroSection() {
                 <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Agendar diagnóstico
+                Ver si aplica para mi negocio
               </Button>
             </div>
 
@@ -144,7 +144,7 @@ export function HeroSection() {
                     {/* Bot response */}
                     <div className="flex justify-start">
                       <div className="bg-white rounded-lg px-3 py-2 max-w-[220px] shadow">
-                        <p className="text-sm text-slate-800">✅ ¡Recibido! Lo guardamos para tu corte mensual.</p>
+                        <p className="text-sm text-slate-800">✅ ¡Recibido! Revisamos si se puede facturar.</p>
                         <p className="text-xs text-slate-500 mt-1">10:30</p>
                       </div>
                     </div>
@@ -152,8 +152,8 @@ export function HeroSection() {
                     {/* Success message */}
                     <div className="flex justify-start">
                       <div className="bg-white rounded-lg px-3 py-2 max-w-[220px] shadow">
-                        <p className="text-sm text-slate-800">📁 <strong>Comprobante ordenado</strong></p>
-                        <p className="text-sm text-slate-600 mt-1">Empleado: Ventas Norte</p>
+                        <p className="text-sm text-slate-800">📁 <strong>Gasto ordenado</strong></p>
+                        <p className="text-sm text-slate-600 mt-1">Estado: Facturable</p>
                         <p className="text-sm text-slate-600">Mes: Mayo 2026</p>
                         <p className="text-xs text-slate-500 mt-1">10:31</p>
                       </div>
@@ -175,11 +175,11 @@ export function HeroSection() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-slate-500">Este mes</span>
-                    <span className="font-semibold text-slate-800">47 comprobantes</span>
+                    <span className="font-semibold text-slate-800">47 recibos</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Deducible</span>
-                    <span className="font-semibold text-green-600">Listo para revisar</span>
+                    <span className="text-slate-500">Factura</span>
+                    <span className="font-semibold text-green-600">En seguimiento</span>
                   </div>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export function HeroSection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'Control Mensual FMG' : 'Diagnóstico de deducciones perdidas'}
+        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos deducibles'}
       />
     </section>
   );

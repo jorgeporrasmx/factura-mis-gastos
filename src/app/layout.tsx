@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://facturamisgastos.com"),
   title: {
-    default: "Factura Mis Gastos | Control de comprobantes y deducciones para empresas",
+    default: "Factura Mis Gastos | Convierte recibos en facturas ordenadas",
     template: "%s | Factura Mis Gastos",
   },
-  description: "Control mensual de comprobantes: centraliza comprobantes, ordénalos por persona y mes, y recibe un reporte mensual listo para revisar con tu contador.",
+  description: "Manda foto de tus recibos. Revisamos si pueden facturarse, los ordenamos en Drive y dejamos el corte mensual listo para tu contador.",
   keywords: [
     "gestión de gastos empresariales México",
     "control de gastos por empleado",
@@ -53,22 +53,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_MX",
     siteName: "Factura Mis Gastos",
-    title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
-    description: "Servicio asistido para centralizar comprobantes, ordenarlos por persona y mes, y entregar un reporte mensual listo para contador.",
+    title: "Factura Mis Gastos | Recibos, facturas y deducciones posibles",
+    description: "Servicio asistido para revisar recibos, facturarlos cuando aplica, ordenarlos en Drive y entregar un corte mensual listo para contador.",
     url: "https://facturamisgastos.com",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Factura Mis Gastos - Control de comprobantes y deducciones para empresas",
+        alt: "Factura Mis Gastos - Recibos, facturas y deducciones posibles",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Factura Mis Gastos | Control mensual de comprobantes",
-    description: "Centraliza comprobantes y recibe un reporte mensual listo para revisar con tu contador.",
+    title: "Factura Mis Gastos | Convierte recibos en facturas ordenadas",
+    description: "Manda foto de tus recibos; FMG los ordena y da seguimiento de facturación cuando aplica.",
     images: ["/og-image.png"],
     creator: "@FactMisGastos",
   },

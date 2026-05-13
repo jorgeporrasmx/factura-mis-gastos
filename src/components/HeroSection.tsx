@@ -61,7 +61,7 @@ export function HeroSection() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-sm font-medium text-primary mb-6 animate-fade-in">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Piloto asistido para empresas mexicanas
+              Control mensual de comprobantes
             </div>
 
             {/* Main headline */}
@@ -82,7 +82,7 @@ export function HeroSection() {
                 onClick={() => openModal('pilot')}
                 className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
               >
-                Solicitar piloto
+                Ordenar mis comprobantes
                 <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -192,7 +192,7 @@ export function HeroSection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'Piloto FMG' : 'Diagnóstico de deducciones perdidas'}
+        planInterest={formType === 'pilot' ? 'Control Mensual FMG' : 'Diagnóstico de deducciones perdidas'}
       />
     </section>
   );

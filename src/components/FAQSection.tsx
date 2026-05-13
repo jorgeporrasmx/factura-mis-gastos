@@ -6,7 +6,7 @@ import { LeadFormModal } from './LeadFormModal';
 const faqs = [
   {
     question: "¿Qué es Factura Mis Gastos?",
-    answer: "Factura Mis Gastos es un piloto asistido para empresas mexicanas que necesitan dejar de perder deducciones por comprobantes desordenados. Centralizamos recibos y facturas, los ordenamos por persona, empresa y mes, y cerramos con un reporte listo para revisar con tu contador."
+    answer: "Factura Mis Gastos es un servicio asistido para empresas mexicanas que necesitan dejar de perder deducciones por comprobantes desordenados. Centralizamos recibos y facturas, los ordenamos por persona, empresa y mes, y cerramos con un reporte listo para revisar con tu contador."
   },
   {
     question: "¿Cómo funciona el servicio?",
@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     question: "¿Cuánto cuesta el servicio?",
-    answer: "Hoy manejamos tres ofertas: Diagnóstico de deducciones perdidas por $999 MXN una vez, Piloto FMG por $1,499 MXN/mes (hasta 3 usuarios y 100 comprobantes), y FMG Empresa por $2,499 MXN/mes (hasta 8 usuarios y 300 comprobantes)."
+    answer: "Hoy manejamos tres ofertas: Diagnóstico de deducciones perdidas por $999 MXN una vez, Control Mensual FMG por $1,499 MXN/mes (hasta 3 usuarios y 100 comprobantes), y FMG Empresa por $2,499 MXN/mes (hasta 8 usuarios y 300 comprobantes)."
   },
   {
     question: "¿Para qué tipo de empresas es ideal?",
@@ -30,11 +30,11 @@ const faqs = [
   },
   {
     question: "¿Se integra con mi sistema contable?",
-    answer: "Todavía no. En este MVP no prometemos integración contable avanzada. Para el piloto entregamos carpeta documental ordenada y reporte mensual para que tu contador lo revise más fácil."
+    answer: "Todavía no. En este MVP no prometemos integración contable avanzada. Para el servicio entregamos carpeta documental ordenada y reporte mensual para que tu contador lo revise más fácil."
   },
   {
     question: "¿Cuánto tiempo tarda en generarse una factura?",
-    answer: "El objetivo del piloto no es prometer facturación automática con el proveedor, sino orden operativo. Normalmente hacemos onboarding rápido y el primer corte mensual se define contigo desde el inicio para que el contador reciba la información a tiempo."
+    answer: "El objetivo del servicio no es prometer facturación automática con el proveedor, sino orden operativo. Normalmente hacemos onboarding rápido y el primer corte mensual se define contigo desde el inicio para que el contador reciba la información a tiempo."
   },
   {
     question: "¿Es útil para gastos de viaje y viáticos?",

@@ -77,7 +77,6 @@ export function ReceiptUploader({ onUploadComplete, onClose }: ReceiptUploaderPr
   };
 
   const allCompleted = files.length > 0 && files.every((f) => f.status === 'success');
-  const hasErrors = files.some((f) => f.status === 'error');
   const pendingCount = files.filter((f) => f.status === 'pending' || f.status === 'error').length;
 
   return (

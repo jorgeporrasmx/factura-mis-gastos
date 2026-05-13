@@ -70,23 +70,23 @@ const formConfig = {
     fields: ['nombre', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'problema_principal'] as const,
     submitText: 'Agendar diagnóstico',
     successTitle: '¡Solicitud recibida!',
-    successMessage: 'Te contactaremos para revisar tu flujo actual y proponerte el piloto adecuado.',
+    successMessage: 'Te contactaremos para revisar tu flujo actual y proponerte el servicio adecuado.',
   },
   pilot: {
-    title: 'Solicitar piloto FMG',
-    description: 'Piloto asistido para centralizar comprobantes y entregar un reporte mensual listo para tu contador.',
+    title: 'Quiero ordenar mis comprobantes',
+    description: 'Servicio asistido para centralizar comprobantes y entregar un reporte mensual listo para tu contador.',
     fields: ['nombre', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'problema_principal'] as const,
-    submitText: 'Solicitar piloto',
-    successTitle: '¡Piloto solicitado!',
-    successMessage: 'Recibimos tus datos. Te contactaremos para configurar el piloto y el primer corte mensual.',
+    submitText: 'Ordenar mis comprobantes',
+    successTitle: '¡Solicitud recibida!',
+    successMessage: 'Recibimos tus datos. Te contactaremos para configurar el servicio y el primer corte mensual.',
   },
   corporate: {
     title: 'Solicitar FMG Empresa',
-    description: 'Cuéntanos sobre tu operación y armamos un piloto asistido para tu equipo.',
+    description: 'Cuéntanos sobre tu operación y armamos un servicio asistido para tu equipo.',
     fields: ['nombre', 'cargo', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'integraciones', 'notas'] as const,
-    submitText: 'Solicitar piloto empresa',
+    submitText: 'Solicitar plan empresa',
     successTitle: '¡Solicitud recibida!',
-    successMessage: 'Te contactaremos para validar usuarios, volumen y fecha de onboarding del piloto.',
+    successMessage: 'Te contactaremos para validar usuarios, volumen y fecha de onboarding del servicio.',
   },
   callback: {
     title: 'Te llamamos',
@@ -112,7 +112,7 @@ const fieldLabels: Record<string, string> = {
   cuando_llamar: '¿Cuándo te llamamos?',
 };
 
-const recibosOptions = ['1-50', '51-100', '101-300', '300+'];
+const recibosOptions = ['1-50', '51-150', '151-300', '300+'];
 const empleadosOptions = ['1-10', '11-50', '51-200', '201-500', '500+'];
 const integracionesOptions = ['SAP B1', 'Aspel', 'Contalink', 'Odoo', 'Bind ERP', 'Google Sheets', 'Otra'];
 const problemaOptions = ['Pierdo recibos de empleados', 'Mi contador recibe todo tarde', 'No sé qué gastos son deducibles', 'Necesito control por persona', 'Quiero reporte mensual ordenado', 'Otro'];

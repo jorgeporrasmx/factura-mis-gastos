@@ -32,7 +32,7 @@ export function CTASection() {
         </h2>
 
         <p className="text-lg sm:text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          Lanza un piloto acompañado: recibimos comprobantes, los ordenamos y cerramos el mes con un paquete claro para tu contador.
+          Empieza con control real: comprobantes centralizados, ordenados por persona y mes, y un corte claro para revisar con tu contador.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -41,7 +41,7 @@ export function CTASection() {
             onClick={() => openModal('pilot')}
             className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"
           >
-            Solicitar piloto
+            Ordenar mis comprobantes
             <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -64,7 +64,7 @@ export function CTASection() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         formType={formType}
-        planInterest={formType === 'pilot' ? 'Piloto FMG' : 'Diagnóstico de deducciones perdidas'}
+        planInterest={formType === 'pilot' ? 'Control Mensual FMG' : 'Diagnóstico de deducciones perdidas'}
       />
     </section>
   );

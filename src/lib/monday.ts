@@ -49,7 +49,7 @@ export const MONDAY_CONFIG = {
     origen: {
       "cta_comenzar": "CTA Comenzar",
       "diagnostico": "Diagnóstico",
-      "piloto_fmg": "Piloto FMG",
+      "piloto_fmg": "Control Mensual FMG",
       "fmg_empresa": "FMG Empresa",
       "widget_whatsapp": "Widget WhatsApp",
       "calendly": "Calendly",
@@ -57,7 +57,7 @@ export const MONDAY_CONFIG = {
     },
     plan_interes: {
       "diagnostico": "Diagnóstico de deducciones perdidas",
-      "piloto": "Piloto FMG",
+      "piloto": "Control Mensual FMG",
       "empresa": "FMG Empresa",
     },
   },
@@ -78,9 +78,45 @@ export interface LeadData {
   notas?: string;
 }
 
+function normalizeDropdownValue(
+  type: keyof typeof MONDAY_CONFIG.dropdownValues,
+  value?: string
+): string | undefined {
+  if (!value) return undefined;
+
+  const options = Object.values(MONDAY_CONFIG.dropdownValues[type]);
+  if (options.includes(value as never)) return value;
+
+  const normalized = value.trim().toLowerCase();
+
+  if (type === 'recibos_mes') {
+    if (normalized === '51-100') return '51-150';
+    if (normalized === '101-300') return '151-300';
+  }
+
+  if (type === 'origen') {
+    if (normalized.includes('diagn')) return 'Diagnóstico';
+    if (normalized.includes('piloto')) return 'Control Mensual FMG';
+    if (normalized.includes('empresa')) return 'FMG Empresa';
+    if (normalized.includes('whatsapp')) return 'Widget WhatsApp';
+  }
+
+  if (type === 'plan_interes') {
+    if (normalized.includes('diagn')) return 'Diagnóstico de deducciones perdidas';
+    if (normalized.includes('piloto')) return 'Control Mensual FMG';
+    if (normalized.includes('empresa')) return 'FMG Empresa';
+  }
+
+  return undefined;
+}
+
 // Función para formatear los valores de columnas para Monday API
 export function formatColumnValues(data: LeadData): string {
   const today = new Date().toISOString().split("T")[0];
+
+  const origen = normalizeDropdownValue('origen', data.origen);
+  const recibosMes = normalizeDropdownValue('recibos_mes', data.recibos_mes);
+  const planInteres = normalizeDropdownValue('plan_interes', data.plan_interes);
 
   const columnValues: Record<string, unknown> = {
     // Teléfono WhatsApp
@@ -98,9 +134,13 @@ export function formatColumnValues(data: LeadData): string {
       date: today,
     },
     // Origen
-    [MONDAY_CONFIG.columns.origen]: {
-      labels: [data.origen],
-    },
+    ...(origen
+      ? {
+          [MONDAY_CONFIG.columns.origen]: {
+            labels: [origen],
+          },
+        }
+      : {}),
   };
 
   // Campos opcionales
@@ -112,9 +152,9 @@ export function formatColumnValues(data: LeadData): string {
     columnValues[MONDAY_CONFIG.columns.cargo] = data.cargo;
   }
 
-  if (data.recibos_mes) {
+  if (recibosMes) {
     columnValues[MONDAY_CONFIG.columns.recibos_mes] = {
-      labels: [data.recibos_mes],
+      labels: [recibosMes],
     };
   }
 
@@ -130,9 +170,9 @@ export function formatColumnValues(data: LeadData): string {
     };
   }
 
-  if (data.plan_interes) {
+  if (planInteres) {
     columnValues[MONDAY_CONFIG.columns.plan_interes] = {
-      labels: [data.plan_interes],
+      labels: [planInteres],
     };
   }
 

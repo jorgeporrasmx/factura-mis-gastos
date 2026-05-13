@@ -61,7 +61,7 @@ function getOrigen(type: FormType): string {
   const origenes: Record<FormType, string> = {
     express: "CTA Comenzar",
     standard: "Diagnóstico",
-    pilot: "Piloto FMG",
+    pilot: "Control Mensual FMG",
     corporate: "FMG Empresa",
     callback: "Widget WhatsApp",
   };
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validaciones adicionales para piloto/corporativo
+    // Validaciones adicionales para servicio/corporativo
     if ((type === "pilot" || type === "corporate") && !data.empresa?.trim()) {
       return NextResponse.json(
         { success: false, error: "La empresa es requerida" },
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       empleados: data.empleados,
       integraciones: data.integraciones,
       origen: getOrigen(type),
-      plan_interes: data.plan_interes || (type === "pilot" ? "Piloto FMG" : type === "standard" ? "Diagnóstico de deducciones perdidas" : type === "corporate" ? "FMG Empresa" : undefined),
+      plan_interes: data.plan_interes || (type === "pilot" ? "Control Mensual FMG" : type === "standard" ? "Diagnóstico de deducciones perdidas" : type === "corporate" ? "FMG Empresa" : undefined),
       notas: notas || undefined,
     };
 

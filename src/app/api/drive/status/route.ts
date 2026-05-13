@@ -42,9 +42,9 @@ export async function GET() {
   const operationalBypass = {
     available: true,
     summary:
-      'Si Drive no valida hoy, el piloto puede operar con una carpeta manual compartida con la service account y validación manual antes de invitar usuarios.',
+      'Si Drive no valida hoy, el servicio puede operar con una carpeta manual compartida con la service account y validación manual antes de invitar usuarios.',
     steps: [
-      'Crear o elegir una carpeta de Google Drive para el cliente piloto.',
+      'Crear o elegir una carpeta de Google Drive para el cliente inicial.',
       'Compartirla con el correo de la service account como Editor.',
       'Confirmar acceso desde este endpoint antes del onboarding.',
       'Registrar el folder ID correcto en GOOGLE_DRIVE_ROOT_FOLDER_ID o en la empresa correspondiente.',
@@ -109,7 +109,7 @@ export async function GET() {
     return NextResponse.json({
       ...status,
       message: 'Google Drive conectado correctamente (sin carpeta raíz configurada)',
-      diagnosis: 'La autenticación funciona, pero falta definir carpeta raíz para operación del piloto.',
+      diagnosis: 'La autenticación funciona, pero falta definir carpeta raíz para operación del servicio.',
       operationalBypass,
     });
   } catch (error) {

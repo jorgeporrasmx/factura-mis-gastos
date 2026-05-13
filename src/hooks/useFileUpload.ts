@@ -272,7 +272,7 @@ export function useFileUpload({
         onError?.(uploadFile_, errorMsg);
       }
     },
-    [files, userId, type, compressImage, updateFile, onComplete, onError]
+    [files, userId, userEmail, type, compressImage, updateFile, onComplete, onError]
   );
 
   // Upload all pending files

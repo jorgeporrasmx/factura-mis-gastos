@@ -307,7 +307,7 @@ export async function linkUserToCompanyAdmin(
     companyId,
     companyName,
     role,
-    driveFolderId,
+    ...(driveFolderId ? { driveFolderId } : {}),
     status: 'active',
     onboardingCompleted: true,
     accountType: role === 'admin' ? 'empresa' : 'empleado',

@@ -9,7 +9,6 @@ import {
 } from '@/lib/firebase/firestore';
 import {
   uploadFile,
-  generateUniqueFileName,
   isDriveConfigured,
 } from '@/lib/google-drive';
 

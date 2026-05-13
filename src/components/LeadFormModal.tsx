@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, Loader2, MessageCircle, Calendar, X, HelpCircle } from 'lucide-react';
 
 // Tipos de formulario
-export type FormType = 'express' | 'standard' | 'corporate' | 'callback';
+export type FormType = 'express' | 'standard' | 'pilot' | 'corporate' | 'callback';
 
 interface LeadFormModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface LeadFormModalProps {
   formType: FormType;
   onSuccess?: () => void;
   redirectTo?: string;
+  planInterest?: string;
 }
 
 interface FormData {
@@ -31,6 +33,7 @@ interface FormData {
   recibos_mes: string;
   empleados: string;
   integraciones: string[];
+  problema_principal: string;
   notas: string;
   cuando_llamar: string;
 }
@@ -47,6 +50,7 @@ const initialFormData: FormData = {
   recibos_mes: '',
   empleados: '',
   integraciones: [],
+  problema_principal: '',
   notas: '',
   cuando_llamar: '',
 };
@@ -61,20 +65,28 @@ const formConfig = {
     successMessage: 'Te hemos registrado. Continúa para seleccionar tu plan.',
   },
   standard: {
-    title: 'Habla con un asesor',
-    description: 'Déjanos tus datos y te contactamos en menos de 5 minutos',
-    fields: ['nombre', 'whatsapp', 'email', 'empresa', 'recibos_mes'] as const,
-    submitText: 'Solicitar asesoría',
-    successTitle: '¡Gracias por contactarnos!',
-    successMessage: 'Un asesor te contactará en menos de 5 minutos en horario laboral.',
+    title: 'Agenda un diagnóstico',
+    description: 'Cuéntanos cómo manejas hoy tus comprobantes y detectamos dónde se pierden deducciones.',
+    fields: ['nombre', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'problema_principal'] as const,
+    submitText: 'Agendar diagnóstico',
+    successTitle: '¡Solicitud recibida!',
+    successMessage: 'Te contactaremos para revisar tu flujo actual y proponerte el piloto adecuado.',
+  },
+  pilot: {
+    title: 'Solicitar piloto FMG',
+    description: 'Piloto asistido para centralizar comprobantes y entregar un reporte mensual listo para tu contador.',
+    fields: ['nombre', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'problema_principal'] as const,
+    submitText: 'Solicitar piloto',
+    successTitle: '¡Piloto solicitado!',
+    successMessage: 'Recibimos tus datos. Te contactaremos para configurar el piloto y el primer corte mensual.',
   },
   corporate: {
-    title: 'Solicitar cotización Enterprise',
-    description: 'Cuéntanos sobre tu empresa y te preparamos una propuesta personalizada',
+    title: 'Solicitar FMG Empresa',
+    description: 'Cuéntanos sobre tu operación y armamos un piloto asistido para tu equipo.',
     fields: ['nombre', 'cargo', 'whatsapp', 'email', 'empresa', 'empleados', 'recibos_mes', 'integraciones', 'notas'] as const,
-    submitText: 'Solicitar cotización',
+    submitText: 'Solicitar piloto empresa',
     successTitle: '¡Solicitud recibida!',
-    successMessage: 'Nuestro equipo Enterprise te contactará en las próximas 24 horas.',
+    successMessage: 'Te contactaremos para validar usuarios, volumen y fecha de onboarding del piloto.',
   },
   callback: {
     title: 'Te llamamos',
@@ -95,16 +107,18 @@ const fieldLabels: Record<string, string> = {
   recibos_mes: 'Recibos mensuales aproximados',
   empleados: 'Número de empleados',
   integraciones: 'Integraciones requeridas',
+  problema_principal: 'Problema principal',
   notas: 'Comentarios adicionales',
   cuando_llamar: '¿Cuándo te llamamos?',
 };
 
-const recibosOptions = ['1-50', '51-150', '151-300', '300+'];
+const recibosOptions = ['1-50', '51-100', '101-300', '300+'];
 const empleadosOptions = ['1-10', '11-50', '51-200', '201-500', '500+'];
 const integracionesOptions = ['SAP B1', 'Aspel', 'Contalink', 'Odoo', 'Bind ERP', 'Google Sheets', 'Otra'];
+const problemaOptions = ['Pierdo recibos de empleados', 'Mi contador recibe todo tarde', 'No sé qué gastos son deducibles', 'Necesito control por persona', 'Quiero reporte mensual ordenado', 'Otro'];
 const cuandoOptions = ['Ahora', 'En 1 hora', 'Mañana por la mañana', 'Mañana por la tarde'];
 
-export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo }: LeadFormModalProps) {
+export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo, planInterest }: LeadFormModalProps) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -138,7 +152,10 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: formType,
-          data: formData,
+          data: {
+            ...formData,
+            plan_interes: planInterest,
+          },
         }),
       });
 
@@ -253,6 +270,22 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
             <option value="">Selecciona una opción</option>
             {empleadosOptions.map(opt => (
               <option key={opt} value={opt}>{opt} empleados</option>
+            ))}
+          </select>
+        );
+
+
+      case 'problema_principal':
+        return (
+          <select
+            value={formData.problema_principal}
+            onChange={(e) => handleInputChange('problema_principal', e.target.value)}
+            required
+            className={`${baseInputClass} bg-white`}
+          >
+            <option value="">Selecciona el dolor principal</option>
+            {problemaOptions.map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
             ))}
           </select>
         );
@@ -386,7 +419,7 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 {fieldLabels[field]}
-                {(field === 'nombre' || field === 'whatsapp' || field === 'email' ||
+                {(field === 'nombre' || field === 'whatsapp' || field === 'email' || field === 'problema_principal' ||
                   (formType === 'corporate' && (field === 'empresa' || field === 'cargo' || field === 'empleados'))) && (
                   <span className="text-red-500 ml-1">*</span>
                 )}
@@ -419,20 +452,20 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
 
           <p className="text-xs text-center text-gray-500">
             Al continuar, aceptas nuestros{' '}
-            <a href="/terminos" className="text-blue-600 hover:underline">términos</a>
+            <Link href="/terminos" className="text-blue-600 hover:underline">términos</Link>
             {' '}y{' '}
-            <a href="/privacidad" className="text-blue-600 hover:underline">política de privacidad</a>
+            <Link href="/privacidad" className="text-blue-600 hover:underline">política de privacidad</Link>
           </p>
 
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <a
+            <Link
               href="/#preguntas-frecuentes"
               onClick={handleClose}
               className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
               ¿Necesitas ayuda? Consulta nuestras preguntas frecuentes
-            </a>
+            </Link>
           </div>
         </form>
       </DialogContent>

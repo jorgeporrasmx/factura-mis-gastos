@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { isMagicLink } from '@/lib/firebase/auth';
@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 
 function VerifyContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { verifyMagicLink, isAuthenticated } = useAuth();
 
   const [status, setStatus] = useState<'verifying' | 'email-needed' | 'success' | 'error'>(
@@ -23,28 +22,35 @@ function VerifyContent() {
 
   // Check if this is a magic link and verify
   useEffect(() => {
-    const url = window.location.href;
+    let cancelled = false;
 
-    if (!isMagicLink(url)) {
-      setStatus('error');
-      setError('Este enlace no es válido o ha expirado.');
-      return;
-    }
+    const runVerification = async () => {
+      await Promise.resolve();
+      const url = window.location.href;
 
-    // Check if we have the email stored
-    const storedEmail = window.localStorage.getItem('emailForSignIn');
+      if (!isMagicLink(url)) {
+        if (!cancelled) {
+          setStatus('error');
+          setError('Este enlace no es válido o ha expirado.');
+        }
+        return;
+      }
 
-    if (!storedEmail) {
-      // Need to ask for email
-      setStatus('email-needed');
-      return;
-    }
+      const storedEmail = window.localStorage.getItem('emailForSignIn');
 
-    // Verify the magic link
-    verifyMagicLink(url).then((result) => {
+      if (!storedEmail) {
+        if (!cancelled) {
+          setStatus('email-needed');
+        }
+        return;
+      }
+
+      const result = await verifyMagicLink(url);
+
+      if (cancelled) return;
+
       if (result.success) {
         setStatus('success');
-        // Redirect after a short delay
         setTimeout(() => {
           router.push('/portal');
         }, 2000);
@@ -52,7 +58,13 @@ function VerifyContent() {
         setStatus('error');
         setError(result.error?.message || 'Error al verificar el enlace');
       }
-    });
+    };
+
+    void runVerification();
+
+    return () => {
+      cancelled = true;
+    };
   }, [verifyMagicLink, router]);
 
   // Redirect if already authenticated

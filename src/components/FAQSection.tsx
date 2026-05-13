@@ -6,15 +6,15 @@ import { LeadFormModal } from './LeadFormModal';
 const faqs = [
   {
     question: "¿Qué es Factura Mis Gastos?",
-    answer: "Factura Mis Gastos es una plataforma de gestión de gastos empresariales en México. Tus empleados envían el recibo por WhatsApp o correo, y nuestro equipo se encarga de solicitar y verificar la factura CFDI con el proveedor. Tú recibes reportes organizados por empleado, departamento o consolidados."
+    answer: "Factura Mis Gastos es un piloto asistido para empresas mexicanas que necesitan dejar de perder deducciones por comprobantes desordenados. Centralizamos recibos y facturas, los ordenamos por persona, empresa y mes, y cerramos con un reporte listo para revisar con tu contador."
   },
   {
     question: "¿Cómo funciona el servicio?",
-    answer: "El proceso es muy simple: 1) Tu empleado envía una foto del recibo por WhatsApp o correo, 2) Nuestro equipo contacta al proveedor y gestiona la factura CFDI, verificando que sea válida, 3) Tú recibes los reportes organizados como los necesites. Sin complicaciones para tu equipo."
+    answer: "El proceso es simple: 1) tu equipo sube tickets, recibos o facturas, 2) FMG los concentra y ordena por usuario y periodo, 3) hacemos seguimiento de faltantes, y 4) entregamos un corte mensual con carpeta documental y reporte de revisión."
   },
   {
     question: "¿Cuánto cuesta el servicio?",
-    answer: "Ofrecemos tres planes: Plan Equipos a $1,299 MXN/mes (hasta 150 recibos y 3 usuarios), Plan Empresa a $2,499 MXN/mes (hasta 300 recibos, 8 usuarios, integración contable y reportes de impuestos), y Plan Corporativo para grandes operaciones con soluciones a la medida."
+    answer: "Hoy manejamos tres ofertas: Diagnóstico de deducciones perdidas por $999 MXN una vez, Piloto FMG por $1,499 MXN/mes (hasta 3 usuarios y 100 comprobantes), y FMG Empresa por $2,499 MXN/mes (hasta 8 usuarios y 300 comprobantes)."
   },
   {
     question: "¿Para qué tipo de empresas es ideal?",
@@ -30,11 +30,11 @@ const faqs = [
   },
   {
     question: "¿Se integra con mi sistema contable?",
-    answer: "Sí, ofrecemos integración opcional con los principales sistemas contables en México: Aspel, Contalink, Bind, Odoo y SAP. También puedes exportar los reportes a Excel o conectarte mediante nuestra API para integraciones personalizadas."
+    answer: "Todavía no. En este MVP no prometemos integración contable avanzada. Para el piloto entregamos carpeta documental ordenada y reporte mensual para que tu contador lo revise más fácil."
   },
   {
     question: "¿Cuánto tiempo tarda en generarse una factura?",
-    answer: "El tiempo depende del proveedor, pero generalmente las facturas se gestionan en 24-48 horas hábiles. Nuestro equipo se encarga de todo el seguimiento con el proveedor hasta obtener el CFDI válido. Tú solo recibes la factura lista."
+    answer: "El objetivo del piloto no es prometer facturación automática con el proveedor, sino orden operativo. Normalmente hacemos onboarding rápido y el primer corte mensual se define contigo desde el inicio para que el contador reciba la información a tiempo."
   },
   {
     question: "¿Es útil para gastos de viaje y viáticos?",
@@ -113,7 +113,7 @@ export function FAQSection() {
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Agenda una llamada con nuestro equipo
+            Agendar diagnóstico
           </button>
         </div>
       </div>

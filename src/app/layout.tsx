@@ -12,10 +12,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://facturamisgastos.com"),
   title: {
-    default: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
+    default: "Factura Mis Gastos | Piloto asistido para ordenar comprobantes empresariales",
     template: "%s | Factura Mis Gastos",
   },
-  description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Plataforma de control de gastos empresariales en México con verificación humana. Desde $10 MXN por factura.",
+  description: "Piloto asistido para empresas mexicanas: centraliza comprobantes, ordénalos por persona y mes, y recibe un reporte mensual listo para revisar con tu contador.",
   keywords: [
     "gestión de gastos empresariales México",
     "control de gastos por empleado",
@@ -54,21 +54,21 @@ export const metadata: Metadata = {
     locale: "es_MX",
     siteName: "Factura Mis Gastos",
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
-    description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Control total de gastos con verificación humana.",
+    description: "Piloto asistido para centralizar comprobantes, ordenarlos por persona y mes, y entregar un reporte mensual listo para contador.",
     url: "https://facturamisgastos.com",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Factura Mis Gastos - Tus empleados envían el recibo, nosotros lo facturamos",
+        alt: "Factura Mis Gastos - Piloto asistido para ordenar comprobantes empresariales",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Factura Mis Gastos | Gestión de Gastos Empresariales",
-    description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI.",
+    title: "Factura Mis Gastos | Piloto asistido para empresas mexicanas",
+    description: "Centraliza comprobantes y recibe un reporte mensual listo para revisar con tu contador.",
     images: ["/og-image.png"],
     creator: "@FactMisGastos",
   },

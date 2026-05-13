@@ -21,11 +21,11 @@ interface ChatOption {
 }
 
 const FAQ_RESPONSES: Record<string, string> = {
-  'que-es': '**Factura Mis Gastos** es una plataforma que convierte tus tickets y recibos en facturas fiscales deducibles de impuestos. Solo tomas una foto del ticket y nosotros nos encargamos del resto.',
-  'como-funciona': 'Es muy sencillo:\n1. Tomas foto de tu ticket\n2. Lo subes a la plataforma\n3. Nosotros generamos tu factura en 24-48 hrs\n4. Recibes tu CFDI válido ante el SAT',
-  'precios': 'Tenemos planes desde **$99/mes** para uso personal hasta planes corporativos. El plan más popular es el de Equipos a $299/mes que incluye hasta 50 facturas.',
-  'tiempo': 'Las facturas se generan en un plazo de **24 a 48 horas hábiles** después de subir tu ticket.',
-  'tickets': 'Puedes facturar tickets de: gasolina, restaurantes, supermercados, farmacias, estacionamientos, peajes, papelería, y muchos más establecimientos.',
+  'que-es': '**Factura Mis Gastos** es un piloto asistido para empresas mexicanas que quieren dejar de perder deducciones por comprobantes desordenados.',
+  'como-funciona': 'Así funciona:\n1. Tu equipo sube comprobantes\n2. FMG los ordena por persona, empresa y mes\n3. Damos seguimiento a faltantes\n4. Recibes un reporte mensual listo para revisar con tu contador',
+  'precios': 'Hoy tenemos **Diagnóstico por $999**, **Piloto FMG por $1,499/mes** y **FMG Empresa por $2,499/mes**.',
+  'tiempo': 'El onboarding es asistido. Definimos contigo el primer corte mensual para que el contador reciba la información ordenada a tiempo.',
+  'tickets': 'El piloto sirve para tickets, recibos y facturas que hoy tu equipo manda por WhatsApp, correo o fotos sueltas y luego se pierden en el cierre mensual.',
 };
 
 const INITIAL_OPTIONS: ChatOption[] = [
@@ -77,7 +77,7 @@ export function WhatsAppWidget() {
       setMessages([
         {
           id: 1,
-          text: '¡Hola! Soy el asistente de Factura Mis Gastos. ¿En qué puedo ayudarte?',
+          text: '¡Hola! Soy el asistente de Factura Mis Gastos. ¿Quieres revisar si un piloto asistido aplica para tu empresa?',
           isBot: true,
           options: INITIAL_OPTIONS,
         },
@@ -124,7 +124,7 @@ export function WhatsAppWidget() {
         addBotMessage('Te redirijo a WhatsApp para que hables con nuestro equipo.');
         setTimeout(() => {
           const message = encodeURIComponent(
-            'Hola, me interesa Factura Mis Gastos. ¿Podrían darme más información?'
+            'Hola, me interesa el piloto de Factura Mis Gastos. ¿Podrían darme más información?'
           );
           window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
         }, 1000);
@@ -180,8 +180,8 @@ export function WhatsAppWidget() {
             <Bot className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="text-white text-sm font-semibold">Asistente Virtual</p>
-            <p className="text-blue-100 text-xs">Resuelvo dudas y agendo citas</p>
+            <p className="text-white text-sm font-semibold">Piloto FMG</p>
+            <p className="text-blue-100 text-xs">Resuelvo dudas y agendo diagnóstico</p>
           </div>
         </div>
         <button

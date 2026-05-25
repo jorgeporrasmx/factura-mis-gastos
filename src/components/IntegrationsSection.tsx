@@ -1,3 +1,5 @@
+import { getWhatsAppUrl } from '@/lib/whatsapp';
+
 const integrations = [
   { name: "Contalink", category: "Contabilidad" },
   { name: "Aspel", category: "Contabilidad" },
@@ -46,7 +48,12 @@ export function IntegrationsSection() {
           <p className="text-muted-foreground mb-4">
             ¿No ves tu sistema? <span className="text-primary font-medium">Probablemente ya lo soportamos.</span>
           </p>
-          <a href="#" className="inline-flex items-center text-primary font-medium hover:underline">
+          <a
+            href={getWhatsAppUrl('Hola, quiero revisar si Factura Mis Gastos se integra con mi sistema.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-primary font-medium hover:underline"
+          >
             Ver todas las integraciones
             <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

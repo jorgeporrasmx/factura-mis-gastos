@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LeadFormModal, type FormType } from '@/components/LeadFormModal';
+import { firstReceiptWhatsAppUrl, getWhatsAppUrl } from '@/lib/whatsapp';
 
 const CALENDLY_URL = 'https://calendly.com/jorgeporras';
 
@@ -21,9 +20,8 @@ const offers = [
       'Orden mensual en Drive',
       'Control básico para contador',
     ],
-    formType: 'standard' as FormType,
-    planInterest: 'Primer lote de recibos',
     cta: 'Enviar mi primer recibo',
+    whatsappUrl: firstReceiptWhatsAppUrl,
   },
   {
     id: 'recibo-factura',
@@ -36,9 +34,8 @@ const offers = [
       'Drive ordenado por negocio y mes',
       'Corte mensual para tu contador',
     ],
-    formType: 'pilot' as FormType,
-    planInterest: 'FMG Recibo a Factura',
     cta: 'Quiero facturar mis recibos',
+    whatsappUrl: getWhatsAppUrl('Hola, quiero contratar FMG Recibo a Factura. Te mando mi primer recibo.'),
     featured: true,
   },
   {
@@ -52,23 +49,12 @@ const offers = [
       'Control por persona o sucursal',
       'Paquete mensual para contador',
     ],
-    formType: 'corporate' as FormType,
-    planInterest: 'FMG Empresa',
     cta: 'Solicitar plan empresa',
+    whatsappUrl: getWhatsAppUrl('Hola, quiero contratar FMG Empresa para mi equipo.'),
   },
 ];
 
 export default function ComenzarPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formType, setFormType] = useState<FormType>('pilot');
-  const [planInterest, setPlanInterest] = useState('FMG Recibo a Factura');
-
-  const openLeadModal = (nextFormType: FormType, nextPlanInterest: string) => {
-    setFormType(nextFormType);
-    setPlanInterest(nextPlanInterest);
-    setIsModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50">
       <header className="bg-white/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
@@ -128,10 +114,12 @@ export default function ComenzarPage() {
                   ))}
                 </ul>
                 <Button
+                  asChild
                   className={`w-full ${offer.featured ? 'gradient-bg hover:opacity-90' : 'bg-slate-800 hover:bg-slate-700'}`}
-                  onClick={() => openLeadModal(offer.formType, offer.planInterest)}
                 >
-                  {offer.cta}
+                  <a href={offer.whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    {offer.cta}
+                  </a>
                 </Button>
               </CardContent>
             </Card>
@@ -162,17 +150,21 @@ export default function ComenzarPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
+                  asChild
                   className="bg-white text-slate-900 hover:bg-slate-100"
-                  onClick={() => openLeadModal('standard', 'Revisión de recibos')}
                 >
-                  Revisar mi caso
+                  <a href={getWhatsAppUrl('Hola, quiero revisar si mis tickets aplican para Factura Mis Gastos.')} target="_blank" rel="noopener noreferrer">
+                    Revisar mi caso
+                  </a>
                 </Button>
                 <Button
+                  asChild
                   variant="outline"
                   className="border-white text-white hover:bg-white/10 bg-transparent"
-                  onClick={() => window.open(CALENDLY_URL, '_blank', 'noopener,noreferrer')}
                 >
-                  Ver agenda disponible
+                  <a href={CALENDLY_URL} target="_blank" rel="noopener noreferrer">
+                    Ver agenda disponible
+                  </a>
                 </Button>
               </div>
             </CardContent>
@@ -180,12 +172,6 @@ export default function ComenzarPage() {
         </section>
       </main>
 
-      <LeadFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        formType={formType}
-        planInterest={planInterest}
-      />
     </div>
   );
 }

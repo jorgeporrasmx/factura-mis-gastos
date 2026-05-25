@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LeadFormModal } from './LeadFormModal';
+import { getWhatsAppUrl } from '@/lib/whatsapp';
 
 const faqs = [
   {
@@ -40,7 +40,6 @@ const faqs = [
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -98,23 +97,19 @@ export function FAQSection() {
           <p className="text-muted-foreground mb-4">
             ¿Tienes más preguntas?
           </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
+          <a
+            href={getWhatsAppUrl('Hola, tengo preguntas sobre Factura Mis Gastos y quiero revisar mi caso.')}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Revisar mi caso
-          </button>
+          </a>
         </div>
       </div>
-
-      <LeadFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        formType="callback"
-      />
     </section>
   );
 }

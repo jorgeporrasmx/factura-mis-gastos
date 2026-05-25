@@ -1,18 +1,7 @@
-'use client';
-
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LeadFormModal } from './LeadFormModal';
+import { firstReceiptWhatsAppUrl } from '@/lib/whatsapp';
 
 export function CTASection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formType, setFormType] = useState<'standard' | 'pilot'>('pilot');
-
-  const openModal = (type: 'standard' | 'pilot') => {
-    setFormType(type);
-    setIsModalOpen(true);
-  };
-
   return (
     <section
       id="contacto"
@@ -37,35 +26,32 @@ export function CTASection() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button
+            asChild
             size="lg"
-            onClick={() => openModal('pilot')}
             className="bg-white text-primary hover:bg-blue-50 text-base px-8 py-6 h-auto font-semibold"
           >
-            Enviar mi primer recibo
-            <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
+            <a href={firstReceiptWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+              Enviar mi primer recibo
+              <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </a>
           </Button>
           <Button
+            asChild
             size="lg"
             variant="outline"
-            onClick={() => openModal('standard')}
             className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6 h-auto bg-transparent"
           >
-            <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Ver si aplica para mi negocio
+            <a href="/comenzar">
+              <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Ver si aplica para mi negocio
+            </a>
           </Button>
         </div>
       </div>
-
-      <LeadFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        formType={formType}
-        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos'}
-      />
     </section>
   );
 }

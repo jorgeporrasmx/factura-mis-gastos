@@ -4,12 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/Logo';
-import { LeadFormModal } from '@/components/LeadFormModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { firstReceiptWhatsAppUrl } from '@/lib/whatsapp';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
   const { user, isAuthenticated, isLoading, signOut } = useAuth();
 
   const handleLogout = async () => {
@@ -90,14 +89,16 @@ export function Header() {
               <>
                 <Link href="/auth/login">
                   <Button variant="ghost" className="text-sm">
-                    Acceder
+                    Portal clientes
                   </Button>
                 </Link>
                 <Button
+                  asChild
                   className="text-sm gradient-bg hover:opacity-90 transition-opacity"
-                  onClick={() => setIsLeadModalOpen(true)}
                 >
-                  Enviar recibo
+                  <a href={firstReceiptWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+                    Enviar recibo
+                  </a>
                 </Button>
               </>
             )}
@@ -178,17 +179,21 @@ export function Header() {
                   <>
                     <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" className="w-full justify-center">
-                        Acceder
+                        Portal clientes
                       </Button>
                     </Link>
                     <Button
+                      asChild
                       className="w-full gradient-bg"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        setIsLeadModalOpen(true);
-                      }}
                     >
-                      Enviar recibo
+                      <a
+                        href={firstReceiptWhatsAppUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Enviar recibo
+                      </a>
                     </Button>
                   </>
                 )}
@@ -197,13 +202,6 @@ export function Header() {
           </div>
         )}
       </nav>
-
-      <LeadFormModal
-        isOpen={isLeadModalOpen}
-        onClose={() => setIsLeadModalOpen(false)}
-        formType="pilot"
-        planInterest="FMG Recibo a Factura"
-      />
     </header>
   );
 }

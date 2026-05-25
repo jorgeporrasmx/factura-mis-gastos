@@ -1,8 +1,5 @@
-'use client';
-
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { LeadFormModal } from './LeadFormModal';
+import { firstReceiptWhatsAppUrl } from '@/lib/whatsapp';
 
 const trustBadges = [
   {
@@ -32,14 +29,6 @@ const trustBadges = [
 ];
 
 export function HeroSection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formType, setFormType] = useState<'standard' | 'pilot'>('pilot');
-
-  const openModal = (type: 'standard' | 'pilot') => {
-    setFormType(type);
-    setIsModalOpen(true);
-  };
-
   return (
     <section
       id="inicio"
@@ -78,25 +67,29 @@ export function HeroSection() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8 animate-fade-in-up delay-200">
               <Button
+                asChild
                 size="lg"
-                onClick={() => openModal('pilot')}
                 className="gradient-bg hover:opacity-90 transition-all text-base px-8 py-6 h-auto shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5"
               >
-                Enviar mi primer recibo
-                <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <a href={firstReceiptWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+                  Enviar mi primer recibo
+                  <svg className="ml-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </a>
               </Button>
               <Button
+                asChild
                 variant="outline"
                 size="lg"
-                onClick={() => openModal('standard')}
                 className="text-base px-8 py-6 h-auto border-2 border-slate-300 hover:border-primary hover:bg-blue-50 transition-all"
               >
-                <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Ver si aplica para mi negocio
+                <a href="/comenzar">
+                  <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Ver si aplica para mi negocio
+                </a>
               </Button>
             </div>
 
@@ -187,13 +180,6 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-
-      <LeadFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        formType={formType}
-        planInterest={formType === 'pilot' ? 'FMG Recibo a Factura' : 'Revisión de recibos'}
-      />
     </section>
   );
 }

@@ -4,25 +4,21 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/Logo';
 import { TermsModal } from '@/components/TermsModal';
+import { getWhatsAppUrl } from '@/lib/whatsapp';
 
 const footerLinks = {
   producto: [
     { label: "Características", href: "#como-funciona" },
     { label: "Precios", href: "#precios" },
     { label: "Integraciones", href: "#integraciones" },
-    { label: "API", href: "#" },
   ],
   empresa: [
-    { label: "Acerca de", href: "#" },
     { label: "Blog", href: "/blog" },
     { label: "Casos de éxito", href: "/blog/caso-exito-logistica" },
-    { label: "Contacto", href: "#" },
+    { label: "Contacto", href: getWhatsAppUrl('Hola, quiero hablar con Factura Mis Gastos.') },
   ],
   recursos: [
-    { label: "Centro de ayuda", href: "#" },
-    { label: "Documentación", href: "#" },
-    { label: "Webinars", href: "#" },
-    { label: "Status", href: "#" },
+    { label: "Guía para empleados", href: "/guia-empleado" },
   ],
   legal: [
     { label: "Privacidad", href: "/privacidad" },
@@ -32,6 +28,23 @@ const footerLinks = {
 
 export function Footer() {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const renderFooterLink = (link: { label: string; href: string }) => {
+    const className = "text-sm hover:text-white transition-colors";
+
+    if (link.href.startsWith('http')) {
+      return (
+        <a href={link.href} target="_blank" rel="noopener noreferrer" className={className}>
+          {link.label}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={link.href} className={className}>
+        {link.label}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -80,9 +93,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {footerLinks.producto.map((link, index) => (
                   <li key={index}>
-                    <Link href={link.href} className="text-sm hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
+                    {renderFooterLink(link)}
                   </li>
                 ))}
               </ul>
@@ -93,9 +104,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {footerLinks.empresa.map((link, index) => (
                   <li key={index}>
-                    <Link href={link.href} className="text-sm hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
+                    {renderFooterLink(link)}
                   </li>
                 ))}
               </ul>
@@ -106,9 +115,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {footerLinks.recursos.map((link, index) => (
                   <li key={index}>
-                    <Link href={link.href} className="text-sm hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
+                    {renderFooterLink(link)}
                   </li>
                 ))}
               </ul>
@@ -119,9 +126,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {footerLinks.legal.map((link, index) => (
                   <li key={index}>
-                    <Link href={link.href} className="text-sm hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
+                    {renderFooterLink(link)}
                   </li>
                 ))}
                 <li>

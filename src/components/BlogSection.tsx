@@ -28,7 +28,7 @@ const blogPosts = [
     excerpt: "¿Tus empleados pierden recibos? ¿No sabes cuánto gasta cada departamento? Estas son las señales de alerta.",
     image: "/blog/business.jpg",
     readTime: "4 min",
-    slug: "senales-sistema-control-gastos"
+    slug: "5-senales-control-gastos"
   }
 ];
 

@@ -1,10 +1,7 @@
-'use client';
-
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { LeadFormModal, FormType } from './LeadFormModal';
+import { firstReceiptWhatsAppUrl, getWhatsAppUrl } from '@/lib/whatsapp';
 
 type PlanId = 'diagnostico' | 'piloto' | 'empresa';
 
@@ -19,6 +16,7 @@ interface PlanConfig {
   cta: string;
   popular: boolean;
   isCustom: boolean;
+  whatsappUrl: string;
 }
 
 const plans: PlanConfig[] = [
@@ -38,7 +36,8 @@ const plans: PlanConfig[] = [
     ],
     cta: "Enviar mi primer recibo",
     popular: false,
-    isCustom: false
+    isCustom: false,
+    whatsappUrl: firstReceiptWhatsAppUrl
   },
   {
     id: 'piloto',
@@ -57,7 +56,8 @@ const plans: PlanConfig[] = [
     ],
     cta: "Quiero facturar mis recibos",
     popular: true,
-    isCustom: false
+    isCustom: false,
+    whatsappUrl: getWhatsAppUrl('Hola, quiero contratar FMG Recibo a Factura. Te mando mi primer recibo.')
   },
   {
     id: 'empresa',
@@ -76,19 +76,12 @@ const plans: PlanConfig[] = [
     ],
     cta: "Solicitar plan empresa",
     popular: false,
-    isCustom: false
+    isCustom: false,
+    whatsappUrl: getWhatsAppUrl('Hola, quiero contratar FMG Empresa para mi equipo.')
   }
 ];
 
 export function PricingSection() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formType, setFormType] = useState<FormType>('corporate');
-
-  const openModal = (type: FormType) => {
-    setFormType(type);
-    setIsModalOpen(true);
-  };
-
   return (
     <section
       id="precios"
@@ -156,34 +149,23 @@ export function PricingSection() {
                   ))}
                 </ul>
 
-                {plan.isCustom ? (
-                  <Button
-                    onClick={() => openModal('corporate')}
-                    className={`w-full transition-all ${
-                      plan.popular
-                        ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
-                        : 'bg-slate-800 hover:bg-slate-700'
-                    }`}
-                  >
-                    {plan.cta}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => openModal(plan.id === 'empresa' ? 'corporate' : plan.id === 'diagnostico' ? 'standard' : 'pilot')}
-                    className={`w-full transition-all ${
-                      plan.popular
-                        ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
-                        : 'bg-slate-800 hover:bg-slate-700'
-                    }`}
-                  >
+                <Button
+                  asChild
+                  className={`w-full transition-all ${
+                    plan.popular
+                      ? 'gradient-bg hover:opacity-90 shadow-lg shadow-blue-500/25 hover:shadow-xl'
+                      : 'bg-slate-800 hover:bg-slate-700'
+                  }`}
+                >
+                  <a href={plan.whatsappUrl} target="_blank" rel="noopener noreferrer">
                     {plan.cta}
                     {plan.popular && (
                       <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     )}
-                  </Button>
-                )}
+                  </a>
+                </Button>
               </CardContent>
             </Card>
           ))}
@@ -192,28 +174,12 @@ export function PricingSection() {
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
             ¿Necesitas algo diferente?{' '}
-            <button
-              onClick={() => openModal('standard')}
-              className="text-primary font-medium hover:underline"
-            >
+            <a href={getWhatsAppUrl('Hola, quiero revisar si Factura Mis Gastos aplica para mi negocio.')} target="_blank" rel="noopener noreferrer" className="text-primary font-medium hover:underline">
               Platiquemos sobre tu caso.
-            </button>
+            </a>
           </p>
         </div>
       </div>
-
-      <LeadFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        formType={formType}
-        planInterest={
-          formType === 'corporate'
-            ? 'FMG Empresa'
-            : formType === 'pilot'
-              ? 'FMG Recibo a Factura'
-              : 'Primer lote de recibos'
-        }
-      />
     </section>
   );
 }

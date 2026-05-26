@@ -5,10 +5,13 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { WhatsAppWidget } from '@/components/WhatsAppWidget';
 import { getWhatsAppUrl } from '@/lib/whatsapp';
-import type { LandingPage } from '@/lib/seo-content';
+import { landingPages, type LandingPage } from '@/lib/seo-content';
 
 export function SeoLandingPage({ page }: { page: LandingPage }) {
   const whatsappUrl = getWhatsAppUrl(page.whatsappMessage);
+  const relatedPages = landingPages
+    .filter((candidate) => candidate.slug !== page.slug && candidate.type === page.type)
+    .slice(0, 3);
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -140,6 +143,36 @@ export function SeoLandingPage({ page }: { page: LandingPage }) {
           </div>
         </section>
 
+        {relatedPages.length > 0 && (
+          <section className="py-16">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+                <div>
+                  <h2 className="text-3xl font-bold text-foreground mb-3">Páginas relacionadas</h2>
+                  <p className="text-muted-foreground">
+                    Más recursos para comparar, ordenar gastos y reducir comprobantes perdidos.
+                  </p>
+                </div>
+                <Link href="/soluciones" className="text-sm font-medium text-primary hover:underline">
+                  Ver todas las soluciones
+                </Link>
+              </div>
+              <div className="grid md:grid-cols-3 gap-4">
+                {relatedPages.map((relatedPage) => (
+                  <Link
+                    key={relatedPage.slug}
+                    href={'/' + relatedPage.slug}
+                    className="rounded-lg border border-slate-200 p-5 hover:border-primary hover:shadow-sm transition bg-white"
+                  >
+                    <p className="text-sm font-semibold text-foreground mb-2">{relatedPage.title}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{relatedPage.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         <section className="py-16 gradient-bg text-white text-center">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold mb-4">Empieza con un recibo real</h2>
@@ -162,4 +195,3 @@ export function SeoLandingPage({ page }: { page: LandingPage }) {
     </>
   );
 }
-

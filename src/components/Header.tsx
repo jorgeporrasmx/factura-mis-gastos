@@ -56,6 +56,12 @@ export function Header() {
               Planes
             </button>
             <Link
+              href="/soluciones"
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Soluciones
+            </Link>
+            <Link
               href="/blog"
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
@@ -134,6 +140,13 @@ export function Header() {
               >
                 Planes
               </button>
+              <Link
+                href="/soluciones"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+              >
+                Soluciones
+              </Link>
               <Link
                 href="/blog"
                 onClick={() => setMobileMenuOpen(false)}

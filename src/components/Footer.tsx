@@ -10,6 +10,7 @@ const footerLinks = {
   producto: [
     { label: "Características", href: "#como-funciona" },
     { label: "Precios", href: "#precios" },
+    { label: "Soluciones", href: "/soluciones" },
     { label: "Recibos por WhatsApp", href: "/facturar-recibos-por-whatsapp" },
     { label: "Control de viáticos", href: "/control-de-viaticos" },
   ],
@@ -23,6 +24,7 @@ const footerLinks = {
     { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
     { label: "Guía para empleados", href: "/guia-empleado" },
     { label: "FMG vs Excel", href: "/fmg-vs-excel" },
+    { label: "RSS", href: "/feed.xml" },
   ],
   legal: [
     { label: "Privacidad", href: "/privacidad" },

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { firstReceiptWhatsAppUrl } from '@/lib/whatsapp';
+import Link from 'next/link';
 
 export function CTASection() {
   return (
@@ -43,12 +44,12 @@ export function CTASection() {
             variant="outline"
             className="border-2 border-white text-white hover:bg-white/10 text-base px-8 py-6 h-auto bg-transparent"
           >
-            <a href="/comenzar">
+            <Link href="/comenzar">
               <svg className="mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Ver si aplica para mi negocio
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

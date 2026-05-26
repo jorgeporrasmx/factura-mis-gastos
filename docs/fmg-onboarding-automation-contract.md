@@ -37,9 +37,38 @@ Notas operativas: {{NOTAS_OPERATIVAS}}
 
 Al duplicar el tablero, la automatización de CSF debe reemplazar esas variables con los datos reales del cliente.
 
-## Entrada Drive -> OCR/IA
+## Entrada Drive -> OCR/IA con n8n
 
-El disparador puede vivir en Zapier o n8n. El contrato estable es el endpoint interno:
+Workflow n8n activo:
+
+- Nombre: `FMG — Drive Recibos OCR → Monday/Firebase`
+- ID: `iBfCbqq9Dore42YC`
+- Webhook productivo: `https://n8n.sutilde.com/webhook/fmg-receipt-ocr`
+- Trigger Drive: observa la raíz del Shared Drive de FMG cada minuto.
+- Credenciales usadas en n8n: Google Drive de Jorge, OpenAI Responses API y `FMG Automation Secret`.
+
+El workflow ejecuta este circuito:
+
+1. Recibe evento desde Google Drive o webhook.
+2. Normaliza `driveFileId`, nombre, link, usuario, empresa y tablero Monday.
+3. Descarga el recibo desde Drive.
+4. Convierte el binario de n8n a base64 real.
+5. Envía imagen/PDF a OpenAI Responses API con salida JSON estructurada.
+6. Normaliza RFC, fecha y razón social.
+7. Envía la extracción a FMG por `/api/internal/receipt-extraction`.
+8. FMG actualiza Monday y Firestore con idempotencia por `driveFileId`.
+
+Prueba validada con el recibo piloto de Abril Medina / Taller Ikigai:
+
+- Drive file ID: `17Zl3ub3_WEGP09aJZce3xuueMLh69Pna`
+- Board Monday: `18414962380`
+- Item Monday: `12111150476`
+- Resultado OCR: Waldo's Dolar Mart de Mexico S. de R.L. de C.V., RFC `WDM990126350`, fecha `2026-05-19`, total `164.95`, ticket `230652`.
+- Resultado FMG: actualización correcta de Monday/Firebase, estado `INFO`, sin duplicar item.
+
+## Contrato interno FMG
+
+El contrato estable es el endpoint interno:
 
 `POST /api/internal/receipt-extraction`
 
@@ -59,7 +88,7 @@ Payload mínimo:
   "userId": "firebase-user-id",
   "companyId": "firebase-company-id",
   "mondayBoardId": "18414962380",
-  "source": "zapier",
+  "source": "n8n-drive-ocr",
   "extraction": {
     "proveedor": "Waldo's Dolar Mart de México",
     "razonSocial": "Waldo's Dolar Mart de México",

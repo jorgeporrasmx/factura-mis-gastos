@@ -71,7 +71,7 @@ export async function createCompany(data: CreateCompanyData): Promise<Company> {
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
-    subscriptionStatus: 'none',
+    subscriptionStatus: 'trial',
     createdAt: now,
     updatedAt: now,
     createdBy: data.adminUid,
@@ -292,6 +292,8 @@ export async function completeOnboarding(
     onboardingCompleted: true,
     accountType,
     status: 'active',
+    subscriptionStatus: 'trial',
+    trialStartedAt: new Date(),
   });
 }
 

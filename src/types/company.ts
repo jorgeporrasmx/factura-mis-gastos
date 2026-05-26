@@ -86,6 +86,11 @@ export interface UserProfile {
   // WhatsApp
   whatsappPhone?: string;          // Número de WhatsApp del usuario (para automatizaciones)
 
+  // Prueba / suscripción para cuentas personales
+  subscriptionStatus?: SubscriptionStatus;
+  trialStartedAt?: Date;
+  trialReceiptUsedAt?: Date;
+
   // Estado de onboarding
   onboardingCompleted: boolean;
   accountType?: 'empresa' | 'empleado' | 'personal';

@@ -193,7 +193,7 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     driveFolderId: '', // Se actualiza después de crear la carpeta
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
-    subscriptionStatus: 'none', // Sin suscripción hasta que pague o active prueba
+    subscriptionStatus: 'trial',
     createdAt: now,
     updatedAt: now,
     createdBy: data.adminUid,
@@ -325,6 +325,8 @@ export async function completeOnboardingAdmin(
     onboardingCompleted: true,
     accountType,
     status: 'active',
+    subscriptionStatus: 'trial',
+    trialStartedAt: new Date(),
   });
 }
 

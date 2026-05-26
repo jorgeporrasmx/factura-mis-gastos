@@ -23,6 +23,8 @@ function RecibosContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const canUseTrialReceipt = !csfValid && receipts.length === 0;
+  const canUploadReceipt = csfValid || canUseTrialReceipt;
 
   // Load receipts from Firestore
   const loadReceipts = useCallback(async () => {
@@ -68,12 +70,12 @@ function RecibosContent() {
   // Handle action from URL params
   useEffect(() => {
     const action = searchParams.get('action');
-    if (action === 'capture' && csfValid) {
+    if (action === 'capture' && canUploadReceipt) {
       setShowCapture(true);
-    } else if (action === 'upload' && csfValid) {
+    } else if (action === 'upload' && canUploadReceipt) {
       setShowUploader(true);
     }
-  }, [searchParams, csfValid]);
+  }, [searchParams, canUploadReceipt]);
 
   // Handle camera capture - uploads to Drive
   const handleCapture = async (blob: Blob) => {
@@ -184,36 +186,32 @@ function RecibosContent() {
     );
   }
 
-  // If CSF is not valid, show message
-  if (!csfValid) {
-    return (
-      <div>
-        <PortalHeader title="Mis Recibos" />
-        <div className="p-4 md:p-6">
-          <div className="max-w-md mx-auto text-center py-12">
-            <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="w-8 h-8 text-yellow-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              CSF requerida
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Para subir recibos, primero necesitas tener tu Constancia de Situación Fiscal vigente.
-            </p>
-            <Link href="/portal/csf">
-              <Button>Subir mi CSF</Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
       <PortalHeader title="Mis Recibos" />
 
       <div className="p-4 md:p-6 space-y-6">
+        {!csfValid && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-yellow-900">
+                  {canUseTrialReceipt ? 'Prueba gratis disponible' : 'CSF requerida para continuar'}
+                </p>
+                <p className="text-sm text-yellow-800">
+                  {canUseTrialReceipt
+                    ? 'Puedes enviar un recibo de prueba. Sube tu CSF para procesar más recibos.'
+                    : 'Tu recibo de prueba ya quedó registrado. Sube tu CSF para seguir usando el servicio.'}
+                </p>
+              </div>
+            </div>
+            <Link href="/portal/csf">
+              <Button variant="outline">Subir CSF</Button>
+            </Link>
+          </div>
+        )}
+
         {/* Upload in progress */}
         {isUploading && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-center gap-3">
@@ -240,7 +238,7 @@ function RecibosContent() {
           <Button 
             onClick={() => setShowCapture(true)} 
             className="flex-1 sm:flex-none"
-            disabled={isUploading}
+            disabled={isUploading || !canUploadReceipt}
           >
             <Camera className="w-4 h-4 mr-2" />
             Tomar foto
@@ -249,7 +247,7 @@ function RecibosContent() {
             variant="outline" 
             onClick={() => setShowUploader(true)} 
             className="flex-1 sm:flex-none"
-            disabled={isUploading}
+            disabled={isUploading || !canUploadReceipt}
           >
             <Upload className="w-4 h-4 mr-2" />
             Subir desde galería
@@ -279,7 +277,7 @@ function RecibosContent() {
             size="lg"
             className="w-14 h-14 rounded-full shadow-lg"
             onClick={() => setShowCapture(true)}
-            disabled={isUploading}
+            disabled={isUploading || !canUploadReceipt}
           >
             {isUploading ? (
               <Loader2 className="w-6 h-6 animate-spin" />

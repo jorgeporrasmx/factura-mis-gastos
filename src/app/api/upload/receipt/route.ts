@@ -6,7 +6,9 @@ import {
   getUserProfileAdmin,
   getCompanyByIdAdmin,
   updateUserProfileAdmin,
+  updateCompanyAdmin,
 } from '@/lib/firebase/firestore-admin';
+import { getAdminFirestore } from '@/lib/firebase/admin';
 import {
   uploadFile,
   createUserFolder,
@@ -14,7 +16,11 @@ import {
   generateUniqueFileName,
   isDriveConfigured,
 } from '@/lib/google-drive';
-import { createExpenseItem, isMondayBoardsConfigured } from '@/lib/monday-boards';
+import {
+  createExpenseItem,
+  duplicateBoardForCompany,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
 
 // Tipos MIME permitidos para recibos
 const ALLOWED_MIME_TYPES = [
@@ -59,6 +65,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const hasCsf = Boolean(userProfile.csfUploadedAt);
+    const trialReceiptUsed = Boolean((userProfile as { trialReceiptUsedAt?: unknown }).trialReceiptUsedAt);
+
     // Determinar carpeta raíz según tipo de cuenta
     let parentFolderId: string | null = null;
     let company: Awaited<ReturnType<typeof getCompanyByIdAdmin>> | null = null;
@@ -81,6 +90,40 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Debes pertenecer a una empresa o tener una cuenta personal para subir recibos' },
         { status: 400 }
       );
+    }
+
+    // Prueba gratis: permitir un recibo aunque todavía no exista CSF.
+    // La CSF desbloquea el uso recurrente.
+    if (!hasCsf) {
+      if (trialReceiptUsed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Tu recibo de prueba ya fue enviado. Sube tu CSF para continuar con más recibos.',
+          },
+          { status: 403 }
+        );
+      }
+
+      const db = getAdminFirestore();
+      if (db) {
+        const existingTrialReceipt = await db
+          .collection('receipts')
+          .where('userId', '==', uid)
+          .limit(1)
+          .get();
+
+        if (!existingTrialReceipt.empty) {
+          await updateUserProfileAdmin(uid, { trialReceiptUsedAt: new Date() });
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Tu recibo de prueba ya fue enviado. Sube tu CSF para continuar con más recibos.',
+            },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     // Obtener el archivo del FormData
@@ -147,13 +190,30 @@ export async function POST(request: NextRequest) {
       file.type
     );
 
-    // Crear item en Monday si está configurado y la empresa tiene tablero
+    // Crear item en Monday. Si la cuenta fue creada antes de tener
+    // tablero asociado, provisionarlo en el primer recibo.
     let mondayItemId: string | null = null;
     
-    if (isMondayBoardsConfigured() && company?.mondayBoardId) {
+    if (isMondayBoardsConfigured() && (company || (userProfile as { accountType?: string }).accountType === 'personal')) {
       try {
-        const today = new Date().toISOString().split('T')[0];
         const userName = userProfile.displayName || userProfile.email.split('@')[0];
+        let mondayBoardId = company?.mondayBoardId || userProfile.mondayBoardId;
+        const boardName = company?.name || userName;
+
+        if (!mondayBoardId) {
+          console.log(`[MONDAY] Cuenta sin tablero, creando tablero para ${boardName}`);
+          const boardResult = await duplicateBoardForCompany(boardName);
+          mondayBoardId = boardResult.boardId;
+          if (company) {
+            await updateCompanyAdmin(company.id, { mondayBoardId });
+            company.mondayBoardId = mondayBoardId;
+          } else {
+            await updateUserProfileAdmin(uid, { mondayBoardId });
+          }
+          console.log(`[MONDAY] Tablero creado para cuenta ${boardName}: ${mondayBoardId}`);
+        }
+
+        const today = new Date().toISOString().split('T')[0];
         
         // Columnas del tablero MACHOTE
         const columnValues: Record<string, unknown> = {
@@ -170,18 +230,22 @@ export async function POST(request: NextRequest) {
         };
 
         mondayItemId = await createExpenseItem(
-          company!.mondayBoardId,
+          mondayBoardId,
           `Recibo - ${userName} - ${today}`, // Nombre del item
           columnValues
         );
 
-        console.log(`[MONDAY] Item creado: ${mondayItemId} en tablero ${company!.mondayBoardId}`);
+        console.log(`[MONDAY] Item creado: ${mondayItemId} en tablero ${mondayBoardId}`);
       } catch (mondayError) {
         // No fallar si Monday falla, el archivo ya está en Drive
         console.error('[MONDAY] Error creando item:', mondayError);
       }
     } else {
-      console.log('[MONDAY] Skipped: No configurado o empresa sin tablero');
+      console.log('[MONDAY] Skipped: Monday no configurado o cuenta sin tablero aplicable');
+    }
+
+    if (!hasCsf) {
+      await updateUserProfileAdmin(uid, { trialReceiptUsedAt: new Date() });
     }
 
     return NextResponse.json({

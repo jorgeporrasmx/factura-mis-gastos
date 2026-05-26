@@ -25,6 +25,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/soluciones`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/feed.xml`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.2,
+    },
+    {
       url: `${baseUrl}/guia-empleado`,
       lastModified: currentDate,
       changeFrequency: 'monthly',

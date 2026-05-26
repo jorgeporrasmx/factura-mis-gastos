@@ -9,6 +9,9 @@ Disallow: /_next/
 # Sitemap
 Sitemap: https://facturamisgastos.com/sitemap.xml
 
+# RSS Feed
+# URL: https://facturamisgastos.com/feed.xml
+
 # LLM/AI Information
 # For AI models and language models, see /llm.txt for structured information about this service
 # URL: https://facturamisgastos.com/llm.txt

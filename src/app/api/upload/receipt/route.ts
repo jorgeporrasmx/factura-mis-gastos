@@ -159,6 +159,8 @@ export async function POST(request: NextRequest) {
           proyecto: { index: 3 },
           // Link al archivo en Drive
           text_mkqygzgk: uploadResult.webViewLink,
+          // Llave idempotente para automatizaciones Drive -> OCR/IA -> Monday
+          enlace4: uploadResult.fileId,
           // Empleado (tag) - usar nombre del usuario
           tag_mm063vts: { tag_ids: [] }, // Se puede mejorar para crear/buscar el tag
         };

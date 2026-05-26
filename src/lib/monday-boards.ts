@@ -173,6 +173,83 @@ export async function createExpenseItem(
   return result.create_item.id;
 }
 
+export async function findExpenseItemByDriveFileId(
+  boardId: string,
+  driveFileId: string
+): Promise<string | null> {
+  const query = `
+    query ($boardId: ID!, $driveFileId: String!) {
+      items_page_by_column_values(
+        board_id: $boardId,
+        columns: [{ column_id: "enlace4", column_values: [$driveFileId] }],
+        limit: 1
+      ) {
+        items {
+          id
+        }
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    items_page_by_column_values: {
+      items: Array<{ id: string }>;
+    };
+  }>(query, {
+    boardId,
+    driveFileId,
+  });
+
+  return result.items_page_by_column_values.items[0]?.id ?? null;
+}
+
+export async function updateExpenseItem(
+  boardId: string,
+  itemId: string,
+  columnValues: Record<string, unknown>
+): Promise<string> {
+  const query = `
+    mutation ($boardId: ID!, $itemId: ID!, $columnValues: JSON!) {
+      change_multiple_column_values(
+        board_id: $boardId,
+        item_id: $itemId,
+        column_values: $columnValues
+      ) {
+        id
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    change_multiple_column_values: { id: string };
+  }>(query, {
+    boardId,
+    itemId,
+    columnValues: JSON.stringify(columnValues),
+  });
+
+  return result.change_multiple_column_values.id;
+}
+
+export async function createItemUpdate(itemId: string, body: string): Promise<string> {
+  const query = `
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) {
+        id
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    create_update: { id: string };
+  }>(query, {
+    itemId,
+    body,
+  });
+
+  return result.create_update.id;
+}
+
 /**
  * Obtener información de un tablero
  */

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Shield, Clock, Users } from 'lucide-react';
 import { Plan, formatAmount } from '@/types/payments';
+import Link from 'next/link';
 
 interface OrderSummaryProps {
   plan: Plan;
@@ -123,13 +124,13 @@ export function OrderSummary({ plan, showFeatures = true }: OrderSummaryProps) {
         <div className="text-xs text-center text-muted-foreground space-y-1">
           <p>
             Al continuar, aceptas nuestros{' '}
-            <a href="/terminos" className="text-primary hover:underline">
+            <Link href="/terminos" className="text-primary hover:underline">
               Terminos de Servicio
-            </a>{' '}
+            </Link>{' '}
             y{' '}
-            <a href="/privacidad" className="text-primary hover:underline">
+            <Link href="/privacidad" className="text-primary hover:underline">
               Politica de Privacidad
-            </a>
+            </Link>
           </p>
           <p>
             Puedes cancelar tu suscripcion en cualquier momento

@@ -4,33 +4,9 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { blogArticles } from '@/lib/seo-content';
 
-const blogPosts = [
-  {
-    category: "Casos de éxito",
-    title: "Cómo una empresa de logística recuperó $180,000 MXN en deducciones anuales",
-    excerpt: "Descubre cómo esta empresa con 8 choferes logró facturar el 95% de sus gastos de combustible y casetas que antes se perdían.",
-    image: "/blog/logistics.jpg",
-    readTime: "5 min",
-    slug: "caso-exito-logistica"
-  },
-  {
-    category: "Gastos de viaje",
-    title: "Guía completa: Cómo gestionar viáticos de empleados sin perder deducciones",
-    excerpt: "Los gastos de viaje son los más difíciles de facturar. Te explicamos cómo automatizar el proceso desde el hotel hasta el taxi.",
-    image: "/blog/travel.jpg",
-    readTime: "7 min",
-    slug: "guia-viaticos-empleados"
-  },
-  {
-    category: "Para tu negocio",
-    title: "5 señales de que tu empresa necesita un sistema de control de gastos",
-    excerpt: "¿Tus empleados pierden recibos? ¿No sabes cuánto gasta cada departamento? Estas son las señales de alerta.",
-    image: "/blog/business.jpg",
-    readTime: "4 min",
-    slug: "5-senales-control-gastos"
-  }
-];
+const blogPosts = blogArticles.slice(0, 3);
 
 const industries = [
   { name: "Logística y transporte", icon: "🚛" },
@@ -98,11 +74,8 @@ export function BlogSection() {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <Button
-                variant="secondary"
-                className="bg-white text-primary hover:bg-blue-50 font-semibold"
-              >
-                Ver cómo funciona
+              <Button asChild variant="secondary" className="bg-white text-primary hover:bg-blue-50 font-semibold">
+                <Link href="/control-de-viaticos">Ver cómo funciona</Link>
               </Button>
             </div>
           </div>
@@ -132,7 +105,7 @@ export function BlogSection() {
                     {post.title}
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {post.excerpt}
+                    {post.description}
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1">

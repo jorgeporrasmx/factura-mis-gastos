@@ -10,15 +10,19 @@ const footerLinks = {
   producto: [
     { label: "Características", href: "#como-funciona" },
     { label: "Precios", href: "#precios" },
-    { label: "Integraciones", href: "#integraciones" },
+    { label: "Recibos por WhatsApp", href: "/facturar-recibos-por-whatsapp" },
+    { label: "Control de viáticos", href: "/control-de-viaticos" },
   ],
   empresa: [
     { label: "Blog", href: "/blog" },
-    { label: "Casos de éxito", href: "/blog/caso-exito-logistica" },
+    { label: "Logística y transporte", href: "/logistica-transporte" },
+    { label: "Ventas en campo", href: "/ventas-en-campo" },
     { label: "Contacto", href: getWhatsAppUrl('Hola, quiero hablar con Factura Mis Gastos.') },
   ],
   recursos: [
+    { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
     { label: "Guía para empleados", href: "/guia-empleado" },
+    { label: "FMG vs Excel", href: "/fmg-vs-excel" },
   ],
   legal: [
     { label: "Privacidad", href: "/privacidad" },

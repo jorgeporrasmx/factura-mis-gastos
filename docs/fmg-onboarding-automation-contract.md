@@ -45,6 +45,7 @@ Workflow n8n activo:
 - ID: `iBfCbqq9Dore42YC`
 - Webhook productivo: `https://n8n.sutilde.com/webhook/fmg-receipt-ocr`
 - Trigger Drive: observa la raíz del Shared Drive de FMG cada minuto.
+- Trigger app: `/api/upload/receipt` llama el webhook al terminar la carga en Drive y la creación/relación del item Monday.
 - Credenciales usadas en n8n: Google Drive de Jorge, OpenAI Responses API y `FMG Automation Secret`.
 
 El workflow ejecuta este circuito:

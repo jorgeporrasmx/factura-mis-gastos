@@ -29,6 +29,45 @@ const ALLOWED_MIME_TYPES = [
 // Tamaño máximo: 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+async function triggerReceiptOcr(payload: {
+  driveFileId: string;
+  fileUrl?: string;
+  fileName: string;
+  mimeType: string;
+  userId: string;
+  companyId: string;
+  mondayBoardId?: string;
+  mondayItemId?: string | null;
+}) {
+  const webhookUrl = process.env.FMG_RECEIPT_OCR_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        driveFileId: payload.driveFileId,
+        fileUrl: payload.fileUrl,
+        fileName: payload.fileName,
+        mimeType: payload.mimeType,
+        userId: payload.userId,
+        companyId: payload.companyId,
+        mondayBoardId: payload.mondayBoardId,
+        mondayItemId: payload.mondayItemId || undefined,
+        source: 'fmg-upload',
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('[OCR] n8n webhook error:', response.status, text.slice(0, 500));
+    }
+  } catch (error) {
+    console.error('[OCR] Error triggering n8n webhook:', error);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verificar que Drive está configurado
@@ -179,6 +218,17 @@ export async function POST(request: NextRequest) {
     } else {
       console.log('[MONDAY] Skipped: No configurado o empresa sin tablero');
     }
+
+    await triggerReceiptOcr({
+      driveFileId: uploadResult.fileId,
+      fileUrl: uploadResult.webViewLink,
+      fileName,
+      mimeType: file.type,
+      userId: uid,
+      companyId: company.id,
+      mondayBoardId: company.mondayBoardId,
+      mondayItemId,
+    });
 
     return NextResponse.json({
       success: true,

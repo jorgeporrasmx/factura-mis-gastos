@@ -286,6 +286,105 @@ export async function getBoardInfo(boardId: string): Promise<{
   }
 }
 
+export interface AccountantBoardContext {
+  id: string;
+  name: string;
+  description: string | null;
+  items: Array<{
+    id: string;
+    name: string;
+    groupTitle?: string;
+    values: Record<string, string>;
+  }>;
+}
+
+/**
+ * Obtener contexto operativo/fiscal mínimo del tablero FMG.
+ * Se usa para el Contador IA: descripción fiscal + últimos recibos visibles.
+ */
+export async function getAccountantBoardContext(boardId: string): Promise<AccountantBoardContext | null> {
+  const query = `
+    query ($boardId: [ID!]!) {
+      boards(ids: $boardId) {
+        id
+        name
+        description
+        items_page(limit: 15) {
+          items {
+            id
+            name
+            group {
+              title
+            }
+            column_values {
+              id
+              text
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const result = await executeMondayMutation<{
+      boards: Array<{
+        id: string;
+        name: string;
+        description: string | null;
+        items_page?: {
+          items: Array<{
+            id: string;
+            name: string;
+            group?: { title?: string };
+            column_values: Array<{ id: string; text: string | null }>;
+          }>;
+        };
+      }>;
+    }>(query, { boardId: [boardId] });
+
+    const board = result.boards?.[0];
+    if (!board) return null;
+
+    const columnLabels: Record<string, string> = {
+      person: 'responsable',
+      status: 'estado',
+      text_mkthrxct: 'fecha_compra',
+      n_meros: 'total',
+      text_mky72d18: 'uuid_cfdi',
+      text_mky7nh3g: 'razon_social',
+      text_mkqygzgk: 'archivo_o_factura',
+      proyecto: 'metodo',
+      enlace4: 'drive_file_id',
+      correo: 'ticket_o_correo',
+      link_mkqg4vhb: 'portal_facturacion',
+      tag_mm063vts: 'empleado',
+    };
+
+    return {
+      id: board.id,
+      name: board.name,
+      description: board.description,
+      items: (board.items_page?.items || []).map((item) => {
+        const values: Record<string, string> = {};
+        for (const column of item.column_values) {
+          const key = columnLabels[column.id] || column.id;
+          if (column.text) values[key] = column.text;
+        }
+        return {
+          id: item.id,
+          name: item.name,
+          groupTitle: item.group?.title,
+          values,
+        };
+      }),
+    };
+  } catch (error) {
+    console.warn('[Monday] No se pudo obtener contexto para Contador IA:', error);
+    return null;
+  }
+}
+
 /**
  * Verificar si Monday está configurado
  */

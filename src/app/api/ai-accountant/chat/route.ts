@@ -20,6 +20,12 @@ type ChatMessage = {
   content: string;
 };
 
+type ChatAttachment = {
+  name: string;
+  mimeType: string;
+  dataUrl: string;
+};
+
 type StoredReceipt = {
   id: string;
   fileName?: string;
@@ -38,9 +44,12 @@ type FiscalUpdate = {
 
 const MAX_QUESTION_LENGTH = 1200;
 const MAX_HISTORY_MESSAGES = 8;
+const MAX_ATTACHMENTS = 3;
+const MAX_ATTACHMENT_DATA_URL_LENGTH = 8_000_000;
 const SAT_RMF_2026_URL =
   'https://www.sat.gob.mx/minisitio/NormatividadRMFyRGCE/normatividad_rmf_rgce2026.html';
 const DOF_HOME_URL = 'https://dof.gob.mx/';
+const ALLOWED_ATTACHMENT_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
 
 function cleanText(value: unknown): string {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -76,6 +85,26 @@ function absoluteUrl(baseUrl: string, href?: string): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+function sanitizeAttachments(value: unknown): ChatAttachment[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .slice(0, MAX_ATTACHMENTS)
+    .map((attachment) => {
+      const candidate = attachment as Partial<ChatAttachment>;
+      return {
+        name: cleanText(candidate.name).slice(0, 120) || 'captura',
+        mimeType: cleanText(candidate.mimeType).toLowerCase(),
+        dataUrl: String(candidate.dataUrl || ''),
+      };
+    })
+    .filter((attachment) => {
+      if (!ALLOWED_ATTACHMENT_MIME_TYPES.has(attachment.mimeType)) return false;
+      if (!attachment.dataUrl.startsWith(`data:${attachment.mimeType};base64,`)) return false;
+      return attachment.dataUrl.length <= MAX_ATTACHMENT_DATA_URL_LENGTH;
+    });
 }
 
 function asIsoDate(value: unknown): string | undefined {
@@ -269,6 +298,8 @@ Tu trabajo:
 - Dar pasos accionables para preparar declaraciones, cierres mensuales y paquetes para contador.
 - Distinguir claramente entre deducciones autorizadas de la actividad, deducciones personales de declaracion anual y gastos que solo son referencia operativa.
 - Usar el contexto officialFiscalUpdates para mencionar publicaciones recientes de SAT/DOF cuando sean relevantes.
+- Guiar al usuario para usar bien el chat: pedirle capturas de pantalla del SAT, CFDI, facturacion o declaracion cuando eso ayude a dar instrucciones paso a paso.
+- Cuando recibas capturas, analizalas visualmente: identifica pantalla, campos, fechas, importes, regimenes, mensajes de error y pasos faltantes. Si algo no se lee, dilo concretamente.
 
 Limites obligatorios:
 - No presentes declaraciones, no calcules impuestos definitivos y no sustituyas a un contador publico.
@@ -284,6 +315,7 @@ Estilo:
 - Actua como experto: toma postura cuando el contexto sea suficiente.
 - Responde en espanol.
 - Usa bullets cortos cuando ayuden.
+- Si la pregunta es amplia o inicial, empieza explicando en 3 bullets como interactuar contigo y que capturas/documentos conviene compartir.
 - Cierra con "Siguiente paso recomendado" cuando la pregunta implique accion. Ese cierre debe ser operativo, no una evasiva.
 
 Contexto del cliente:
@@ -309,22 +341,44 @@ function extractOutputText(responseJson: unknown): string {
   return parts.join('\n').trim();
 }
 
-async function callOpenAI(systemPrompt: string, messages: ChatMessage[]): Promise<string> {
+async function callOpenAI(
+  systemPrompt: string,
+  messages: ChatMessage[],
+  attachments: ChatAttachment[]
+): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY no configurada');
   }
 
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const historyMessages = messages.slice(0, -1).map((message) => ({
+    role: message.role,
+    content: message.content,
+  }));
+  const lastMessage = messages[messages.length - 1];
+  const lastUserContent = [
+    {
+      type: 'input_text',
+      text: lastMessage?.content || '',
+    },
+    ...attachments.map((attachment) => ({
+      type: 'input_image',
+      image_url: attachment.dataUrl,
+      detail: 'high',
+    })),
+  ];
+
   const input = [
     {
       role: 'system',
       content: systemPrompt,
     },
-    ...messages.map((message) => ({
-      role: message.role,
-      content: message.content,
-    })),
+    ...historyMessages,
+    {
+      role: 'user',
+      content: lastUserContent,
+    },
   ];
 
   const response = await fetch('https://api.openai.com/v1/responses', {
@@ -357,6 +411,7 @@ async function saveConversation(args: {
   companyId?: string | null;
   question: string;
   answer: string;
+  attachments: ChatAttachment[];
 }) {
   const db = getAdminFirestore();
   if (!db) return;
@@ -366,6 +421,10 @@ async function saveConversation(args: {
     companyId: args.companyId || null,
     question: args.question,
     answer: args.answer,
+    attachments: args.attachments.map((attachment) => ({
+      name: attachment.name,
+      mimeType: attachment.mimeType,
+    })),
     createdAt: FieldValue.serverTimestamp(),
     product: 'fmg-ai-accountant-mvp',
   });
@@ -381,6 +440,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const question = cleanText(body?.question);
     const history = Array.isArray(body?.history) ? body.history : [];
+    const attachments = sanitizeAttachments(body?.attachments);
 
     if (!question) {
       return NextResponse.json({ success: false, error: 'La pregunta es obligatoria' }, { status: 400 });
@@ -423,13 +483,14 @@ export async function POST(request: NextRequest) {
     const answer = await callOpenAI(systemPrompt, [
       ...sanitizedHistory,
       { role: 'user', content: question },
-    ]);
+    ], attachments);
 
     await saveConversation({
       uid,
       companyId: company?.id || null,
       question,
       answer,
+      attachments,
     });
 
     return NextResponse.json({
@@ -441,6 +502,7 @@ export async function POST(request: NextRequest) {
         mondayBoardId: mondayBoardId || null,
         receiptsCount: receipts.length + (board?.items.length || 0),
         fiscalUpdatesCount: fiscalUpdates.length,
+        attachmentsCount: attachments.length,
       },
     });
   } catch (error) {

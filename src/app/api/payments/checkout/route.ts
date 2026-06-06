@@ -209,7 +209,7 @@ function validateCheckoutRequest(data: CheckoutRequest): string | null {
 }
 
 function isValidPlanId(planId: string): planId is PlanId {
-  return ['personal', 'equipos', 'empresa', 'corporativo'].includes(planId);
+  return ['freelancer', 'personal', 'equipos', 'empresa', 'corporativo'].includes(planId);
 }
 
 function isValidEmail(email: string): boolean {

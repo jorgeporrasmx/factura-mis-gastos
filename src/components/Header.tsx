@@ -40,6 +40,12 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-8">
             <button
+              onClick={() => scrollToSection('precios')}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Freelancers
+            </button>
+            <button
               onClick={() => scrollToSection('como-funciona')}
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
@@ -115,6 +121,12 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
+              <button
+                onClick={() => scrollToSection('precios')}
+                className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+              >
+                Freelancers
+              </button>
               <button
                 onClick={() => scrollToSection('como-funciona')}
                 className="text-sm font-medium text-muted-foreground hover:text-primary text-left"

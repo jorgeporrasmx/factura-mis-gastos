@@ -6,7 +6,7 @@
 // PLANES Y PRECIOS
 // ============================================
 
-export type PlanId = 'personal' | 'equipos' | 'empresa' | 'corporativo';
+export type PlanId = 'freelancer' | 'personal' | 'equipos' | 'empresa' | 'corporativo';
 
 export interface Plan {
   id: PlanId;
@@ -24,6 +24,27 @@ export interface Plan {
 }
 
 export const PLANS: Record<PlanId, Plan> = {
+  freelancer: {
+    id: 'freelancer',
+    name: 'Freelancer Founder',
+    tagline: 'Para freelancers, RESICO y profesionistas independientes.',
+    price: 15000, // $150 MXN/mes (en centavos)
+    priceDisplay: '$150',
+    unit: 'MXN/mes',
+    description: 'Lanzamiento: hasta 30 facturas al mes con Contador IA.',
+    features: [
+      'Hasta 30 facturas mensuales',
+      '1 usuario',
+      'Contador IA personalizado con tu CSF',
+      'Guia de deducciones por regimen',
+      'Checklist mensual para preparar declaraciones',
+      'Capturas de pantalla para guia paso a paso',
+    ],
+    receiptsLimit: 30,
+    usersLimit: 1,
+    isCustom: false,
+    popular: true,
+  },
   personal: {
     id: 'personal',
     name: 'Personal',

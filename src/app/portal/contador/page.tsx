@@ -16,6 +16,7 @@ type ContextState = {
   hasCsf?: boolean;
   mondayBoardId?: string | null;
   receiptsCount?: number;
+  fiscalUpdatesCount?: number;
 };
 
 const SUGGESTIONS = [
@@ -31,7 +32,7 @@ export default function AccountantPage() {
     {
       role: 'assistant',
       content:
-        'Soy tu Contador IA de FMG. Puedo orientarte con base en tu perfil fiscal, tus recibos y reglas fiscales generales de Mexico. No presento impuestos ni sustituyo a tu contador.',
+        'Soy tu Contador IA de FMG. Analizo tu perfil fiscal, tus comprobantes y reglas fiscales mexicanas para darte una guia practica y personalizada.',
     },
   ]);
   const [question, setQuestion] = useState('');
@@ -48,6 +49,7 @@ export default function AccountantPage() {
       context.hasCsf ? 'CSF detectada' : 'CSF pendiente/no detectada',
       context.mondayBoardId ? `Tablero ${context.mondayBoardId}` : null,
       typeof context.receiptsCount === 'number' ? `${context.receiptsCount} comprobantes en contexto` : null,
+      typeof context.fiscalUpdatesCount === 'number' ? `${context.fiscalUpdatesCount} fuentes fiscales recientes` : null,
     ];
     return chips.filter(Boolean) as string[];
   }, [context]);
@@ -121,7 +123,7 @@ export default function AccountantPage() {
             <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 md:min-w-[300px]">
               <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
                 <ShieldCheck className="w-4 h-4 text-green-600" />
-                Limites claros
+                Criterio experto
               </div>
               <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
                 <FileText className="w-4 h-4 text-blue-600" />
@@ -216,7 +218,7 @@ export default function AccountantPage() {
             </form>
 
             <p className="text-xs text-gray-500">
-              Guia informativa. Para declaraciones, pagos y criterios definitivos, valida con tu contador y fuentes SAT/DOF vigentes.
+              Guia fiscal personalizada con fuentes SAT/DOF cuando aplican. No presenta declaraciones ni ejecuta pagos.
             </p>
           </div>
         </section>

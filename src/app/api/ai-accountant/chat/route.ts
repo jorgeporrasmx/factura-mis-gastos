@@ -29,11 +29,53 @@ type StoredReceipt = {
   metadata?: Record<string, unknown>;
 };
 
+type FiscalUpdate = {
+  title: string;
+  date?: string;
+  url?: string;
+  source: 'SAT' | 'DOF';
+};
+
 const MAX_QUESTION_LENGTH = 1200;
 const MAX_HISTORY_MESSAGES = 8;
+const SAT_RMF_2026_URL =
+  'https://www.sat.gob.mx/minisitio/NormatividadRMFyRGCE/normatividad_rmf_rgce2026.html';
+const DOF_HOME_URL = 'https://dof.gob.mx/';
 
 function cleanText(value: unknown): string {
   return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&aacute;/gi, 'á')
+    .replace(/&eacute;/gi, 'é')
+    .replace(/&iacute;/gi, 'í')
+    .replace(/&oacute;/gi, 'ó')
+    .replace(/&uacute;/gi, 'ú')
+    .replace(/&Aacute;/g, 'Á')
+    .replace(/&Eacute;/g, 'É')
+    .replace(/&Iacute;/g, 'Í')
+    .replace(/&Oacute;/g, 'Ó')
+    .replace(/&Uacute;/g, 'Ú')
+    .replace(/&ntilde;/gi, 'ñ')
+    .replace(/&Ntilde;/g, 'Ñ')
+    .replace(/&uuml;/gi, 'ü')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&#173;/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function absoluteUrl(baseUrl: string, href?: string): string | undefined {
+  if (!href) return undefined;
+  try {
+    return new URL(href, baseUrl).toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function asIsoDate(value: unknown): string | undefined {
@@ -70,6 +112,59 @@ async function getRecentReceipts(uid: string): Promise<StoredReceipt[]> {
     console.warn('[AI Accountant] No se pudieron leer recibos:', error);
     return [];
   }
+}
+
+async function fetchFiscalUpdates(): Promise<FiscalUpdate[]> {
+  const updates: FiscalUpdate[] = [];
+
+  try {
+    const response = await fetch(SAT_RMF_2026_URL, { next: { revalidate: 60 * 60 * 6 } });
+    if (response.ok) {
+      const html = await response.text();
+      const anchorRegex = /<a\s+[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>\s*\((publicad[ao][^)]+)\)/gi;
+      let match: RegExpExecArray | null;
+
+      while ((match = anchorRegex.exec(html)) && updates.length < 14) {
+        const title = decodeHtml(match[2]);
+        if (!/RMF|Miscelánea|RMRMF|RGCE|RFA|Resolución/i.test(title)) continue;
+
+        updates.push({
+          source: 'SAT',
+          title,
+          date: decodeHtml(match[3]),
+          url: absoluteUrl(SAT_RMF_2026_URL, match[1]),
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('[AI Accountant] No se pudo leer SAT RMF 2026:', error);
+  }
+
+  try {
+    const response = await fetch(DOF_HOME_URL, { next: { revalidate: 60 * 60 * 6 } });
+    if (response.ok) {
+      const html = await response.text();
+      const linkRegex = /<a[^>]+href="([^"]*nota_detalle[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+      let match: RegExpExecArray | null;
+
+      while ((match = linkRegex.exec(html)) && updates.length < 20) {
+        const title = decodeHtml(match[2]);
+        if (!/(SAT|SHCP|Fiscal|Federaci[oó]n|Contribuyente|Impuesto|ISR|IVA|C[oó]digo Fiscal|69-B|Miscel[aá]nea)/i.test(title)) {
+          continue;
+        }
+
+        updates.push({
+          source: 'DOF',
+          title,
+          url: absoluteUrl(DOF_HOME_URL, match[1].replace(/&amp;/g, '&')),
+        });
+      }
+    }
+  } catch (error) {
+    console.warn('[AI Accountant] No se pudo leer DOF:', error);
+  }
+
+  return updates;
 }
 
 function summarizeUser(user: UserProfile) {
@@ -110,6 +205,7 @@ function buildContextText(args: {
   company: Company | null;
   board: AccountantBoardContext | null;
   receipts: StoredReceipt[];
+  fiscalUpdates: FiscalUpdate[];
 }) {
   const fiscalDescription = args.board?.description
     ? args.board.description.slice(0, 2400)
@@ -141,11 +237,19 @@ function buildContextText(args: {
       company: summarizeCompany(args.company),
       fiscalProfileFromMondayDescription: fiscalDescription,
       receiptsAndExpenses: receiptLines,
+      officialFiscalUpdates: {
+        fetchedAt: new Date().toISOString(),
+        sources: [
+          'SAT Normatividad RMF/RGCE/RFA 2026',
+          'DOF portada oficial filtrada por señales fiscales',
+        ],
+        items: args.fiscalUpdates,
+      },
       fiscalKnowledgePolicy: {
         generalKnowledgeAllowed: true,
         curatedFiscalNotes: process.env.FMG_FISCAL_CONTEXT_NOTES || null,
         currentLawGuardrail:
-          'Si la pregunta depende de una reforma reciente, regla miscelanea, criterio SAT o publicacion DOF, indica que debe verificarse contra DOF/SAT vigente antes de actuar.',
+          'Usa officialFiscalUpdates como contexto de actualidad. Si el caso depende de una publicacion especifica no incluida, pide fecha/documento o sugiere consultar esa fuente concreta, sin usarlo como salida evasiva.',
         noDefinitiveTaxFiling: true,
       },
     },
@@ -161,23 +265,26 @@ Eres el Contador IA de Factura Mis Gastos para clientes mexicanos.
 Tu trabajo:
 - Resolver dudas fiscales practicas en Mexico usando el perfil del cliente, su CSF/cedula fiscal disponible, su empresa y sus recibos/facturas.
 - Explicar que regimen fiscal parece tener el cliente cuando el contexto lo indique.
-- Orientar sobre que puede facturar, que datos necesita, que puede ser deducible y que conviene revisar con su contador.
+- Orientar con criterio experto sobre que puede facturar, que datos necesita, que puede ser deducible y que tratamiento conviene segun el regimen.
 - Dar pasos accionables para preparar declaraciones, cierres mensuales y paquetes para contador.
 - Distinguir claramente entre deducciones autorizadas de la actividad, deducciones personales de declaracion anual y gastos que solo son referencia operativa.
+- Usar el contexto officialFiscalUpdates para mencionar publicaciones recientes de SAT/DOF cuando sean relevantes.
 
 Limites obligatorios:
 - No presentes declaraciones, no calcules impuestos definitivos y no sustituyas a un contador publico.
 - No inventes datos fiscales del cliente. Si no aparece en el contexto, dilo y pide la CSF o el dato necesario.
-- Para cambios recientes de ley, Resolucion Miscelanea Fiscal, criterios SAT o Diario Oficial de la Federacion, advierte que debe verificarse contra DOF/SAT vigente antes de actuar.
-- No prometas deducibilidad definitiva; habla de "posible", "generalmente", "requiere cumplir requisitos" y "validar con contador".
+- No abras ni cierres respuestas con "revisa con tu contador", "consulta a tu contador" o frases similares. Da primero tu analisis y consejo personalizado. Solo menciona validacion humana si hay riesgo, ambiguedad documental o decision definitiva de presentacion/pago.
+- Para cambios recientes de ley, Resolucion Miscelanea Fiscal, criterios SAT o DOF: usa las fuentes oficiales incluidas; si falta una fuente especifica, di exactamente que falta verificar.
+- No prometas deducibilidad definitiva; habla de "deducible si cumple requisitos", "normalmente procede", "normalmente no procede" o "requiere evidencia X".
 - No mezcles gastos personales con gastos de actividad empresarial. Si mencionas salud, educacion, intereses hipotecarios u otros conceptos personales, aclara que suelen revisarse como deducciones personales y no como gastos operativos del negocio.
 - No des estrategias de evasion, simulacion, facturas falsas ni ocultamiento.
 
 Estilo:
 - Tono de contador practico, directo y claro.
+- Actua como experto: toma postura cuando el contexto sea suficiente.
 - Responde en espanol.
 - Usa bullets cortos cuando ayuden.
-- Cierra con "Siguiente paso recomendado" cuando la pregunta implique accion.
+- Cierra con "Siguiente paso recomendado" cuando la pregunta implique accion. Ese cierre debe ser operativo, no una evasiva.
 
 Contexto del cliente:
 ${contextText}
@@ -293,14 +400,15 @@ export async function POST(request: NextRequest) {
 
     const company = user.companyId ? await getCompanyByIdAdmin(user.companyId) : null;
     const mondayBoardId = company?.mondayBoardId;
-    const [board, receipts] = await Promise.all([
+    const [board, receipts, fiscalUpdates] = await Promise.all([
       mondayBoardId && isMondayBoardsConfigured()
         ? getAccountantBoardContext(mondayBoardId)
         : Promise.resolve(null),
       getRecentReceipts(uid),
+      fetchFiscalUpdates(),
     ]);
 
-    const contextText = buildContextText({ user, company, board, receipts });
+    const contextText = buildContextText({ user, company, board, receipts, fiscalUpdates });
     const systemPrompt = buildSystemPrompt(contextText);
 
     const sanitizedHistory: ChatMessage[] = history
@@ -332,6 +440,7 @@ export async function POST(request: NextRequest) {
         hasCsf: Boolean(user.csfUploadedAt || company?.csfUrl || company?.cedulaUrl),
         mondayBoardId: mondayBoardId || null,
         receiptsCount: receipts.length + (board?.items.length || 0),
+        fiscalUpdatesCount: fiscalUpdates.length,
       },
     });
   } catch (error) {

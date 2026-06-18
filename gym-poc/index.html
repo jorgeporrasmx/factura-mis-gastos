@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Gym Form Coach · Prototipo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>🏋️ Gym Form Coach <span class="tag">Prototipo</span></h1>
+      <p class="disclaimer">
+        Orientación automática, <strong>no sustituye a un entrenador ni es consejo médico</strong>.
+        Todo el video se procesa en tu dispositivo y no se envía a ningún servidor.
+      </p>
+    </header>
+
+    <main>
+      <section class="stage">
+        <div class="camera-wrap">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="controls">
+          <label>
+            Ejercicio
+            <select id="exerciseSelect"></select>
+          </label>
+          <button id="startBtn">Iniciar cámara</button>
+          <button id="stopBtn" disabled>Detener</button>
+        </div>
+        <p id="setupHint" class="hint"></p>
+        <p id="status" class="status">Listo.</p>
+      </section>
+
+      <aside class="panel">
+        <div class="metrics">
+          <div class="metric"><span class="label">Reps</span><span id="reps" class="value big">0</span></div>
+          <div class="metric"><span class="label">Fase</span><span id="phase" class="value">—</span></div>
+          <div class="metric"><span class="label">Rodilla</span><span id="kneeAngle" class="value">—</span></div>
+          <div class="metric"><span class="label">Torso</span><span id="torsoLean" class="value">—</span></div>
+        </div>
+
+        <h2>Feedback en vivo</h2>
+        <ul id="feedback" class="feedback"></ul>
+
+        <h2>Última repetición</h2>
+        <div id="lastRep" class="last-rep muted">Aún sin repeticiones.</div>
+      </aside>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

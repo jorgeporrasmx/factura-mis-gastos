@@ -97,7 +97,8 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
           `/checkout/success?` +
             `transactionId=${result.transactionId}&` +
             `subscriptionId=${result.subscriptionId}&` +
-            `plan=${planId}`
+            `plan=${planId}&` +
+            `email=${encodeURIComponent(data.customer.email)}`
         );
       } else {
         setError(result.message || 'Error procesando el pago');

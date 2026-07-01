@@ -86,6 +86,8 @@ export interface UserProfile {
   // Estado de onboarding
   onboardingCompleted: boolean;
   accountType?: 'empresa' | 'empleado' | 'personal';
+  plan?: CompanyPlan;
+  subscriptionStatus?: SubscriptionStatus;
 
   // Metadatos
   createdAt: Date;

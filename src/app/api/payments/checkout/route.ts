@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirstDataClient, getErrorMessage } from '@/lib/firstdata';
-import { activateSubscription } from '@/lib/fmg-onboarding';
+import { activateSubscription, createDriveFolderForOnboarding } from '@/lib/fmg-onboarding';
+import {
+  duplicateBoardForCompany,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
 import {
   PLANS,
   PlanId,
@@ -120,6 +124,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
       });
 
       try {
+        const accountType = body.planId === 'freelancer' ? 'personal' : 'empresa';
+        const companyName = body.customer.company || body.customer.name;
+        let mondayBoardId: string | undefined;
+        let mondayBoardUrl: string | undefined;
+
+        if (isMondayBoardsConfigured()) {
+          try {
+            const boardResult = await duplicateBoardForCompany(companyName);
+            mondayBoardId = boardResult.boardId;
+            mondayBoardUrl = boardResult.boardUrl;
+          } catch (boardError) {
+            console.error('[checkout] No se pudo crear tablero operativo Monday:', boardError);
+          }
+        }
+
         await activateSubscription({
           transactionId: approvedTransactionId,
           orderId: transactionId,
@@ -127,15 +146,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
           customerEmail: body.customer.email,
           customerName: body.customer.name,
           customerPhone: body.customer.phone,
-          companyName: body.customer.company || body.customer.name,
-          accountType: body.planId === 'freelancer' ? 'personal' : 'empresa',
+          companyName,
+          accountType,
           planId: body.planId,
           planName: plan.name,
           amount: plan.price,
           currency: 'MXN',
           paymentEnvironment: process.env.FIRSTDATA_ENVIRONMENT || 'sandbox',
           mondaySubscriptionItemId: mondayResult.itemId,
+          mondayBoardId,
+          mondayBoardUrl,
           source: 'checkout',
+        });
+
+        await createDriveFolderForOnboarding({
+          transactionId: approvedTransactionId,
+          customerEmail: body.customer.email,
+          customerName: body.customer.name,
+          companyName,
+          accountType,
         });
       } catch (activationError) {
         console.error('[checkout] Pago aprobado pero no se pudo persistir activación:', activationError);

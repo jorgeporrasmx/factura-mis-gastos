@@ -15,6 +15,7 @@ import {
   isDriveConfigured,
 } from '@/lib/google-drive';
 import { createExpenseItem, isMondayBoardsConfigured } from '@/lib/monday-boards';
+import { createPersonalOperationForUser } from '@/lib/personal-operation';
 
 // Tipos MIME permitidos para recibos
 const ALLOWED_MIME_TYPES = [
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener perfil del usuario (usando Admin SDK)
-    const userProfile = await getUserProfileAdmin(uid);
+    let userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
       return NextResponse.json(
@@ -98,16 +99,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que tiene empresa
+    // Las cuentas personales usan una operación individual detrás de escena.
+    // Si el perfil viene de una versión anterior sin companyId, provisionarla aquí.
     if (!userProfile.companyId) {
+      if (userProfile.accountType && userProfile.accountType !== 'personal') {
+        return NextResponse.json(
+          { success: false, error: 'Necesitas completar tu configuración para subir recibos' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const provisioned = await createPersonalOperationForUser(userProfile);
+        userProfile = provisioned.userProfile;
+      } catch (provisionError) {
+        console.error('[API/upload/receipt] Error provisionando operación personal:', provisionError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No pudimos preparar tu cuenta personal para subir recibos',
+            details: provisionError instanceof Error ? provisionError.message : 'Error desconocido',
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    const companyId = userProfile.companyId;
+    if (!companyId) {
       return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa para subir recibos' },
+        { success: false, error: 'Necesitas completar tu configuración para subir recibos' },
         { status: 400 }
       );
     }
 
     // Obtener empresa (usando Admin SDK)
-    const company = await getCompanyByIdAdmin(userProfile.companyId);
+    const company = await getCompanyByIdAdmin(companyId);
 
     if (!company || !company.driveFolderId) {
       return NextResponse.json(

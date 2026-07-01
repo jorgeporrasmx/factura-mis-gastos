@@ -6,7 +6,7 @@ import { useCompany } from '@/contexts/CompanyContext';
 import { useRouter } from 'next/navigation';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
-import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Link2, Copy, Check, MessageCircle, Users } from 'lucide-react';
+import { Mail, Calendar, LogOut, Shield, Building2, FolderOpen, ExternalLink, Loader2, FolderPlus, Copy, Check, MessageCircle, Users } from 'lucide-react';
 
 export default function PerfilPage() {
   const { user, signOut } = useAuth();
@@ -114,6 +114,7 @@ export default function PerfilPage() {
   const userDriveLink = userProfile?.driveFolderId
     ? `https://drive.google.com/drive/folders/${userProfile.driveFolderId}`
     : null;
+  const isPersonalAccount = userProfile?.accountType === 'personal';
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('es-MX', {
@@ -191,7 +192,7 @@ export default function PerfilPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Building2 className="w-5 h-5" />
-              Empresa
+              {isPersonalAccount ? 'Cuenta personal' : 'Empresa'}
             </h3>
 
             <div className="space-y-4">
@@ -208,7 +209,7 @@ export default function PerfilPage() {
                 <div>
                   <p className="text-sm text-gray-500">Tu rol</p>
                   <p className="text-gray-900">
-                    {isAdmin ? 'Administrador' : 'Usuario'}
+                    {isPersonalAccount ? 'Titular' : isAdmin ? 'Administrador' : 'Usuario'}
                   </p>
                 </div>
               </div>
@@ -230,24 +231,23 @@ export default function PerfilPage() {
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <Building2 className="w-5 h-5 text-amber-600" />
-              Sin empresa
+              Sin operación configurada
             </h3>
             <p className="text-gray-600 text-sm mb-4">
-              Necesitas pertenecer a una empresa para subir tu CSF y recibos.
-              Crea una empresa o pide a tu administrador que te invite.
+              Necesitas terminar tu configuración para subir tu CSF y recibos.
             </p>
             <Button
-              onClick={() => router.push('/auth/onboarding/empresa')}
+              onClick={() => router.push('/auth/onboarding')}
               className="w-full sm:w-auto"
             >
               <Building2 className="w-4 h-4 mr-2" />
-              Crear empresa
+              Completar configuración
             </Button>
           </div>
         )}
 
         {/* Invite employees section (admin only) */}
-        {company && isAdmin && company.inviteCode && (
+        {company && isAdmin && !isPersonalAccount && company.inviteCode && (
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Users className="w-5 h-5" />
@@ -381,8 +381,12 @@ export default function PerfilPage() {
                   <div className="flex items-center gap-3">
                     <Building2 className="w-5 h-5 text-green-600" />
                     <div>
-                      <p className="font-medium text-green-900">Carpeta de empresa</p>
-                      <p className="text-sm text-green-600">Documentos de {company?.name}</p>
+                      <p className="font-medium text-green-900">
+                        {isPersonalAccount ? 'Carpeta principal' : 'Carpeta de empresa'}
+                      </p>
+                      <p className="text-sm text-green-600">
+                        {isPersonalAccount ? 'Tus documentos fiscales' : `Documentos de ${company?.name}`}
+                      </p>
                     </div>
                   </div>
                   <ExternalLink className="w-4 h-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -393,8 +397,9 @@ export default function PerfilPage() {
               {!companyDriveLink && isAdmin && (
                 <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                   <p className="text-sm text-amber-800 mb-3">
-                    Tu empresa aún no tiene una carpeta de Google Drive configurada.
-                    Crea una para organizar los documentos de tu equipo.
+                    {isPersonalAccount
+                      ? 'Tu cuenta aún no tiene una carpeta de Google Drive configurada. Crea una para organizar tus documentos.'
+                      : 'Tu empresa aún no tiene una carpeta de Google Drive configurada. Crea una para organizar los documentos de tu equipo.'}
                   </p>
                   <Button
                     onClick={handleCreateDriveFolder}

@@ -14,6 +14,7 @@ import {
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
+import { createPersonalOperationForUser } from '@/lib/personal-operation';
 
 // Tipos MIME permitidos para CSF
 const ALLOWED_MIME_TYPES = [
@@ -94,16 +95,42 @@ export async function POST(request: NextRequest) {
       email: userProfile.email,
     });
 
-    // Verificar que tiene empresa
+    // Las cuentas personales usan una operación individual detrás de escena.
+    // Si el perfil viene de una versión anterior sin companyId, provisionarla aquí.
     if (!userProfile.companyId) {
+      if (userProfile.accountType && userProfile.accountType !== 'personal') {
+        return NextResponse.json(
+          { success: false, error: 'Necesitas completar tu configuración para subir tu CSF' },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const provisioned = await createPersonalOperationForUser(userProfile);
+        userProfile = provisioned.userProfile;
+      } catch (provisionError) {
+        console.error('[API/upload/csf] Error provisionando operación personal:', provisionError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No pudimos preparar tu cuenta personal para subir la CSF',
+            details: provisionError instanceof Error ? provisionError.message : 'Error desconocido',
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    const companyId = userProfile.companyId;
+    if (!companyId) {
       return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa para subir tu CSF' },
+        { success: false, error: 'Necesitas completar tu configuración para subir tu CSF' },
         { status: 400 }
       );
     }
 
     // Obtener empresa (usando Admin SDK)
-    const company = await getCompanyByIdAdmin(userProfile.companyId);
+    const company = await getCompanyByIdAdmin(companyId);
 
     if (!company || !company.driveFolderId) {
       return NextResponse.json(

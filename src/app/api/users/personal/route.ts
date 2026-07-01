@@ -6,8 +6,41 @@ import {
   getUserProfileAdmin,
   createUserProfileAdmin,
   updateUserProfileAdmin,
-  completeOnboardingAdmin,
+  createCompanyAdmin,
+  updateCompanyDriveFoldersAdmin,
+  updateCompanyAdmin,
+  isInviteCodeAvailableAdmin,
 } from '@/lib/firebase/firestore-admin';
+import {
+  createCompanyFolderStructure,
+  createUserFolder,
+  shareFolderWithUser,
+  isDriveConfigured,
+} from '@/lib/google-drive';
+import {
+  duplicateBoardForCompany,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
+import { generateInviteCode, generateUniqueCompanyDomain } from '@/types/company';
+
+function displayNameFromEmail(email: string): string {
+  return email.split('@')[0]?.replace(/[._-]+/g, ' ').trim() || email;
+}
+
+async function generateAvailableInviteCode(baseName: string): Promise<string> {
+  const base = generateInviteCode(baseName) || 'personal';
+  let inviteCode = base;
+  let codeIsAvailable = await isInviteCodeAvailableAdmin(inviteCode);
+  let suffix = 2;
+
+  while (!codeIsAvailable) {
+    inviteCode = `${base}-${suffix}`;
+    codeIsAvailable = await isInviteCodeAvailableAdmin(inviteCode);
+    suffix++;
+  }
+
+  return inviteCode;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,8 +87,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Completar onboarding como usuario personal
-    await completeOnboardingAdmin(uid, 'personal');
+    if (!isDriveConfigured()) {
+      return NextResponse.json(
+        { success: false, error: 'Google Drive no está configurado para crear tu cuenta personal.' },
+        { status: 503 }
+      );
+    }
+
+    const personalName = (displayName || userProfile.displayName || displayNameFromEmail(email)).trim();
+    const operationName = `${personalName} - Personal`;
+    const domain = generateUniqueCompanyDomain(operationName, uid);
+    const inviteCode = await generateAvailableInviteCode(operationName);
+
+    const company = await createCompanyAdmin({
+      name: operationName,
+      domain,
+      adminEmail: email,
+      adminUid: uid,
+      adminName: personalName,
+      inviteCode,
+    });
+
+    const folderStructure = await createCompanyFolderStructure(operationName);
+    await shareFolderWithUser(folderStructure.rootFolderId, email, 'writer');
+
+    const userFolder = await createUserFolder(folderStructure.rootFolderId, personalName);
+    await shareFolderWithUser(userFolder.folderId, email, 'writer');
+
+    await updateCompanyDriveFoldersAdmin(
+      company.id,
+      folderStructure.rootFolderId,
+      folderStructure.docsFolderId
+    );
+
+    let mondayBoardId: string | undefined;
+    if (isMondayBoardsConfigured()) {
+      try {
+        const boardResult = await duplicateBoardForCompany(operationName);
+        mondayBoardId = boardResult.boardId;
+        await updateCompanyAdmin(company.id, { mondayBoardId: boardResult.boardId });
+      } catch (mondayError) {
+        console.error('[API/users/personal] Error creando tablero Monday:', mondayError);
+      }
+    }
+
+    await updateUserProfileAdmin(uid, {
+      email,
+      displayName: personalName,
+      companyId: company.id,
+      companyName: operationName,
+      role: 'admin',
+      driveFolderId: userFolder.folderId,
+      status: 'active',
+      onboardingCompleted: true,
+      accountType: 'personal',
+      plan: 'personal',
+      subscriptionStatus: 'none',
+    });
 
     return NextResponse.json({
       success: true,
@@ -63,8 +151,17 @@ export async function POST(request: NextRequest) {
       user: {
         uid,
         email,
-        displayName,
+        displayName: personalName,
         accountType: 'personal',
+        companyId: company.id,
+        companyName: operationName,
+        driveFolderId: userFolder.folderId,
+      },
+      company: {
+        id: company.id,
+        name: operationName,
+        driveFolderId: folderStructure.rootFolderId,
+        mondayBoardId,
       },
     });
   } catch (error) {

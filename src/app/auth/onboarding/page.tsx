@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Building2, User, UserCircle, Loader2, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
 import { extractDomainFromEmail } from '@/types/company';
 
@@ -26,8 +28,13 @@ export default function OnboardingPage() {
     found: false,
     isPublicEmail: false,
   });
+  const [personalEmail, setPersonalEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const currentEmail = user?.email?.trim() || '';
+  const personalAccountEmail = (currentEmail || personalEmail).trim().toLowerCase();
+  const needsPersonalEmail = selectedType === 'personal' && !currentEmail;
+  const isPersonalEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalAccountEmail);
 
   // Verificar empresa por dominio cuando el usuario selecciona "empleado"
   useEffect(() => {
@@ -107,6 +114,11 @@ export default function OnboardingPage() {
   async function handlePersonalAccount() {
     if (!user) return;
 
+    if (!personalAccountEmail || !isPersonalEmailValid) {
+      setError('Ingresa un email válido para crear tu cuenta personal.');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -118,7 +130,7 @@ export default function OnboardingPage() {
         },
         body: JSON.stringify({
           uid: user.uid,
-          email: user.email,
+          email: personalAccountEmail,
           displayName: user.displayName,
         }),
       });
@@ -317,6 +329,24 @@ export default function OnboardingPage() {
               </div>
             </div>
 
+            {needsPersonalEmail && (
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="personal-email">Email para tu cuenta</Label>
+                <Input
+                  id="personal-email"
+                  type="email"
+                  value={personalEmail}
+                  onChange={(event) => setPersonalEmail(event.target.value)}
+                  placeholder="tu@email.com"
+                  autoComplete="email"
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-gray-500">
+                  Lo necesitamos para guardar tu perfil y enviarte notificaciones de tus recibos.
+                </p>
+              </div>
+            )}
+
             {error && (
               <div className="mt-4 text-red-600 bg-red-50 p-3 rounded-lg text-sm">{error}</div>
             )}
@@ -361,7 +391,7 @@ export default function OnboardingPage() {
             <Button
               size="lg"
               onClick={handlePersonalAccount}
-              disabled={isSubmitting}
+              disabled={isSubmitting || (needsPersonalEmail && !isPersonalEmailValid)}
               className="min-w-[200px]"
             >
               {isSubmitting ? (

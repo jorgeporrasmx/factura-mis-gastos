@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserProfileAdmin,
   createUserProfileAdmin,
+  updateUserProfileAdmin,
   completeOnboardingAdmin,
 } from '@/lib/firebase/firestore-admin';
 
@@ -12,12 +13,20 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const { uid, email, displayName, photoURL } = body;
+    const { uid, displayName, photoURL } = body;
+    const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
 
     // Validaciones
     if (!uid || !email) {
       return NextResponse.json(
         { success: false, error: 'Faltan campos requeridos: uid, email' },
+        { status: 400 }
+      );
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json(
+        { success: false, error: 'Email inválido' },
         { status: 400 }
       );
     }
@@ -32,6 +41,9 @@ export async function POST(request: NextRequest) {
         displayName: displayName || null,
         photoURL: photoURL || null,
       });
+    } else if (!userProfile.email) {
+      await updateUserProfileAdmin(uid, { email });
+      userProfile = { ...userProfile, email };
     }
 
     // Verificar que el usuario no ya pertenezca a una empresa

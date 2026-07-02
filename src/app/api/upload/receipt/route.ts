@@ -221,8 +221,8 @@ export async function POST(request: NextRequest) {
           status: { index: 5 },
           // Fecha de compra (hoy por defecto)
           text_mkthrxct: today,
-          // Método: Web (index 3) - se puede cambiar si viene de WhatsApp
-          proyecto: { index: 3 },
+          // Método: Web - se puede cambiar si viene de WhatsApp
+          proyecto: { label: 'Sitio Web' },
           // Link al archivo en Drive
           text_mkqygzgk: uploadResult.webViewLink,
           // Llave idempotente para automatizaciones Drive -> OCR/IA -> Monday

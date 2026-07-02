@@ -42,6 +42,114 @@ async function executeMondayMutation<T>(query: string, variables?: Record<string
   return result.data;
 }
 
+type MondayColumn = {
+  id: string;
+  title: string;
+  type: string;
+};
+
+const boardColumnsCache = new Map<string, MondayColumn[]>();
+
+const COLUMN_TITLE_FALLBACKS: Record<string, string[]> = {
+  text_mkthrxct: ['Fecha compra', 'Fecha de compra'],
+  text_mky72d18: ['UUID'],
+  text_mky7nh3g: ['Razón Social', 'Razon Social'],
+  link_mkqg4vhb: ['Portal de facturación', 'Portal Facturación', 'Web para Facturar'],
+  tag_mm063vts: ['Empleado'],
+};
+
+const METHOD_LABELS = new Set(['Correo', 'Instagram', 'Sitio Web', 'Whatsapp', 'WhatsApp', 'Sin definir']);
+
+function normalizeTitle(title: string): string {
+  return title
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+async function getBoardColumns(boardId: string): Promise<MondayColumn[]> {
+  const cached = boardColumnsCache.get(boardId);
+  if (cached) return cached;
+
+  const query = `
+    query ($boardId: [ID!]!) {
+      boards(ids: $boardId) {
+        columns {
+          id
+          title
+          type
+        }
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    boards: Array<{ columns: MondayColumn[] }>;
+  }>(query, { boardId: [boardId] });
+
+  const columns = result.boards?.[0]?.columns ?? [];
+  boardColumnsCache.set(boardId, columns);
+  return columns;
+}
+
+function findColumnByTitle(columns: MondayColumn[], titles: string[]): MondayColumn | undefined {
+  const normalized = new Set(titles.map(normalizeTitle));
+  return columns.find((column) => normalized.has(normalizeTitle(column.title)));
+}
+
+function normalizeValueForColumn(column: MondayColumn, value: unknown): unknown {
+  if (column.type === 'date' && typeof value === 'string') {
+    return { date: value };
+  }
+
+  if (column.type === 'link' && typeof value === 'string') {
+    return { url: value, text: column.title };
+  }
+
+  return value;
+}
+
+async function normalizeColumnValuesForBoard(
+  boardId: string,
+  columnValues: Record<string, unknown>
+): Promise<Record<string, unknown>> {
+  const columns = await getBoardColumns(boardId);
+  const columnIds = new Set(columns.map((column) => column.id));
+  const normalizedValues: Record<string, unknown> = {};
+
+  for (const [columnId, value] of Object.entries(columnValues)) {
+    let targetColumn: MondayColumn | undefined;
+
+    if (columnId === 'proyecto') {
+      const label = typeof value === 'object' && value && 'label' in value
+        ? String((value as { label?: unknown }).label)
+        : '';
+
+      if (METHOD_LABELS.has(label)) {
+        targetColumn = findColumnByTitle(columns, ['Método', 'Metodo']);
+      }
+    }
+
+    if (!targetColumn && columnIds.has(columnId)) {
+      targetColumn = columns.find((column) => column.id === columnId);
+    }
+
+    if (!targetColumn && COLUMN_TITLE_FALLBACKS[columnId]) {
+      targetColumn = findColumnByTitle(columns, COLUMN_TITLE_FALLBACKS[columnId]);
+    }
+
+    if (!targetColumn) {
+      console.warn(`[Monday] Columna omitida en tablero ${boardId}: ${columnId}`);
+      continue;
+    }
+
+    normalizedValues[targetColumn.id] = normalizeValueForColumn(targetColumn, value);
+  }
+
+  return normalizedValues;
+}
+
 /**
  * Duplicar el tablero MACHOTE para una nueva empresa
  * Retorna el ID del nuevo tablero
@@ -150,6 +258,8 @@ export async function createExpenseItem(
   itemName: string,
   columnValues: Record<string, unknown>
 ): Promise<string> {
+  const normalizedColumnValues = await normalizeColumnValuesForBoard(boardId, columnValues);
+
   const query = `
     mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
       create_item(
@@ -167,7 +277,7 @@ export async function createExpenseItem(
   }>(query, {
     boardId,
     itemName,
-    columnValues: JSON.stringify(columnValues),
+    columnValues: JSON.stringify(normalizedColumnValues),
   });
 
   return result.create_item.id;
@@ -208,6 +318,8 @@ export async function updateExpenseItem(
   itemId: string,
   columnValues: Record<string, unknown>
 ): Promise<string> {
+  const normalizedColumnValues = await normalizeColumnValuesForBoard(boardId, columnValues);
+
   const query = `
     mutation ($boardId: ID!, $itemId: ID!, $columnValues: JSON!) {
       change_multiple_column_values(
@@ -225,7 +337,7 @@ export async function updateExpenseItem(
   }>(query, {
     boardId,
     itemId,
-    columnValues: JSON.stringify(columnValues),
+    columnValues: JSON.stringify(normalizedColumnValues),
   });
 
   return result.change_multiple_column_values.id;

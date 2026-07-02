@@ -38,6 +38,7 @@ export default function UnirseByCodePage({ params }: { params: Promise<{ code: s
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const [companyLoading, setCompanyLoading] = useState(true);
   const [companyNotFound, setCompanyNotFound] = useState(false);
+  const [companyLoadError, setCompanyLoadError] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
@@ -49,6 +50,14 @@ export default function UnirseByCodePage({ params }: { params: Promise<{ code: s
     async function fetchCompany() {
       try {
         const response = await fetch(`/api/companies/join-by-invite?code=${encodeURIComponent(code)}`);
+
+        if (!response.ok) {
+          // Error del servidor: no confundir al empleado diciendo que su
+          // enlace es inválido cuando el problema es nuestro.
+          setCompanyLoadError(true);
+          return;
+        }
+
         const data = await response.json();
 
         if (data.success && data.companyFound) {
@@ -57,7 +66,7 @@ export default function UnirseByCodePage({ params }: { params: Promise<{ code: s
           setCompanyNotFound(true);
         }
       } catch {
-        setCompanyNotFound(true);
+        setCompanyLoadError(true);
       } finally {
         setCompanyLoading(false);
       }
@@ -135,6 +144,26 @@ export default function UnirseByCodePage({ params }: { params: Promise<{ code: s
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
           <p className="text-gray-500">Cargando información...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error temporal del servidor (el enlace puede ser correcto)
+  if (companyLoadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-4">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-2xl border border-gray-200 p-8">
+            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-gray-900 mb-2">No pudimos verificar tu invitación</h1>
+            <p className="text-gray-600 mb-6">
+              Tuvimos un problema temporal al verificar el enlace. Intenta de nuevo en unos minutos; tu enlace de invitación sigue siendo válido.
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
+              Reintentar
+            </Button>
+          </div>
         </div>
       </div>
     );

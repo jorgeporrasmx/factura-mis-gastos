@@ -14,6 +14,7 @@ import {
   shareFolderWithUser,
   isDriveConfigured,
 } from '@/lib/google-drive';
+import { createPersonalOperationForUser } from '@/lib/personal-operation';
 
 // Tipos MIME permitidos para CSF
 const ALLOWED_MIME_TYPES = [
@@ -94,26 +95,46 @@ export async function POST(request: NextRequest) {
       email: userProfile.email,
     });
 
-    // Determinar carpeta raíz según tipo de cuenta
-    let parentFolderId: string | null = null;
-
-    if (userProfile.companyId) {
-      // Usuario con empresa: usar carpeta de la empresa
-      const company = await getCompanyByIdAdmin(userProfile.companyId);
-      if (!company || !company.driveFolderId) {
+    // Las cuentas personales usan una operación individual detrás de escena.
+    // Si el perfil viene de una versión anterior sin companyId, provisionarla aquí.
+    if (!userProfile.companyId) {
+      if (userProfile.accountType && userProfile.accountType !== 'personal') {
         return NextResponse.json(
-          { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
+          { success: false, error: 'Necesitas completar tu configuración para subir tu CSF' },
           { status: 400 }
         );
       }
-      parentFolderId = company.driveFolderId;
-    } else if ((userProfile as { accountType?: string }).accountType === 'personal') {
-      // Usuario personal: usar carpeta raíz de Drive configurada en el servidor
-      const rootFolderId = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || null;
-      parentFolderId = rootFolderId;
-    } else {
+
+      try {
+        const provisioned = await createPersonalOperationForUser(userProfile);
+        userProfile = provisioned.userProfile;
+      } catch (provisionError) {
+        console.error('[API/upload/csf] Error provisionando operación personal:', provisionError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No pudimos preparar tu cuenta personal para subir la CSF',
+            details: provisionError instanceof Error ? provisionError.message : 'Error desconocido',
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    const companyId = userProfile.companyId;
+    if (!companyId) {
       return NextResponse.json(
-        { success: false, error: 'Debes pertenecer a una empresa o tener una cuenta personal para subir tu CSF' },
+        { success: false, error: 'Necesitas completar tu configuración para subir tu CSF' },
+        { status: 400 }
+      );
+    }
+
+    // Obtener empresa (usando Admin SDK)
+    const company = await getCompanyByIdAdmin(companyId);
+
+    if (!company || !company.driveFolderId) {
+      return NextResponse.json(
+        { success: false, error: 'La empresa no tiene carpeta de Drive configurada' },
         { status: 400 }
       );
     }
@@ -157,7 +178,7 @@ export async function POST(request: NextRequest) {
     if (!userFolderId) {
       // Crear carpeta del usuario si no existe
       const userName = userProfile.displayName || userProfile.email.split('@')[0];
-      const userFolder = await createUserFolder(parentFolderId!, userName);
+      const userFolder = await createUserFolder(company.driveFolderId, userName);
       userFolderId = userFolder.folderId;
 
       // Compartir carpeta con el usuario

@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, FileText, Receipt, BarChart3, User, HelpCircle } from 'lucide-react';
+import { Home, FileText, Receipt, BarChart3, User, HelpCircle, Bot } from 'lucide-react';
 
 const navItems = [
   { href: '/portal', label: 'Inicio', icon: Home },
   { href: '/portal/csf', label: 'CSF', icon: FileText },
   { href: '/portal/recibos', label: 'Recibos', icon: Receipt },
+  { href: '/portal/contador', label: 'Contador IA', icon: Bot },
   { href: '/portal/reportes', label: 'Reportes', icon: BarChart3 },
   { href: '/portal/perfil', label: 'Perfil', icon: User },
 ];

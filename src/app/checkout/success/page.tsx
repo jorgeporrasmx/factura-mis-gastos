@@ -27,6 +27,14 @@ function SuccessContent() {
   const email = searchParams.get('email') || '';
 
   const plan = planId ? PLANS[planId] : null;
+  const registrationHref = `/auth/registro?email=${encodeURIComponent(email)}&txn=${transactionId || ''}`;
+  const whatsappText = encodeURIComponent(
+    [
+      'Hola, acabo de suscribirme a Factura Mis Gastos y quiero completar mi alta.',
+      transactionId ? `Transaction ID: ${transactionId}` : null,
+      email ? `Email: ${email}` : null,
+    ].filter(Boolean).join('\n')
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -40,11 +48,11 @@ function SuccessContent() {
             ¡Pago exitoso!
           </h1>
           <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-            Bienvenido a Factura Mis Gastos. Tu suscripción al plan{' '}
+            Bienvenido a Factura Mis Gastos. Tu pago para el plan{' '}
             <span className="font-semibold text-foreground">
               {plan?.name || 'seleccionado'}
             </span>{' '}
-            está activa.
+            fue aprobado. Completa tu cuenta para activar la operación.
           </p>
         </div>
 
@@ -90,8 +98,8 @@ function SuccessContent() {
             <div className="mt-6 p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
                 <Mail className="w-4 h-4 inline mr-2" />
-                Hemos enviado un correo de confirmación con todos los detalles
-                de tu compra y próximos pasos.
+                Registramos tu pago y abrimos tu alta operativa. El siguiente paso es crear
+                tu cuenta con el mismo email de compra.
               </p>
             </div>
           </CardContent>
@@ -139,7 +147,7 @@ function SuccessContent() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
-                    href={`/auth/registro?email=${encodeURIComponent(email)}&txn=${transactionId || ''}`}
+                    href={registrationHref}
                     className="flex-1"
                   >
                     <Button className="w-full gradient-bg hover:opacity-90">
@@ -234,7 +242,7 @@ function SuccessContent() {
           </Link>
 
           <Link
-            href="https://wa.me/5216144273301?text=Hola%2C%20acabo%20de%20suscribirme%20y%20tengo%20dudas"
+            href={`https://wa.me/5216144273301?text=${whatsappText}`}
             target="_blank"
             className="block"
           >
@@ -264,7 +272,7 @@ function SuccessContent() {
               </Button>
             </Link>
           ) : (
-            <Link href={`/auth/registro?email=${encodeURIComponent(email)}&txn=${transactionId || ''}`}>
+            <Link href={registrationHref}>
               <Button className="gradient-bg hover:opacity-90">
                 Crear mi cuenta
                 <ArrowRight className="w-4 h-4 ml-2" />

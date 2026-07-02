@@ -49,9 +49,11 @@ export interface Expense {
 
   // Vinculación empresa/usuario
   companyId: string;
-  userId: string;
+  userId: string;                  // uid de Firebase = llave técnica estable del empleado
   userName: string;                // Para mostrar en reportes de admin
   userEmail: string;
+  employeeCode?: string;           // Código legible por empresa (opcional)
+  whatsappPhone?: string;          // Teléfono del empleado (opcional, trazabilidad)
 
   // Datos del gasto
   nombre: string;

@@ -91,11 +91,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar que el usuario no ya pertenezca a una empresa
+    // Casos de error explícitos (no fallo silencioso):
     if (userProfile.companyId) {
+      // Cuenta personal activa: tiene su propia operación personal (empresa
+      // detrás de escena) y puede tener recibos/CSF. No se convierte
+      // automáticamente para no mezclar datos personales con los de la empresa.
+      if (userProfile.accountType === 'personal') {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Tu cuenta es personal y ya tiene su propia operación (recibos, carpetas o CSF). Para unirte a una empresa sin perder tu información, contacta a soporte.',
+            code: 'PERSONAL_ACCOUNT_ACTIVE',
+          },
+          { status: 409 }
+        );
+      }
+
+      const sameCompany = userProfile.companyId === company.id;
       return NextResponse.json(
-        { success: false, error: 'Ya perteneces a una empresa' },
-        { status: 400 }
+        {
+          success: false,
+          error: sameCompany
+            ? `Ya perteneces a ${company.name}.`
+            : 'Tu cuenta ya pertenece a otra empresa. Para cambiar de empresa contacta a soporte.',
+          code: sameCompany ? 'ALREADY_IN_THIS_COMPANY' : 'ALREADY_IN_ANOTHER_COMPANY',
+        },
+        { status: 409 }
+      );
+    }
+
+    // Cuenta personal legada (sin operación provisionada) pero con datos:
+    // también requiere soporte para no perder información.
+    if (userProfile.accountType === 'personal' && userProfile.csfUploadedAt) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Tu cuenta es personal y ya tiene datos (CSF). Para unirte a una empresa sin perder tu información, contacta a soporte.',
+          code: 'PERSONAL_ACCOUNT_HAS_DATA',
+        },
+        { status: 409 }
       );
     }
 
@@ -114,7 +150,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Vincular usuario a empresa
+    // Vincular usuario a empresa. Esto deja el perfil con exactamente:
+    // companyId, companyName, role: 'user', accountType: 'empleado',
+    // status: 'active', onboardingCompleted: true y (si aplica) driveFolderId.
     await linkUserToCompanyAdmin(
       uid,
       company.id,
@@ -123,8 +161,12 @@ export async function POST(request: NextRequest) {
       userDriveFolderId
     );
 
-    // Guardar número de WhatsApp
-    await updateUserProfileAdmin(uid, { whatsappPhone });
+    // Guardar número de WhatsApp y nombre visible del empleado (trazabilidad).
+    const employeeName = displayName || userProfile.displayName || undefined;
+    await updateUserProfileAdmin(uid, {
+      whatsappPhone,
+      ...(employeeName ? { displayName: employeeName } : {}),
+    });
 
     return NextResponse.json({
       success: true,

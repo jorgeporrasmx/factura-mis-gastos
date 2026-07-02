@@ -251,6 +251,45 @@ export async function getCompanyByInviteCodeAdmin(inviteCode: string): Promise<C
 }
 
 /**
+ * Obtener empresas activas SIN inviteCode (Admin).
+ * Se usa para el backfill idempotente de códigos de invitación.
+ * Firestore no permite consultar "campo inexistente", así que se filtra en memoria.
+ */
+export async function getActiveCompaniesMissingInviteCodeAdmin(): Promise<Company[]> {
+  const db = getAdminFirestore();
+  if (!db) {
+    console.error('Firestore Admin no disponible');
+    return [];
+  }
+
+  try {
+    const snapshot = await db
+      .collection('companies')
+      .where('status', '==', 'active')
+      .get();
+
+    const companies: Company[] = [];
+    snapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      const inviteCode = typeof data.inviteCode === 'string' ? data.inviteCode.trim() : '';
+      if (!inviteCode) {
+        companies.push({
+          ...data,
+          id: docSnap.id,
+          createdAt: data.createdAt?.toDate() ?? new Date(),
+          updatedAt: data.updatedAt?.toDate() ?? new Date(),
+        } as Company);
+      }
+    });
+
+    return companies;
+  } catch (error) {
+    console.error('Error listing companies missing invite code (Admin):', error);
+    return [];
+  }
+}
+
+/**
  * Check if invite code is available (Admin)
  */
 export async function isInviteCodeAvailableAdmin(inviteCode: string): Promise<boolean> {

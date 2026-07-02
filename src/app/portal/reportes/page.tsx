@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Download, Settings, AlertCircle } from 'lucide-react';
 import { useCompany } from '@/contexts/CompanyContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useExpenseSync } from '@/hooks/useExpenseSync';
+import { buildExpensesCsv } from '@/lib/employee-traceability';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ExpenseSummaryCards } from '@/components/expenses/ExpenseSummaryCards';
 import { ExpenseFiltersBar } from '@/components/expenses/ExpenseFilters';
@@ -14,8 +16,11 @@ import type { ExpenseFilters, ExpenseSortOptions, Expense } from '@/types/expens
 
 export default function ReportesPage() {
   const { company, userProfile, companyUsers, isAdmin } = useCompany();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<ExpenseFilters>({});
   const [sort, setSort] = useState<ExpenseSortOptions>({ field: 'fecha', direction: 'desc' });
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const {
     expenses,
@@ -46,6 +51,71 @@ export default function ReportesPage() {
     const success = await sync();
     if (success) {
       refresh();
+    }
+  };
+
+  // Exportar a CSV. Descarga todos los gastos que cumplen los filtros actuales,
+  // respetando permisos (el backend ya limita al empleado a sus propios gastos).
+  const handleExport = async () => {
+    if (!user?.uid) return;
+    setIsExporting(true);
+    setExportError(null);
+
+    try {
+      const all: Expense[] = [];
+      let cursor: string | undefined;
+      let guard = 0; // tope de seguridad: 100 páginas x 100 = 10,000 gastos
+
+      do {
+        const params = new URLSearchParams();
+        if (filters.userId) params.set('userId', filters.userId);
+        if (filters.estado) params.set('estado', filters.estado);
+        if (filters.categoria) params.set('categoria', filters.categoria);
+        if (filters.fechaDesde) params.set('fechaDesde', filters.fechaDesde.toISOString());
+        if (filters.fechaHasta) params.set('fechaHasta', filters.fechaHasta.toISOString());
+        params.set('sortField', sort.field);
+        params.set('sortDirection', sort.direction);
+        params.set('limit', '100');
+        if (cursor) params.set('cursor', cursor);
+
+        const response = await fetch(`/api/expenses?${params.toString()}`, {
+          headers: { 'x-user-uid': user.uid },
+        });
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Error al exportar');
+        }
+
+        const page: Expense[] = data.data.expenses.map((exp: Expense & { fecha: string }) => ({
+          ...exp,
+          fecha: new Date(exp.fecha),
+        }));
+        all.push(...page);
+
+        cursor = data.data.pagination.hasMore ? data.data.pagination.nextCursor : undefined;
+        guard++;
+      } while (cursor && guard < 100);
+
+      if (all.length === 0) {
+        setExportError('No hay gastos para exportar con los filtros actuales.');
+        return;
+      }
+
+      const csv = buildExpensesCsv(all);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const stamp = new Date().toISOString().split('T')[0];
+      link.href = url;
+      link.download = `gastos-${company?.name ? company.name.replace(/\s+/g, '-').toLowerCase() : 'reporte'}-${stamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : 'Error al exportar');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -119,12 +189,19 @@ export default function ReportesPage() {
                 {isSyncing ? 'Sincronizando...' : 'Sincronizar'}
               </Button>
             )}
-            <Button variant="outline">
-              <Download className="w-4 h-4 mr-2" />
-              Exportar
+            <Button variant="outline" onClick={handleExport} disabled={isExporting}>
+              <Download className={`w-4 h-4 mr-2 ${isExporting ? 'animate-pulse' : ''}`} />
+              {isExporting ? 'Exportando...' : 'Exportar CSV'}
             </Button>
           </div>
         </div>
+
+        {/* Error de exportación */}
+        {exportError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+            {exportError}
+          </div>
+        )}
 
         {/* Resultado de sincronización */}
         {syncResult && (

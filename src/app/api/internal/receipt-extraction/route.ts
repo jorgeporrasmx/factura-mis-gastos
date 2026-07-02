@@ -12,10 +12,12 @@ import type { Company } from '@/types/company';
 import {
   createExpenseItem,
   createItemUpdate,
+  fetchBoardColumns,
   findExpenseItemByDriveFileId,
   isMondayBoardsConfigured,
   updateExpenseItem,
 } from '@/lib/monday-boards';
+import { buildEmployeeColumnValues } from '@/lib/employee-traceability';
 
 type ReceiptRoute = 'portal_web' | 'correo' | 'whatsapp' | 'revision' | 'no_facturable';
 type ExtractionStatus =
@@ -36,6 +38,14 @@ interface ReceiptExtractionPayload {
   mondayBoardId?: string;
   mondayItemId?: string;
   source?: 'zapier' | 'n8n' | 'manual' | string;
+
+  // Datos de empleado (trazabilidad). Opcionales: si sólo llega userId,
+  // el perfil completo se resuelve desde Firestore.
+  employeeId?: string;        // uid de Firebase (equivale a userId)
+  employeeName?: string;
+  employeeEmail?: string;
+  employeeWhatsapp?: string;
+  employeeCode?: string;      // código legible por empresa (opcional)
   extraction: {
     proveedor?: string;
     razonSocial?: string;
@@ -65,10 +75,12 @@ const STATUS_BY_ROUTE: Record<ReceiptRoute, ExtractionStatus> = {
   no_facturable: 'No Facturado',
 };
 
+// Nota de nomenclatura: la etiqueta correcta en el machote es "Sitio Web"
+// (no "Página Web"). Ver docs/monday-columns.md.
 const METHOD_LABELS: Record<string, string> = {
-  Web: 'Página Web',
-  web: 'Página Web',
-  portal_web: 'Página Web',
+  Web: 'Sitio Web',
+  web: 'Sitio Web',
+  portal_web: 'Sitio Web',
   Correo: 'Correo',
   correo: 'Correo',
   Whatsapp: 'Whatsapp',
@@ -223,6 +235,59 @@ async function readReceiptUserId(driveFileId: string): Promise<string | undefine
   return receipt.exists ? receipt.data()?.userId : undefined;
 }
 
+interface ResolvedEmployee {
+  userId?: string;
+  userName?: string;
+  userEmail?: string;
+  whatsappPhone?: string;
+  employeeCode?: string;
+}
+
+// Resuelve la identidad del empleado. Usa lo que venga en el payload
+// (employeeName/Email/Whatsapp/Code) y, si sólo llegó userId, completa el
+// perfil desde Firestore. No falla si faltan campos opcionales.
+async function resolveEmployeeIdentity(
+  payload: ReceiptExtractionPayload,
+  userId: string | undefined
+): Promise<ResolvedEmployee> {
+  const identity: ResolvedEmployee = {
+    userId: userId || payload.employeeId?.trim() || undefined,
+    userName: payload.employeeName?.trim() || undefined,
+    userEmail: payload.employeeEmail?.trim() || undefined,
+    whatsappPhone: payload.employeeWhatsapp?.trim() || undefined,
+    employeeCode: payload.employeeCode?.trim() || undefined,
+  };
+
+  if (identity.userId && (!identity.userName || !identity.userEmail || !identity.whatsappPhone)) {
+    try {
+      const profile = await getUserProfileAdmin(identity.userId);
+      if (profile) {
+        identity.userName =
+          identity.userName || profile.displayName || profile.email?.split('@')[0] || undefined;
+        identity.userEmail = identity.userEmail || profile.email || undefined;
+        identity.whatsappPhone = identity.whatsappPhone || profile.whatsappPhone || undefined;
+      }
+    } catch (profileError) {
+      console.warn('[receipt-extraction] No se pudo resolver perfil de empleado:', profileError);
+    }
+  }
+
+  return identity;
+}
+
+// Campos de empleado listos para escribir en Firestore. Sólo incluye llaves
+// con valor: con merge:true, omitir la llave preserva el valor ya poblado
+// (regla dura: nunca vaciar un campo de empleado en reprocesos).
+function employeeFirestoreFields(employee: ResolvedEmployee): Record<string, string> {
+  return {
+    ...(employee.userId ? { userId: employee.userId } : {}),
+    ...(employee.userName ? { userName: employee.userName } : {}),
+    ...(employee.userEmail ? { userEmail: employee.userEmail } : {}),
+    ...(employee.whatsappPhone ? { whatsappPhone: employee.whatsappPhone } : {}),
+    ...(employee.employeeCode ? { employeeCode: employee.employeeCode } : {}),
+  };
+}
+
 export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json(
@@ -250,7 +315,8 @@ export async function POST(request: NextRequest) {
     }
 
     const receiptId = payload.receiptId || payload.driveFileId;
-    const userId = payload.userId || await readReceiptUserId(receiptId);
+    const userId = payload.userId || payload.employeeId || await readReceiptUserId(receiptId);
+    const employee = await resolveEmployeeIdentity(payload, userId);
     const company = await resolveCompany({ ...payload, userId });
 
     if (!company?.id) {
@@ -273,6 +339,31 @@ export async function POST(request: NextRequest) {
 
       const columnValues = buildMondayColumnValues(payload);
 
+      // Columnas de empleado (Empleado / Empleado Email / Empleado ID) de
+      // forma tolerante: si faltan en el board, no se rompe el proceso —
+      // sólo se registra warning con la columna faltante.
+      if (employee.userId || employee.userEmail || employee.userName) {
+        try {
+          const boardColumns = await fetchBoardColumns(boardId);
+          const { columnValues: employeeColumns, warnings } = buildEmployeeColumnValues(boardColumns, {
+            uid: employee.userId || '',
+            name: employee.userName || '',
+            email: employee.userEmail || '',
+            whatsappPhone: employee.whatsappPhone,
+            employeeCode: employee.employeeCode,
+          });
+          Object.assign(columnValues, employeeColumns);
+          if (warnings.length > 0) {
+            console.warn(
+              `[receipt-extraction] Columnas de empleado faltantes en board ${boardId}: ${warnings.join(', ')}. ` +
+              `Ver docs/monday-columns.md.`
+            );
+          }
+        } catch (columnError) {
+          console.warn('[receipt-extraction] No se pudieron leer columnas del board para empleado:', columnError);
+        }
+      }
+
       if (mondayItemId) {
         await updateExpenseItem(boardId, mondayItemId, columnValues);
       } else {
@@ -288,9 +379,13 @@ export async function POST(request: NextRequest) {
       status === 'En Proceso' ? 'in_progress' :
       'pending';
 
+    // Campos de empleado: sólo llaves con valor. Con merge:true esto garantiza
+    // que un reproceso nunca vacíe un campo de empleado ya poblado.
+    const employeeFields = employeeFirestoreFields(employee);
+
     await db.collection('receipts').doc(receiptId).set({
       id: receiptId,
-      ...(userId ? { userId } : {}),
+      ...employeeFields,
       ...(payload.fileUrl ? { fileUrl: payload.fileUrl } : {}),
       storagePath: payload.driveFileId,
       status: receiptStatus,
@@ -313,9 +408,7 @@ export async function POST(request: NextRequest) {
         id: payload.driveFileId,
         mondayItemId: mondayItemId || '',
         companyId: company.id,
-        userId: userId || '',
-        userName: '',
-        userEmail: '',
+        ...employeeFields,
         nombre: provider,
         monto: total,
         fecha: fecha ? new Date(`${fecha}T00:00:00`) : new Date(),
@@ -339,6 +432,7 @@ export async function POST(request: NextRequest) {
       driveFileId: payload.driveFileId,
       receiptId,
       companyId: company.id,
+      ...employeeFields,
       boardId: boardId || null,
       mondayItemId: mondayItemId || null,
       status,

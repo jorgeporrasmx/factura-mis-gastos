@@ -251,6 +251,32 @@ export async function createItemUpdate(itemId: string, body: string): Promise<st
 }
 
 /**
+ * Obtener las columnas (id, título, tipo) de un tablero.
+ * Se usa para detectar de forma tolerante las columnas de empleado.
+ */
+export async function fetchBoardColumns(
+  boardId: string
+): Promise<Array<{ id: string; title: string; type: string }>> {
+  const query = `
+    query ($boardId: ID!) {
+      boards(ids: [$boardId]) {
+        columns {
+          id
+          title
+          type
+        }
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    boards: Array<{ columns: Array<{ id: string; title: string; type: string }> }>;
+  }>(query, { boardId });
+
+  return result.boards?.[0]?.columns || [];
+}
+
+/**
  * Obtener información de un tablero
  */
 export async function getBoardInfo(boardId: string): Promise<{

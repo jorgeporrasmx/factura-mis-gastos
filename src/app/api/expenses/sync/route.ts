@@ -5,9 +5,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getUserProfile,
   getCompanyById,
+  getCompanyUsers,
   upsertExpenses,
   updateCompanySyncMetadata,
 } from '@/lib/firebase/firestore';
+import type { EmployeeRecord } from '@/lib/employee-traceability';
 import {
   verifyBoardAccess,
   syncBoardToExpenses,
@@ -128,6 +130,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Cargar usuarios de la empresa para poder resolver el empleado dueño de
+    // cada gasto (por email/uid en las columnas de Monday).
+    const companyUsers = await getCompanyUsers(company.id);
+    const employees: EmployeeRecord[] = companyUsers.map((u) => ({
+      uid: u.uid,
+      email: u.email,
+      displayName: u.displayName,
+      whatsappPhone: u.whatsappPhone,
+    }));
+
     // Sincronizar items desde Monday
     const syncResult = await syncBoardToExpenses(
       company.mondayBoardId,
@@ -135,7 +147,8 @@ export async function POST(request: NextRequest) {
       company.id,
       userProfile.uid,
       userProfile.displayName || 'Admin',
-      userProfile.email
+      userProfile.email,
+      employees
     );
 
     // Guardar en Firestore

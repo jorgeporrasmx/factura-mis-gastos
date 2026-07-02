@@ -16,6 +16,11 @@ export interface MondayExpenseColumns {
   rfc?: string;            // Columna texto
   folio?: string;          // Columna texto
   usuario_email?: string;  // Columna email (para vincular con usuario de la app)
+
+  // Columnas de empleado (trazabilidad) - opcionales y tolerantes a faltantes
+  empleado_nombre?: string; // Columna texto (visible)
+  empleado_email?: string;  // Columna texto/email (estable)
+  empleado_id?: string;     // Columna texto (uid de Firebase, estable)
 }
 
 // Configuración completa de un board de gastos
@@ -223,6 +228,25 @@ export function detectColumnMapping(columns: MondayColumnInfo[]): Partial<Monday
       if (typeLower === 'email') {
         mapping.usuario_email = col.id;
       }
+    }
+
+    // Columnas de empleado (trazabilidad). Se detectan por título de forma
+    // tolerante; no son requeridas para que la sincronización funcione.
+    if (titleLower === 'empleado id' || titleLower === 'id empleado' || titleLower === 'empleado uid') {
+      mapping.empleado_id = col.id;
+    } else if (
+      titleLower === 'empleado email' ||
+      titleLower === 'email empleado' ||
+      titleLower === 'correo empleado' ||
+      titleLower === 'correo del empleado'
+    ) {
+      mapping.empleado_email = col.id;
+    } else if (
+      titleLower === 'empleado' ||
+      titleLower === 'nombre empleado' ||
+      titleLower === 'empleado nombre'
+    ) {
+      mapping.empleado_nombre = col.id;
     }
 
     // Si no se detectó por nombre, intentar por tipo

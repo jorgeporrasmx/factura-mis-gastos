@@ -9,13 +9,10 @@ import type {
   MondayBoardData,
   MondayColumnInfo,
   BoardVerificationResult,
-  MondayItemsPageResponse,
-  MONDAY_STATUS_MAP,
-  MONDAY_CATEGORY_MAP,
-  detectColumnMapping,
-  validateColumnMapping,
 } from '@/types/monday-expenses';
+import { MONDAY_STATUS_MAP, MONDAY_CATEGORY_MAP } from '@/types/monday-expenses';
 import type { Expense, ExpenseStatus, ExpenseCategory } from '@/types/expenses';
+import { resolveEmployeeForItem, type EmployeeRecord } from '@/lib/employee-traceability';
 
 // API URL de Monday
 const MONDAY_API_URL = 'https://api.monday.com/v2';
@@ -270,7 +267,6 @@ function parseColumnValue(column: MondayColumnValue): string | number | null {
 function mapEstado(mondayStatus: string | null): ExpenseStatus {
   if (!mondayStatus) return 'pendiente';
 
-  const { MONDAY_STATUS_MAP } = require('@/types/monday-expenses');
   const normalized = mondayStatus.toLowerCase().trim();
   return (MONDAY_STATUS_MAP[normalized] as ExpenseStatus) || 'pendiente';
 }
@@ -281,7 +277,6 @@ function mapEstado(mondayStatus: string | null): ExpenseStatus {
 function mapCategoria(mondayCategoria: string | null): ExpenseCategory {
   if (!mondayCategoria) return 'otros';
 
-  const { MONDAY_CATEGORY_MAP } = require('@/types/monday-expenses');
   const normalized = mondayCategoria.toLowerCase().trim();
   return (MONDAY_CATEGORY_MAP[normalized] as ExpenseCategory) || 'otros';
 }
@@ -295,7 +290,8 @@ export function transformMondayItem(
   companyId: string,
   defaultUserId: string,
   defaultUserName: string,
-  defaultUserEmail: string
+  defaultUserEmail: string,
+  employees: EmployeeRecord[] = []
 ): Expense {
   // Crear mapa de columnas por ID
   const columns: Record<string, MondayColumnValue> = {};
@@ -314,8 +310,17 @@ export function transformMondayItem(
   const fechaStr = getCol('fecha') as string | null;
   const fecha = fechaStr ? new Date(fechaStr) : new Date();
 
-  // Determinar usuario (si hay columna de email, buscar usuario por email)
-  const userEmail = (getCol('usuario_email') as string) || defaultUserEmail;
+  // Identificar al empleado dueño del gasto.
+  // Prioridad: columnas de empleado (id/email) del propio item -> usuario de la
+  // empresa que haga match -> columna email genérica -> admin (fallback).
+  const empleadoEmail = (getCol('empleado_email') as string | null) || (getCol('usuario_email') as string | null);
+  const empleadoId = getCol('empleado_id') as string | null;
+
+  const resolved = resolveEmployeeForItem(
+    { empleadoEmail, empleadoId },
+    employees,
+    { userId: defaultUserId, userName: defaultUserName, userEmail: defaultUserEmail }
+  );
 
   const now = new Date();
 
@@ -323,11 +328,11 @@ export function transformMondayItem(
     id: item.id,
     mondayItemId: item.id,
 
-    // Vinculación
+    // Vinculación (uid de Firebase = llave técnica estable)
     companyId,
-    userId: defaultUserId, // Se puede mejorar para buscar por email
-    userName: defaultUserName,
-    userEmail,
+    userId: resolved.userId,
+    userName: resolved.userName,
+    userEmail: resolved.userEmail,
 
     // Datos del gasto
     nombre: item.name,
@@ -362,7 +367,8 @@ export async function syncBoardToExpenses(
   companyId: string,
   defaultUserId: string,
   defaultUserName: string,
-  defaultUserEmail: string
+  defaultUserEmail: string,
+  employees: EmployeeRecord[] = []
 ): Promise<{
   expenses: Expense[];
   itemsProcessed: number;
@@ -382,7 +388,8 @@ export async function syncBoardToExpenses(
           companyId,
           defaultUserId,
           defaultUserName,
-          defaultUserEmail
+          defaultUserEmail,
+          employees
         );
         expenses.push(expense);
       } catch (error) {

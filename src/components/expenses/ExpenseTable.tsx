@@ -210,7 +210,14 @@ export const ExpenseTable = memo(function ExpenseTable({
                   </td>
                   {showUserColumn && (
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {expense.userName}
+                      <div className="font-medium text-gray-900 max-w-[180px] truncate">
+                        {expense.userName || '—'}
+                      </div>
+                      {expense.userEmail && (
+                        <div className="text-xs text-gray-500 max-w-[180px] truncate">
+                          {expense.userEmail}
+                        </div>
+                      )}
                     </td>
                   )}
                   <td className="px-4 py-3 text-sm text-gray-600 max-w-[150px] truncate">

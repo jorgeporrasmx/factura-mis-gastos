@@ -21,6 +21,7 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { getFirestoreDb } from './config';
+import { mergeEmployeePreservingNonEmpty } from '@/lib/employee-traceability';
 import type {
   Company,
   CreateCompanyData,
@@ -486,8 +487,15 @@ export async function upsertExpense(companyId: string, expense: Expense): Promis
 
   const docRef = doc(db, 'companies', companyId, 'expenses', expense.mondayItemId);
 
+  // Regla dura: no vaciar campos de empleado ya poblados en reprocesos.
+  const existing = await getDoc(docRef);
+  const merged = mergeEmployeePreservingNonEmpty(
+    { ...expense } as Record<string, unknown>,
+    existing.exists() ? existing.data() : undefined
+  );
+
   await setDoc(docRef, {
-    ...expense,
+    ...merged,
     fecha: dateToTimestamp(expense.fecha),
     createdAt: dateToTimestamp(expense.createdAt),
     updatedAt: serverTimestamp(),
@@ -519,8 +527,14 @@ export async function upsertExpenses(
       const docRef = doc(db, 'companies', companyId, 'expenses', expense.mondayItemId);
       const existing = await getDoc(docRef);
 
+      // Regla dura: no vaciar campos de empleado ya poblados en reprocesos.
+      const merged = mergeEmployeePreservingNonEmpty(
+        { ...expense } as Record<string, unknown>,
+        existing.exists() ? existing.data() : undefined
+      );
+
       const docData = {
-        ...expense,
+        ...merged,
         fecha: dateToTimestamp(expense.fecha),
         createdAt: existing.exists()
           ? existing.data().createdAt

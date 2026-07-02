@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -425,14 +426,14 @@ export function LeadFormModal({ isOpen, onClose, formType, onSuccess, redirectTo
           </p>
 
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <a
+            <Link
               href="/#preguntas-frecuentes"
               onClick={handleClose}
               className="flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors"
             >
               <HelpCircle className="w-4 h-4" />
               ¿Necesitas ayuda? Consulta nuestras preguntas frecuentes
-            </a>
+            </Link>
           </div>
         </form>
       </DialogContent>

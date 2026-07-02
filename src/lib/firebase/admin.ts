@@ -12,7 +12,7 @@ function formatPrivateKey(key: string | undefined): string | undefined {
   if (!key) return undefined;
 
   // Replace escaped newlines with real newlines
-  let formatted = key.replace(/\\n/g, '\n');
+  const formatted = key.replace(/\\n/g, '\n');
 
   // Check if the key already has proper newlines (valid PEM format)
   const lines = formatted.split('\n').filter(line => line.trim());

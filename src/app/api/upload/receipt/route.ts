@@ -14,7 +14,8 @@ import {
   generateUniqueFileName,
   isDriveConfigured,
 } from '@/lib/google-drive';
-import { createExpenseItem, isMondayBoardsConfigured } from '@/lib/monday-boards';
+import { createExpenseItem, fetchBoardColumns, isMondayBoardsConfigured } from '@/lib/monday-boards';
+import { buildEmployeeColumnValues } from '@/lib/employee-traceability';
 import { createPersonalOperationForUser } from '@/lib/personal-operation';
 
 // Tipos MIME permitidos para recibos
@@ -39,6 +40,9 @@ async function triggerReceiptOcr(payload: {
   companyId: string;
   mondayBoardId?: string;
   mondayItemId?: string | null;
+  employeeName?: string;
+  employeeEmail?: string;
+  employeeWhatsapp?: string;
 }) {
   const webhookUrl = process.env.FMG_RECEIPT_OCR_WEBHOOK_URL;
   if (!webhookUrl) return;
@@ -56,6 +60,11 @@ async function triggerReceiptOcr(payload: {
         companyId: payload.companyId,
         mondayBoardId: payload.mondayBoardId,
         mondayItemId: payload.mondayItemId || undefined,
+        // Datos de empleado (trazabilidad). employeeId === userId (uid Firebase).
+        employeeId: payload.userId,
+        employeeName: payload.employeeName,
+        employeeEmail: payload.employeeEmail,
+        employeeWhatsapp: payload.employeeWhatsapp,
         source: 'fmg-upload',
       }),
     });
@@ -214,7 +223,7 @@ export async function POST(request: NextRequest) {
       try {
         const today = new Date().toISOString().split('T')[0];
         const userName = userProfile.displayName || userProfile.email.split('@')[0];
-        
+
         // Columnas del tablero MACHOTE
         const columnValues: Record<string, unknown> = {
           // Estado: NUEVO (index 5 en el tablero)
@@ -227,9 +236,32 @@ export async function POST(request: NextRequest) {
           text_mkqygzgk: uploadResult.webViewLink,
           // Llave idempotente para automatizaciones Drive -> OCR/IA -> Monday
           enlace4: uploadResult.fileId,
-          // Empleado (tag) - usar nombre del usuario
-          tag_mm063vts: { tag_ids: [] }, // Se puede mejorar para crear/buscar el tag
         };
+        // Nota: ya no se envía tag_mm063vts vacío. Los tags de Monday no sirven
+        // como identificador (requieren ids precreados); el empleado se escribe
+        // en columnas de texto estables/visibles si existen en el board.
+
+        // Datos del empleado (trazabilidad). Si las columnas Empleado /
+        // Empleado Email / Empleado ID faltan en el board, NO se rompe la
+        // subida: sólo se registra un warning con la columna faltante.
+        try {
+          const boardColumns = await fetchBoardColumns(company.mondayBoardId);
+          const { columnValues: employeeColumns, warnings } = buildEmployeeColumnValues(boardColumns, {
+            uid,
+            name: userName,
+            email: userProfile.email,
+            whatsappPhone: userProfile.whatsappPhone,
+          });
+          Object.assign(columnValues, employeeColumns);
+          if (warnings.length > 0) {
+            console.warn(
+              `[MONDAY] Columnas de empleado faltantes en board ${company.mondayBoardId}: ${warnings.join(', ')}. ` +
+              `Agrégalas al machote para trazabilidad completa (ver docs/monday-columns.md).`
+            );
+          }
+        } catch (columnError) {
+          console.warn('[MONDAY] No se pudieron leer las columnas del board para datos de empleado:', columnError);
+        }
 
         mondayItemId = await createExpenseItem(
           company.mondayBoardId,
@@ -255,6 +287,9 @@ export async function POST(request: NextRequest) {
       companyId: company.id,
       mondayBoardId: company.mondayBoardId,
       mondayItemId,
+      employeeName: userProfile.displayName || userProfile.email.split('@')[0],
+      employeeEmail: userProfile.email,
+      employeeWhatsapp: userProfile.whatsappPhone,
     });
 
     return NextResponse.json({

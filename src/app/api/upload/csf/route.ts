@@ -2,6 +2,7 @@
 // POST /api/upload/csf - Subir CSF a carpeta del usuario en Drive
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   getCompanyByIdAdmin,
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener UID y email del header
-    const uid = request.headers.get('x-user-uid');
+    // Obtener UID verificado y email del header
+    const uid = await getAuthenticatedUid(request);
     const userEmail = request.headers.get('x-user-email');
 
     if (!uid) {

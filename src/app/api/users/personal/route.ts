@@ -2,6 +2,7 @@
 // POST /api/users/personal - Completar onboarding como usuario personal
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   createUserProfileAdmin,
@@ -44,6 +45,14 @@ async function generateAvailableInviteCode(baseName: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUid = await getAuthenticatedUid(request);
+    if (!authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const { uid, displayName, photoURL } = body;
@@ -54,6 +63,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Faltan campos requeridos: uid, email' },
         { status: 400 }
+      );
+    }
+
+    // El uid del body debe coincidir con el uid autenticado
+    if (uid !== authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 403 }
       );
     }
 

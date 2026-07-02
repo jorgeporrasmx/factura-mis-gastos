@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserProfile, getUserReceipts, saveReceipt } from '@/lib/firebase/firestore';
+import { getAuthHeaders } from '@/lib/api-client';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { ReceiptGrid } from '@/components/receipts/ReceiptGrid';
 import { ReceiptCapture } from '@/components/receipts/ReceiptCapture';
@@ -47,16 +48,17 @@ function RecibosContent() {
       }
 
       try {
-        const profile = await getUserProfile(user.uid);
+        // Perfil y recibos en paralelo: son consultas independientes
+        const [profile] = await Promise.all([
+          getUserProfile(user.uid),
+          loadReceipts(),
+        ]);
         if (profile?.csfUploadedAt) {
           const uploadDate = new Date(profile.csfUploadedAt);
           const expiresAt = new Date(uploadDate);
           expiresAt.setMonth(expiresAt.getMonth() + 3);
           setCsfValid(new Date() < expiresAt);
         }
-        
-        // Load receipts from Firestore
-        await loadReceipts();
       } catch (error) {
         console.error('Error checking CSF status:', error);
       } finally {
@@ -97,9 +99,7 @@ function RecibosContent() {
       // Upload to Drive via API
       const response = await fetch('/api/upload/receipt', {
         method: 'POST',
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: await getAuthHeaders(),
         body: formData,
       });
 

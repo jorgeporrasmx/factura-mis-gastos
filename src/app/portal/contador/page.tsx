@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/api-client';
 import { PortalHeader } from '@/components/portal/PortalHeader';
 import { Button } from '@/components/ui/button';
 import { Bot, Send, Loader2, ShieldCheck, FileText, Receipt, Upload, X, Image as ImageIcon } from 'lucide-react';
@@ -93,10 +94,7 @@ export default function AccountantPage() {
     try {
       const response = await fetch('/api/ai-accountant/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-uid': user.uid,
-        },
+        headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           question: prompt,
           history: messages.slice(-8),

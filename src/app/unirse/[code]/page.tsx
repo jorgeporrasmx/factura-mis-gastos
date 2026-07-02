@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/api-client';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { EmailPasswordForm } from '@/components/auth/EmailPasswordForm';
 import { EmployeeFAQ } from '@/components/employee/EmployeeFAQ';
@@ -100,7 +101,7 @@ export default function UnirseByCodePage({ params }: { params: Promise<{ code: s
     try {
       const response = await fetch('/api/companies/join-by-invite', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           uid: user.uid,
           email: user.email,

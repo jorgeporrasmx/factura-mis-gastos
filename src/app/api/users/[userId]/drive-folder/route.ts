@@ -2,6 +2,7 @@
 // POST /api/users/[userId]/drive-folder - Crear carpeta personal en Drive
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   getCompanyByIdAdmin,
@@ -29,7 +30,7 @@ export async function POST(
     }
 
     // Verificar autorización - el header debe coincidir con el userId
-    const requestingUid = request.headers.get('x-user-uid');
+    const requestingUid = await getAuthenticatedUid(request);
 
     if (!requestingUid || requestingUid !== userId) {
       return NextResponse.json(

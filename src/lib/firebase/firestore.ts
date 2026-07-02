@@ -517,11 +517,18 @@ export async function upsertExpenses(
     const batch = writeBatch(db);
     const chunk = expenses.slice(i, i + BATCH_SIZE);
 
-    for (const expense of chunk) {
-      const docRef = doc(db, 'companies', companyId, 'expenses', expense.mondayItemId);
-      const existing = await getDoc(docRef);
+    // Leer los documentos existentes en paralelo (antes era 1 read serial por gasto)
+    const existingDocs = await Promise.all(
+      chunk.map((expense) =>
+        getDoc(doc(db, 'companies', companyId, 'expenses', expense.mondayItemId))
+      )
+    );
 
-      const docData = {
+    chunk.forEach((expense, index) => {
+      const docRef = doc(db, 'companies', companyId, 'expenses', expense.mondayItemId);
+      const existing = existingDocs[index];
+
+      const docData: Record<string, unknown> = {
         ...expense,
         fecha: dateToTimestamp(expense.fecha),
         createdAt: existing.exists()
@@ -532,13 +539,22 @@ export async function upsertExpenses(
       };
 
       if (existing.exists()) {
+        // No pisar la atribución de empleado que dejó el upload/OCR:
+        // el sync de Monday llena userId/userName con los datos del admin
+        // que dispara el sync, no con los del empleado real.
+        const existingData = existing.data();
+        if (existingData.userId && existingData.userId !== expense.userId) {
+          delete docData.userId;
+          delete docData.userName;
+          delete docData.userEmail;
+        }
         batch.update(docRef, docData);
         updated++;
       } else {
         batch.set(docRef, docData);
         created++;
       }
-    }
+    });
 
     await batch.commit();
   }

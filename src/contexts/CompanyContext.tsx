@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import type { Company, UserProfile, CompanyUser } from '@/types/company';
 // Imports estáticos - el 'use client' garantiza que solo se ejecutan en el navegador
 import { getUserProfile, getCompanyById, createUserProfile, getCompanyUsers } from '@/lib/firebase/firestore';
+import { getAuthHeaders } from '@/lib/api-client';
 
 interface CompanyContextType {
   // Estado
@@ -51,7 +52,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       if (user.email) {
         await fetch('/api/users/claim-pending-payment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({
             uid: user.uid,
             email: user.email,

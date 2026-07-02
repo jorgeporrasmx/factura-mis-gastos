@@ -2,6 +2,7 @@
 // POST /api/companies - Crear una nueva empresa
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   createCompanyAdmin,
   getCompanyByDomainAdmin,
@@ -27,6 +28,14 @@ import { isInviteCodeAvailableAdmin } from '@/lib/firebase/firestore-admin';
 export async function POST(request: NextRequest) {
   console.log('[API/companies] POST iniciado');
   try {
+    const authUid = await getAuthenticatedUid(request);
+    if (!authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     console.log('[API/companies] Body recibido:', { name: body.name, adminUid: body.adminUid, adminEmail: body.adminEmail });
 
@@ -37,6 +46,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Faltan campos requeridos: name, adminUid, adminEmail' },
         { status: 400 }
+      );
+    }
+
+    // El uid del body debe coincidir con el uid autenticado
+    if (adminUid !== authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 403 }
       );
     }
 
@@ -123,40 +140,47 @@ export async function POST(request: NextRequest) {
       throw new Error(`Error al crear empresa en base de datos: ${firestoreError instanceof Error ? firestoreError.message : 'Error desconocido'}`);
     }
 
-    // Crear estructura de carpetas en Google Drive (si está configurado)
-    let driveFolderInfo = null;
+    // Drive y Monday son independientes: correr ambos aprovisionamientos en
+    // paralelo recorta varios segundos del onboarding.
+    interface DriveFolderInfo {
+      rootFolderId: string;
+      docsFolderId: string;
+      rootWebViewLink: string;
+      adminFolderId: string;
+      adminFolderLink: string;
+    }
+
     let adminDriveFolderId: string | undefined;
 
-    if (isDriveConfigured()) {
+    const provisionDrive = async (): Promise<DriveFolderInfo | null> => {
+      if (!isDriveConfigured()) {
+        console.log('[API/companies] Google Drive no configurado, omitiendo creación de carpetas');
+        return null;
+      }
       try {
         console.log('[API/companies] Iniciando creación de carpetas en Drive para empresa:', name);
 
         const folderStructure = await createCompanyFolderStructure(name);
 
-        // Compartir carpeta raíz con el admin
-        await shareFolderWithUser(folderStructure.rootFolderId, adminEmail, 'writer');
-
-        // Crear carpeta personal del admin dentro de la carpeta de empresa
+        // Compartir carpeta raíz y crear carpeta personal del admin en paralelo
         const adminFolderName = adminName || userProfile.displayName || adminEmail.split('@')[0];
-        const adminFolder = await createUserFolder(folderStructure.rootFolderId, adminFolderName);
+        const [, adminFolder] = await Promise.all([
+          shareFolderWithUser(folderStructure.rootFolderId, adminEmail, 'writer'),
+          createUserFolder(folderStructure.rootFolderId, adminFolderName),
+        ]);
         adminDriveFolderId = adminFolder.folderId;
 
-        // Compartir carpeta personal del admin con permisos de escritura
-        await shareFolderWithUser(adminFolder.folderId, adminEmail, 'writer');
+        // Compartir carpeta del admin y guardar IDs de carpetas en paralelo
+        await Promise.all([
+          shareFolderWithUser(adminFolder.folderId, adminEmail, 'writer'),
+          updateCompanyDriveFoldersAdmin(
+            company.id,
+            folderStructure.rootFolderId,
+            folderStructure.docsFolderId
+          ),
+        ]);
 
-        console.log('[API/companies] Carpeta personal del admin creada:', {
-          adminFolderId: adminDriveFolderId,
-          adminFolderLink: adminFolder.webViewLink,
-        });
-
-        // Actualizar empresa con IDs de carpetas
-        await updateCompanyDriveFoldersAdmin(
-          company.id,
-          folderStructure.rootFolderId,
-          folderStructure.docsFolderId
-        );
-
-        driveFolderInfo = {
+        const info: DriveFolderInfo = {
           rootFolderId: folderStructure.rootFolderId,
           docsFolderId: folderStructure.docsFolderId,
           rootWebViewLink: folderStructure.rootWebViewLink,
@@ -168,40 +192,42 @@ export async function POST(request: NextRequest) {
         company.driveFolderId = folderStructure.rootFolderId;
         company.driveDocsFolderId = folderStructure.docsFolderId;
 
-        console.log('[API/companies] Estructura de Drive creada exitosamente:', driveFolderInfo);
+        console.log('[API/companies] Estructura de Drive creada exitosamente:', info);
+        return info;
       } catch (driveError) {
         console.error('[API/companies] Error creando carpetas en Drive:', driveError);
         // Continuamos sin Drive, la empresa ya está creada
+        return null;
       }
-    } else {
-      console.log('[API/companies] Google Drive no configurado, omitiendo creación de carpetas');
-    }
+    };
 
-    // Crear tablero de Monday (duplicar MACHOTE)
-    let mondayBoardInfo = null;
-    if (isMondayBoardsConfigured()) {
+    const provisionMonday = async (): Promise<{ boardId: string; boardUrl: string } | null> => {
+      if (!isMondayBoardsConfigured()) {
+        console.log('[API/companies] Monday.com no configurado, omitiendo creación de tablero');
+        return null;
+      }
       try {
         console.log('[API/companies] Duplicando tablero MACHOTE para empresa:', name);
         const boardResult = await duplicateBoardForCompany(name);
-        
+
         // Actualizar empresa con el ID del tablero
         await updateCompanyAdmin(company.id, {
           mondayBoardId: boardResult.boardId,
         });
-        
-        mondayBoardInfo = {
-          boardId: boardResult.boardId,
-          boardUrl: boardResult.boardUrl,
-        };
-        
-        console.log('[API/companies] Tablero de Monday creado:', mondayBoardInfo);
+
+        console.log('[API/companies] Tablero de Monday creado:', boardResult.boardId);
+        return { boardId: boardResult.boardId, boardUrl: boardResult.boardUrl };
       } catch (mondayError) {
         console.error('[API/companies] Error creando tablero de Monday:', mondayError);
         // Continuamos sin Monday, la empresa ya está creada
+        return null;
       }
-    } else {
-      console.log('[API/companies] Monday.com no configurado, omitiendo creación de tablero');
-    }
+    };
+
+    const [driveFolderInfo, mondayBoardInfo] = await Promise.all([
+      provisionDrive(),
+      provisionMonday(),
+    ]);
 
     // Vincular usuario a empresa como admin (con su carpeta personal si se creó)
     console.log('[API/companies] Vinculando usuario a empresa...');

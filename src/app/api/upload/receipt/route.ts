@@ -2,6 +2,7 @@
 // POST /api/upload/receipt - Subir recibo a carpeta del usuario y crear item en Monday
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   getCompanyByIdAdmin,
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(

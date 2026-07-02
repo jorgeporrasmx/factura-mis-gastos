@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,9 +87,7 @@ export default function OnboardingPage() {
     try {
       const response = await fetch('/api/companies/join', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           uid: user.uid,
           email: user.email,
@@ -125,9 +124,7 @@ export default function OnboardingPage() {
     try {
       const response = await fetch('/api/users/personal', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           uid: user.uid,
           email: personalAccountEmail,

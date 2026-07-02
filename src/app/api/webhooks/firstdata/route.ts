@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getAdminFirestore } from '@/lib/firebase/admin';
 
 /**
  * POST /api/webhooks/firstdata
@@ -102,68 +103,94 @@ function verifyWebhookSignature(
     .update(payload)
     .digest('hex');
 
-  // Comparación segura contra timing attacks
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+  // Comparación segura contra timing attacks.
+  // timingSafeEqual lanza si las longitudes difieren: comparar longitudes primero
+  // para responder 401 en vez de caer al catch (que respondería 200).
+  const signatureBuffer = Buffer.from(signature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+
+  if (signatureBuffer.length !== expectedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 }
 
 // ============================================
 // HANDLERS DE EVENTOS
 // ============================================
 
+/**
+ * Actualiza el estado de la transacción en payment_transactions y deja
+ * registro del evento en la subcolección webhook_events (auditoría).
+ */
+async function updateTransactionFromWebhook(
+  event: WebhookEvent,
+  status: 'approved' | 'declined' | 'voided' | 'refunded' | 'fraud_alert' | 'chargeback'
+): Promise<void> {
+  const db = getAdminFirestore();
+  if (!db) {
+    console.error('[webhook] Firebase Admin no configurado; evento no persistido');
+    return;
+  }
+
+  const transactionId = event.orderId || event.transactionId;
+  if (!transactionId) return;
+
+  const now = new Date();
+  const transactionRef = db.collection('payment_transactions').doc(transactionId);
+
+  await transactionRef.set(
+    {
+      status,
+      lastWebhookEvent: event.eventType,
+      lastWebhookAt: now,
+      updatedAt: now,
+      processorResponseCode: event.processor?.responseCode ?? null,
+      processorResponseMessage: event.processor?.responseMessage ?? null,
+    },
+    { merge: true }
+  );
+
+  await transactionRef.collection('webhook_events').add({
+    eventType: event.eventType,
+    transactionId: event.transactionId,
+    orderId: event.orderId ?? null,
+    amount: event.amount ?? null,
+    processor: event.processor ?? null,
+    timestamp: event.timestamp,
+    receivedAt: now,
+  });
+}
+
 async function handleTransactionApproved(event: WebhookEvent): Promise<void> {
   console.log('Transacción aprobada:', event.transactionId);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Activar suscripción si es pago inicial
-  // 3. Enviar email de confirmación al cliente
-  // 4. Actualizar Monday.com
+  await updateTransactionFromWebhook(event, 'approved');
 }
 
 async function handleTransactionDeclined(event: WebhookEvent): Promise<void> {
   console.log('Transacción rechazada:', event.transactionId);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Notificar al cliente
-  // 3. Si es pago recurrente, marcar suscripción como "past_due"
+  await updateTransactionFromWebhook(event, 'declined');
 }
 
 async function handleTransactionVoided(event: WebhookEvent): Promise<void> {
   console.log('Transacción anulada:', event.transactionId);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Si aplica, cancelar suscripción
+  await updateTransactionFromWebhook(event, 'voided');
 }
 
 async function handleTransactionRefunded(event: WebhookEvent): Promise<void> {
   console.log('Transacción reembolsada:', event.transactionId);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Actualizar estado de transacción en BD
-  // 2. Notificar al cliente
+  await updateTransactionFromWebhook(event, 'refunded');
 }
 
 async function handleFraudAlert(event: WebhookEvent): Promise<void> {
   console.error('⚠️ Alerta de fraude:', event);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Registrar alerta
-  // 2. Notificar al equipo de seguridad
-  // 3. Considerar bloquear cliente/tarjeta
+  await updateTransactionFromWebhook(event, 'fraud_alert');
 }
 
 async function handleChargeback(event: WebhookEvent): Promise<void> {
   console.error('⚠️ Contracargo recibido:', event);
-
-  // TODO: Implementar lógica de negocio
-  // 1. Registrar contracargo
-  // 2. Notificar al equipo
-  // 3. Preparar documentación para disputa
+  await updateTransactionFromWebhook(event, 'chargeback');
 }
 
 // ============================================

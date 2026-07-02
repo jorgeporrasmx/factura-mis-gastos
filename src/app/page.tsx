@@ -8,7 +8,7 @@ import { PricingSection } from '@/components/PricingSection';
 import { FAQSection } from '@/components/FAQSection';
 import { CTASection } from '@/components/CTASection';
 import { Footer } from '@/components/Footer';
-import { WhatsAppWidget } from '@/components/WhatsAppWidget';
+import { WhatsAppWidgetLazy } from '@/components/WhatsAppWidgetLazy';
 
 export default function Home() {
   return (
@@ -25,7 +25,7 @@ export default function Home() {
         <BlogSection />
       </main>
       <Footer />
-      <WhatsAppWidget />
+      <WhatsAppWidgetLazy />
     </>
   );
 }

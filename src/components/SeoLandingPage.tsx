@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { WhatsAppWidget } from '@/components/WhatsAppWidget';
+import { WhatsAppWidgetLazy } from '@/components/WhatsAppWidgetLazy';
 import { getWhatsAppUrl } from '@/lib/whatsapp';
 import { landingPages, type LandingPage } from '@/lib/seo-content';
 
@@ -188,7 +188,7 @@ export function SeoLandingPage({ page }: { page: LandingPage }) {
         </section>
       </main>
       <Footer />
-      <WhatsAppWidget />
+      <WhatsAppWidgetLazy />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }} />

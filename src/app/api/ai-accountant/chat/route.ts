@@ -2,6 +2,7 @@
 // The assistant is advisory: it does not file taxes or replace a licensed accountant.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase/admin';
 import {
@@ -432,7 +433,7 @@ async function saveConversation(args: {
 
 export async function POST(request: NextRequest) {
   try {
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
     if (!uid) {
       return NextResponse.json({ success: false, error: 'No autorizado' }, { status: 401 });
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase/admin';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -8,6 +9,14 @@ function normalizeEmail(email: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUid = await getAuthenticatedUid(request);
+    if (!authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const uid = String(body.uid || '').trim();
     const email = normalizeEmail(String(body.email || ''));
@@ -18,6 +27,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'uid y email son obligatorios' },
         { status: 400 }
+      );
+    }
+
+    if (uid !== authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No puedes reclamar pagos de otro usuario' },
+        { status: 403 }
       );
     }
 

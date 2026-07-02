@@ -2,6 +2,7 @@
 // POST /api/drive/create-folder - Crear carpeta de empresa en Drive
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   getCompanyByIdAdmin,
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(

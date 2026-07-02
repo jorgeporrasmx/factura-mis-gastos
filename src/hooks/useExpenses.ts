@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/api-client';
 import type {
   Expense,
   ExpenseFilters,
@@ -80,9 +81,7 @@ export function useExpenses(options: UseExpensesOptions = {}): UseExpensesResult
 
       try {
         const response = await fetch(buildUrl(cursor), {
-          headers: {
-            'x-user-uid': user.uid,
-          },
+          headers: await getAuthHeaders(),
         });
 
         const data = await response.json();
@@ -167,9 +166,7 @@ export function useExpenseSummary(userId?: string) {
     try {
       const params = userId ? `?userId=${userId}` : '';
       const response = await fetch(`/api/expenses/summary${params}`, {
-        headers: {
-          'x-user-uid': user.uid,
-        },
+        headers: await getAuthHeaders(),
       });
 
       const data = await response.json();

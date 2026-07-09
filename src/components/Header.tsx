@@ -100,8 +100,8 @@ export function Header() {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-sm">
-                    Portal clientes
+                  <Button variant="outline" className="text-sm">
+                    Iniciar sesión
                   </Button>
                 </Link>
                 <Button
@@ -116,8 +116,16 @@ export function Header() {
             )}
           </div>
 
+          <div className="md:hidden flex items-center gap-2">
+            {!isLoading && (
+              <Link href={isAuthenticated ? '/portal' : '/auth/login'}>
+                <Button variant="outline" size="sm" className="text-sm">
+                  {isAuthenticated ? 'Mi Portal' : 'Iniciar sesión'}
+                </Button>
+              </Link>
+            )}
           <button
-            className="md:hidden p-2"
+            className="p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -129,6 +137,7 @@ export function Header() {
               )}
             </svg>
           </button>
+          </div>
         </div>
 
         {mobileMenuOpen && (
@@ -204,7 +213,7 @@ export function Header() {
                   <>
                     <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" className="w-full justify-center">
-                        Portal clientes
+                        Iniciar sesión
                       </Button>
                     </Link>
                     <Button

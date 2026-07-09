@@ -3,6 +3,7 @@ import { HeroSection } from '@/components/HeroSection';
 import { ProblemSection } from '@/components/ProblemSection';
 import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { DifferentiatorsSection } from '@/components/DifferentiatorsSection';
+import { ReconciliationSection } from '@/components/ReconciliationSection';
 import { BlogSection } from '@/components/BlogSection';
 import { PricingSection } from '@/components/PricingSection';
 import { FAQSection } from '@/components/FAQSection';
@@ -20,6 +21,7 @@ export default function Home() {
         <ProblemSection />
         <HowItWorksSection />
         <DifferentiatorsSection />
+        <ReconciliationSection />
         <PricingSection />
         <FAQSection />
         <CTASection />

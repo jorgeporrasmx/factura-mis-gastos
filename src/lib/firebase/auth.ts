@@ -156,12 +156,38 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   }
 }
 
+// Flag en sessionStorage para saber si hay un redirect de Google pendiente.
+// Permite saltarnos el round-trip de getRedirectResult() en cargas normales.
+const GOOGLE_REDIRECT_FLAG = 'fmg-google-redirect-pending';
+
+export function hasPendingGoogleRedirect(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return sessionStorage.getItem(GOOGLE_REDIRECT_FLAG) === '1';
+  } catch {
+    return true; // sin sessionStorage, conservar el comportamiento anterior
+  }
+}
+
+function clearPendingGoogleRedirect(): void {
+  try {
+    sessionStorage.removeItem(GOOGLE_REDIRECT_FLAG);
+  } catch {
+    // ignorar
+  }
+}
+
 // Sign in with Google (redirect - for mobile)
 export async function signInWithGoogleRedirect(): Promise<AuthResult> {
   const auth = getFirebaseAuth();
   if (!auth) return notConfiguredError;
 
   try {
+    try {
+      sessionStorage.setItem(GOOGLE_REDIRECT_FLAG, '1');
+    } catch {
+      // ignorar
+    }
     await signInWithRedirect(auth, getGoogleProvider());
     // The page will redirect to Google, so this return won't be reached in success case
     return { success: true };
@@ -181,6 +207,13 @@ export async function signInWithGoogleRedirect(): Promise<AuthResult> {
 export async function getGoogleRedirectResult(): Promise<AuthResult> {
   const auth = getFirebaseAuth();
   if (!auth) return { success: false };
+
+  // Sin redirect pendiente no hay nada que procesar: evita un round-trip
+  // de red de Firebase que bloquea isLoading en cada page load.
+  if (!hasPendingGoogleRedirect()) {
+    return { success: false };
+  }
+  clearPendingGoogleRedirect();
 
   try {
     const result = await getRedirectResult(auth);

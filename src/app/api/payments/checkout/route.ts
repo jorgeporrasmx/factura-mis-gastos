@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirstDataClient, getErrorMessage } from '@/lib/firstdata';
+import { activateSubscription, createDriveFolderForOnboarding } from '@/lib/fmg-onboarding';
+import {
+  duplicateBoardForCompany,
+  isMondayBoardsConfigured,
+} from '@/lib/monday-boards';
 import {
   PLANS,
   PlanId,
@@ -13,6 +18,12 @@ import {
   generateCustomerId,
   generateSubscriptionId,
 } from '@/types/payments';
+
+type MondaySubscriptionResult = {
+  success: boolean;
+  itemId?: string;
+  error?: string;
+};
 
 /**
  * POST /api/payments/checkout
@@ -98,26 +109,70 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
     });
 
     if (result.success) {
-      // TODO: Guardar en base de datos:
-      // 1. Crear/actualizar cliente
-      // 2. Tokenizar la tarjeta para pagos futuros
-      // 3. Crear suscripción
-      // 4. Registrar transacción
+      const approvedTransactionId = result.transactionId || transactionId;
 
       // Enviar notificación a Monday.com (opcional)
-      await notifyMondayNewSubscription({
+      const mondayResult = await notifyMondayNewSubscription({
         customerId,
         customerName: body.customer.name,
         customerEmail: body.customer.email,
         customerPhone: body.customer.phone,
         planName: plan.name,
         amount: plan.priceDisplay,
-        transactionId: result.transactionId || transactionId,
+        transactionId: approvedTransactionId,
+        subscriptionId,
       });
+
+      try {
+        const accountType = body.planId === 'freelancer' ? 'personal' : 'empresa';
+        const companyName = body.customer.company || body.customer.name;
+        let mondayBoardId: string | undefined;
+        let mondayBoardUrl: string | undefined;
+
+        if (isMondayBoardsConfigured()) {
+          try {
+            const boardResult = await duplicateBoardForCompany(companyName);
+            mondayBoardId = boardResult.boardId;
+            mondayBoardUrl = boardResult.boardUrl;
+          } catch (boardError) {
+            console.error('[checkout] No se pudo crear tablero operativo Monday:', boardError);
+          }
+        }
+
+        await activateSubscription({
+          transactionId: approvedTransactionId,
+          orderId: transactionId,
+          subscriptionId,
+          customerEmail: body.customer.email,
+          customerName: body.customer.name,
+          customerPhone: body.customer.phone,
+          companyName,
+          accountType,
+          planId: body.planId,
+          planName: plan.name,
+          amount: plan.price,
+          currency: 'MXN',
+          paymentEnvironment: process.env.FIRSTDATA_ENVIRONMENT || 'sandbox',
+          mondaySubscriptionItemId: mondayResult.itemId,
+          mondayBoardId,
+          mondayBoardUrl,
+          source: 'checkout',
+        });
+
+        await createDriveFolderForOnboarding({
+          transactionId: approvedTransactionId,
+          customerEmail: body.customer.email,
+          customerName: body.customer.name,
+          companyName,
+          accountType,
+        });
+      } catch (activationError) {
+        console.error('[checkout] Pago aprobado pero no se pudo persistir activación:', activationError);
+      }
 
       return NextResponse.json({
         success: true,
-        transactionId: result.transactionId || transactionId,
+        transactionId: approvedTransactionId,
         subscriptionId,
         approvalCode: result.approvalCode,
         message: '¡Pago procesado exitosamente! Bienvenido a Factura Mis Gastos.',
@@ -209,7 +264,7 @@ function validateCheckoutRequest(data: CheckoutRequest): string | null {
 }
 
 function isValidPlanId(planId: string): planId is PlanId {
-  return ['personal', 'equipos', 'empresa', 'corporativo'].includes(planId);
+  return ['freelancer', 'personal', 'equipos', 'empresa', 'corporativo'].includes(planId);
 }
 
 function isValidEmail(email: string): boolean {
@@ -227,11 +282,12 @@ async function notifyMondayNewSubscription(data: {
   planName: string;
   amount: string;
   transactionId: string;
-}): Promise<void> {
+  subscriptionId: string;
+}): Promise<MondaySubscriptionResult> {
   const apiKey = process.env.MONDAY_API_KEY;
   if (!apiKey) {
     console.warn('MONDAY_API_KEY no configurado, omitiendo notificación');
-    return;
+    return { success: false, error: 'MONDAY_API_KEY no configurado' };
   }
 
   try {
@@ -255,12 +311,27 @@ async function notifyMondayNewSubscription(data: {
       phone_mkz742fw: data.customerPhone || '',
       text_mkz75aj8: data.planName,
       text_mkz7hm0p: data.amount,
-      text_mkz7v1b1: `Transaction ID: ${data.transactionId}`,
+      text_mkz7v1b1: [
+        `Alta operativa FMG`,
+        `Transaction ID: ${data.transactionId}`,
+        `Subscription ID: ${data.subscriptionId}`,
+        `Cliente ID: ${data.customerId}`,
+        '',
+        'Checklist:',
+        '- Confirmar pago real/ambiente First Data',
+        '- Verificar cuenta creada',
+        '- Solicitar/subir CSF',
+        '- Crear o validar carpeta Drive',
+        '- Validar tablero Monday de recibos',
+        '- Pedir primer recibo',
+        '',
+        '-- Juan',
+      ].join('\n'),
       date_mkz7qq3d: { date: new Date().toISOString().split('T')[0] },
-      color_mkz79aj8: { label: 'Activo' },
+      color_mkz79aj8: { label: process.env.MONDAY_SUBSCRIPTIONS_STATUS_LABEL || 'Ganado' },
     });
 
-    await fetch('https://api.monday.com/v2', {
+    const response = await fetch('https://api.monday.com/v2', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -275,8 +346,71 @@ async function notifyMondayNewSubscription(data: {
         },
       }),
     });
+
+    const payload = await response.json();
+    if (payload.errors?.length) {
+      const error = payload.errors[0]?.message || 'Error de Monday';
+      console.error('Monday API Error:', payload.errors);
+      return { success: false, error };
+    }
+
+    const itemId = payload.data?.create_item?.id as string | undefined;
+    if (itemId) {
+      await createMondayUpdate(
+        apiKey,
+        itemId,
+        [
+          'Pago recibido desde checkout FMG.',
+          '',
+          `Cliente: ${data.customerName}`,
+          `Email: ${data.customerEmail}`,
+          data.customerPhone ? `WhatsApp: ${data.customerPhone}` : null,
+          `Plan: ${data.planName}`,
+          `Monto: ${data.amount}`,
+          `Transaction ID: ${data.transactionId}`,
+          `Subscription ID: ${data.subscriptionId}`,
+          '',
+          'Siguiente paso: alta asistida, CSF y primer recibo.',
+          '',
+          '-- Juan',
+        ].filter(Boolean).join('\n')
+      );
+    }
+
+    return { success: true, itemId };
   } catch (error) {
     console.error('Error notificando a Monday:', error);
     // No fallar la transacción por esto
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error notificando a Monday',
+    };
+  }
+}
+
+async function createMondayUpdate(apiKey: string, itemId: string, body: string): Promise<void> {
+  const mutation = `
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) {
+        id
+      }
+    }
+  `;
+
+  const response = await fetch('https://api.monday.com/v2', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: apiKey,
+    },
+    body: JSON.stringify({
+      query: mutation,
+      variables: { itemId, body },
+    }),
+  });
+
+  const payload = await response.json();
+  if (payload.errors?.length) {
+    console.error('Monday update error:', payload.errors);
   }
 }

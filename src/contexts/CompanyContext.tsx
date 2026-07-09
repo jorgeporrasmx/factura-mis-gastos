@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import type { Company, UserProfile, CompanyUser } from '@/types/company';
 // Imports estáticos - el 'use client' garantiza que solo se ejecutan en el navegador
 import { getUserProfile, getCompanyById, createUserProfile, getCompanyUsers } from '@/lib/firebase/firestore';
+import { getAuthHeaders } from '@/lib/api-client';
 
 interface CompanyContextType {
   // Estado
@@ -47,6 +48,22 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
+      // Si el usuario pagó antes de crear cuenta, liga su perfil al pago pendiente.
+      if (user.email) {
+        await fetch('/api/users/claim-pending-payment', {
+          method: 'POST',
+          headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+          }),
+        }).catch((claimError) => {
+          console.warn('No se pudo reclamar pago pendiente:', claimError);
+        });
+      }
+
       // Obtener perfil del usuario
       const profile = await getUserProfile(user.uid);
 
@@ -97,7 +114,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.uid]); // Solo depende del uid, no del objeto user completo
+  }, [user?.uid, user?.email, user?.displayName, user?.photoURL]);
 
   // Cargar usuarios de la empresa (solo admin) - para refrescos manuales
   const refreshUsers = useCallback(async () => {

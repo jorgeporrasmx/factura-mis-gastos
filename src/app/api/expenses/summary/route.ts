@@ -2,16 +2,17 @@
 // GET /api/expenses/summary - Obtiene estadísticas de gastos
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
-  getUserProfile,
-  getExpenseSummary,
-  getCompanyById,
-} from '@/lib/firebase/firestore';
+  getUserProfileAdmin,
+  getExpenseSummaryAdmin,
+  getCompanyByIdAdmin,
+} from '@/lib/firebase/firestore-admin';
 
 export async function GET(request: NextRequest) {
   try {
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(
@@ -20,8 +21,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener perfil del usuario
-    const userProfile = await getUserProfile(uid);
+    // Obtener perfil del usuario (Admin SDK: sin reglas de seguridad de cliente)
+    const userProfile = await getUserProfileAdmin(uid);
 
     if (!userProfile) {
       return NextResponse.json(
@@ -37,9 +38,6 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Obtener empresa para info adicional
-    const company = await getCompanyById(userProfile.companyId);
 
     // Obtener parámetros
     const searchParams = request.nextUrl.searchParams;
@@ -57,8 +55,11 @@ export async function GET(request: NextRequest) {
     }
     // Si admin sin filtro, ve resumen de toda la empresa (targetUserId = undefined)
 
-    // Obtener resumen
-    const summary = await getExpenseSummary(userProfile.companyId, targetUserId);
+    // Obtener empresa y resumen en paralelo
+    const [company, summary] = await Promise.all([
+      getCompanyByIdAdmin(userProfile.companyId),
+      getExpenseSummaryAdmin(userProfile.companyId, targetUserId),
+    ]);
 
     return NextResponse.json({
       success: true,

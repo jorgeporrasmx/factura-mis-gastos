@@ -146,14 +146,59 @@ export async function createClientDashboardView(boardId: string): Promise<string
   }
 }
 
+export interface ExpenseEmployeeInfo {
+  name: string;
+  email?: string;
+  whatsapp?: string;
+}
+
 /**
- * Crear item de gasto en el tablero de una empresa
+ * Crear (o reutilizar) un tag de empleado en el tablero.
+ * Los tags de Monday son la columna visual de empleado (tag_mm063vts).
+ */
+export async function createOrGetEmployeeTag(
+  boardId: string,
+  tagName: string
+): Promise<string | null> {
+  const query = `
+    mutation ($boardId: ID!, $tagName: String!) {
+      create_or_get_tag(tag_name: $tagName, board_id: $boardId) {
+        id
+      }
+    }
+  `;
+
+  try {
+    const result = await executeMondayMutation<{
+      create_or_get_tag: { id: string };
+    }>(query, { boardId, tagName });
+    return result.create_or_get_tag?.id ?? null;
+  } catch (error) {
+    console.warn('[Monday] No se pudo crear/obtener tag de empleado:', error);
+    return null;
+  }
+}
+
+/**
+ * Crear item de gasto en el tablero de una empresa.
+ * Si se proporciona información del empleado, se llena el tag de empleado
+ * y se agrega un update con nombre/email/WhatsApp para trazabilidad.
  */
 export async function createExpenseItem(
   boardId: string,
   itemName: string,
-  columnValues: Record<string, unknown>
+  columnValues: Record<string, unknown>,
+  employee?: ExpenseEmployeeInfo
 ): Promise<string> {
+  const finalColumnValues = { ...columnValues };
+
+  if (employee?.name) {
+    const tagId = await createOrGetEmployeeTag(boardId, employee.name);
+    if (tagId) {
+      finalColumnValues['tag_mm063vts'] = { tag_ids: [Number(tagId)] };
+    }
+  }
+
   const query = `
     mutation ($boardId: ID!, $itemName: String!, $columnValues: JSON!) {
       create_item(
@@ -171,10 +216,102 @@ export async function createExpenseItem(
   }>(query, {
     boardId,
     itemName,
+    columnValues: JSON.stringify(finalColumnValues),
+  });
+
+  const itemId = result.create_item.id;
+
+  if (employee?.name) {
+    const lines = [
+      `Empleado: ${employee.name}`,
+      employee.email ? `Email: ${employee.email}` : null,
+      employee.whatsapp ? `WhatsApp: ${employee.whatsapp}` : null,
+    ].filter(Boolean);
+    try {
+      await createItemUpdate(itemId, lines.join(' | '));
+    } catch (updateError) {
+      console.warn('[Monday] No se pudo agregar update de empleado:', updateError);
+    }
+  }
+
+  return itemId;
+}
+
+export async function findExpenseItemByDriveFileId(
+  boardId: string,
+  driveFileId: string
+): Promise<string | null> {
+  const query = `
+    query ($boardId: ID!, $driveFileId: String!) {
+      items_page_by_column_values(
+        board_id: $boardId,
+        columns: [{ column_id: "enlace4", column_values: [$driveFileId] }],
+        limit: 1
+      ) {
+        items {
+          id
+        }
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    items_page_by_column_values: {
+      items: Array<{ id: string }>;
+    };
+  }>(query, {
+    boardId,
+    driveFileId,
+  });
+
+  return result.items_page_by_column_values.items[0]?.id ?? null;
+}
+
+export async function updateExpenseItem(
+  boardId: string,
+  itemId: string,
+  columnValues: Record<string, unknown>
+): Promise<string> {
+  const query = `
+    mutation ($boardId: ID!, $itemId: ID!, $columnValues: JSON!) {
+      change_multiple_column_values(
+        board_id: $boardId,
+        item_id: $itemId,
+        column_values: $columnValues
+      ) {
+        id
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    change_multiple_column_values: { id: string };
+  }>(query, {
+    boardId,
+    itemId,
     columnValues: JSON.stringify(columnValues),
   });
 
-  return result.create_item.id;
+  return result.change_multiple_column_values.id;
+}
+
+export async function createItemUpdate(itemId: string, body: string): Promise<string> {
+  const query = `
+    mutation ($itemId: ID!, $body: String!) {
+      create_update(item_id: $itemId, body: $body) {
+        id
+      }
+    }
+  `;
+
+  const result = await executeMondayMutation<{
+    create_update: { id: string };
+  }>(query, {
+    itemId,
+    body,
+  });
+
+  return result.create_update.id;
 }
 
 /**
@@ -209,6 +346,105 @@ export async function getBoardInfo(boardId: string): Promise<{
     }
     return null;
   } catch {
+    return null;
+  }
+}
+
+export interface AccountantBoardContext {
+  id: string;
+  name: string;
+  description: string | null;
+  items: Array<{
+    id: string;
+    name: string;
+    groupTitle?: string;
+    values: Record<string, string>;
+  }>;
+}
+
+/**
+ * Obtener contexto operativo/fiscal mínimo del tablero FMG.
+ * Se usa para el Contador IA: descripción fiscal + últimos recibos visibles.
+ */
+export async function getAccountantBoardContext(boardId: string): Promise<AccountantBoardContext | null> {
+  const query = `
+    query ($boardId: [ID!]!) {
+      boards(ids: $boardId) {
+        id
+        name
+        description
+        items_page(limit: 15) {
+          items {
+            id
+            name
+            group {
+              title
+            }
+            column_values {
+              id
+              text
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const result = await executeMondayMutation<{
+      boards: Array<{
+        id: string;
+        name: string;
+        description: string | null;
+        items_page?: {
+          items: Array<{
+            id: string;
+            name: string;
+            group?: { title?: string };
+            column_values: Array<{ id: string; text: string | null }>;
+          }>;
+        };
+      }>;
+    }>(query, { boardId: [boardId] });
+
+    const board = result.boards?.[0];
+    if (!board) return null;
+
+    const columnLabels: Record<string, string> = {
+      person: 'responsable',
+      status: 'estado',
+      text_mkthrxct: 'fecha_compra',
+      n_meros: 'total',
+      text_mky72d18: 'uuid_cfdi',
+      text_mky7nh3g: 'razon_social',
+      text_mkqygzgk: 'archivo_o_factura',
+      proyecto: 'metodo',
+      enlace4: 'drive_file_id',
+      correo: 'ticket_o_correo',
+      link_mkqg4vhb: 'portal_facturacion',
+      tag_mm063vts: 'empleado',
+    };
+
+    return {
+      id: board.id,
+      name: board.name,
+      description: board.description,
+      items: (board.items_page?.items || []).map((item) => {
+        const values: Record<string, string> = {};
+        for (const column of item.column_values) {
+          const key = columnLabels[column.id] || column.id;
+          if (column.text) values[key] = column.text;
+        }
+        return {
+          id: item.id,
+          name: item.name,
+          groupTitle: item.group?.title,
+          values,
+        };
+      }),
+    };
+  } catch (error) {
+    console.warn('[Monday] No se pudo obtener contexto para Contador IA:', error);
     return null;
   }
 }

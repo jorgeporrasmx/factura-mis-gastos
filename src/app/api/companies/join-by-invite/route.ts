@@ -3,6 +3,7 @@
 // POST /api/companies/join-by-invite - Unirse a empresa
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getCompanyByInviteCodeAdmin,
   getUserProfileAdmin,
@@ -55,6 +56,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUid = await getAuthenticatedUid(request);
+    if (!authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { uid, email, displayName, whatsappPhone, inviteCode } = body;
 
@@ -62,6 +71,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Faltan campos requeridos: uid, email, inviteCode' },
         { status: 400 }
+      );
+    }
+
+    // El uid del body debe coincidir con el uid autenticado
+    if (uid !== authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 403 }
       );
     }
 

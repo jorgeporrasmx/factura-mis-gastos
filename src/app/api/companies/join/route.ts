@@ -2,6 +2,7 @@
 // POST /api/companies/join - Unirse a empresa por dominio de email
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getCompanyByDomain,
   getUserProfile,
@@ -17,6 +18,14 @@ import { extractDomainFromEmail, isPublicEmailDomain } from '@/types/company';
 
 export async function POST(request: NextRequest) {
   try {
+    const authUid = await getAuthenticatedUid(request);
+    if (!authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
 
     const { uid, email, displayName, photoURL } = body;
@@ -26,6 +35,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Faltan campos requeridos: uid, email' },
         { status: 400 }
+      );
+    }
+
+    // El uid del body debe coincidir con el uid autenticado
+    if (uid !== authUid) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 403 }
       );
     }
 

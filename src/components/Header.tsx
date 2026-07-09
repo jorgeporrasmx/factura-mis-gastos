@@ -44,6 +44,12 @@ export function Header() {
 
           <div className="hidden md:flex items-center gap-8">
             <button
+              onClick={() => scrollToSection('precios')}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              Freelancers
+            </button>
+            <button
               onClick={() => scrollToSection('como-funciona')}
               className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
             >
@@ -94,8 +100,8 @@ export function Header() {
             ) : (
               <>
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-sm">
-                    Portal clientes
+                  <Button variant="outline" className="text-sm">
+                    Iniciar sesión
                   </Button>
                 </Link>
                 <Button
@@ -110,8 +116,16 @@ export function Header() {
             )}
           </div>
 
+          <div className="md:hidden flex items-center gap-2">
+            {!isLoading && (
+              <Link href={isAuthenticated ? '/portal' : '/auth/login'}>
+                <Button variant="outline" size="sm" className="text-sm">
+                  {isAuthenticated ? 'Mi Portal' : 'Iniciar sesión'}
+                </Button>
+              </Link>
+            )}
           <button
-            className="md:hidden p-2"
+            className="p-2"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -123,11 +137,18 @@ export function Header() {
               )}
             </svg>
           </button>
+          </div>
         </div>
 
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col gap-4">
+              <button
+                onClick={() => scrollToSection('precios')}
+                className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
+              >
+                Freelancers
+              </button>
               <button
                 onClick={() => scrollToSection('como-funciona')}
                 className="text-sm font-medium text-muted-foreground hover:text-primary text-left"
@@ -192,7 +213,7 @@ export function Header() {
                   <>
                     <Link href="/auth/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                       <Button variant="ghost" className="w-full justify-center">
-                        Portal clientes
+                        Iniciar sesión
                       </Button>
                     </Link>
                     <Button

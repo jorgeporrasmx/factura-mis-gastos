@@ -2,6 +2,7 @@
 // POST /api/expenses/sync - Sincroniza items del tablero de Monday a Firestore
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfile,
   getCompanyById,
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(

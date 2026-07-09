@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import imageCompression from 'browser-image-compression';
 import { uploadFile, getStoragePath, type UploadProgress } from '@/lib/firebase/storage';
+import { getAuthHeaders } from '@/lib/api-client';
 import {
   type UploadFile,
   type UploadConfig,
@@ -139,6 +139,8 @@ export function useFileUpload({
           initialQuality: config.quality || 0.85,
         };
 
+        // Import dinámico: la librería solo se descarga cuando el usuario sube algo
+        const { default: imageCompression } = await import('browser-image-compression');
         return await imageCompression(file, options);
       } catch {
         // Return original file if compression fails
@@ -176,7 +178,7 @@ export function useFileUpload({
 
           const response = await fetch('/api/upload/receipt', {
             method: 'POST',
-            headers: { 'x-user-uid': userId },
+            headers: await getAuthHeaders(),
             body: formData,
           });
 
@@ -213,10 +215,9 @@ export function useFileUpload({
 
           const response = await fetch('/api/upload/csf', {
             method: 'POST',
-            headers: {
-              'x-user-uid': userId,
+            headers: await getAuthHeaders({
               'x-user-email': userEmail || '',
-            },
+            }),
             body: formData,
           });
 

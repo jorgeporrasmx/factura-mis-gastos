@@ -2,6 +2,7 @@
 // GET /api/companies/users - Lista usuarios de la empresa del admin
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfile,
   getCompanyUsers,
@@ -10,8 +11,7 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
-    // Obtener UID del header (en producción, verificar con Firebase Admin SDK)
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(

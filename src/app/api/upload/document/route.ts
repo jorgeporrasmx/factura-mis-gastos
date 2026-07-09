@@ -2,6 +2,7 @@
 // POST /api/upload/document - Solo admin puede subir documentos de empresa
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfile,
   getCompanyById,
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest) {
 // GET /api/upload/document - Obtener documentos de la empresa
 export async function GET(request: NextRequest) {
   try {
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(

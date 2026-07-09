@@ -30,6 +30,7 @@ export default function ReportesPage() {
   } = useExpenses({ filters, sort, autoFetch: true });
 
   const { isSyncing, sync, lastSyncAt, error: syncError, result: syncResult } = useExpenseSync();
+  const isPersonalAccount = userProfile?.accountType === 'personal';
 
   // Actualizar filtros en el hook cuando cambian
   useEffect(() => {
@@ -68,21 +69,27 @@ export default function ReportesPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h3 className="font-medium text-yellow-800">Configura tu tablero de Monday</h3>
+                <h3 className="font-medium text-yellow-800">
+                  {isPersonalAccount ? 'Estamos preparando tu operación' : 'Configura tu tablero de Monday'}
+                </h3>
                 <p className="text-sm text-yellow-700 mt-1">
-                  Para sincronizar gastos, necesitas configurar el ID de tu tablero de Monday.com
+                  {isPersonalAccount
+                    ? 'Aún falta conectar el tablero operativo donde se procesarán tus recibos.'
+                    : 'Para sincronizar gastos, necesitas configurar el ID de tu tablero de Monday.com'}
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => {
-                    // TODO: Abrir configuración
-                  }}
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Configurar
-                </Button>
+                {!isPersonalAccount && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => {
+                      // TODO: Abrir configuración
+                    }}
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configurar
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -92,7 +99,7 @@ export default function ReportesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">
-              {isAdmin ? 'Todos los gastos' : 'Mis gastos'}
+              {isPersonalAccount ? 'Mis gastos' : isAdmin ? 'Todos los gastos' : 'Mis gastos'}
             </h2>
             {lastSyncAt && (
               <p className="text-sm text-gray-500">
@@ -141,7 +148,7 @@ export default function ReportesPage() {
         <ExpenseFiltersBar
           filters={filters}
           onFiltersChange={setFilters}
-          showUserFilter={isAdmin}
+          showUserFilter={isAdmin && !isPersonalAccount}
           users={companyUsers.map((u) => ({
             uid: u.uid,
             displayName: u.displayName,
@@ -167,7 +174,7 @@ export default function ReportesPage() {
             isLoading={isLoading}
             sort={sort}
             onSortChange={setSort}
-            showUserColumn={isAdmin}
+            showUserColumn={isAdmin && !isPersonalAccount}
             onViewExpense={handleViewExpense}
           />
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAuthHeaders } from '@/lib/api-client';
 import type { MondayExpenseColumns } from '@/types/monday-expenses';
 
 interface SyncState {
@@ -49,10 +50,7 @@ export function useExpenseSync(): UseExpenseSyncResult {
 
         const response = await fetch('/api/expenses/sync', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-user-uid': user.uid,
-          },
+          headers: await getAuthHeaders({ 'Content-Type': 'application/json' }),
           body,
         });
 
@@ -120,9 +118,7 @@ export function useMondayBoardStatus() {
         // Esta verificación se haría a través de una API que llame a Monday
         // Por ahora, simulamos la llamada
         const response = await fetch(`/api/monday/verify?boardId=${boardId}`, {
-          headers: {
-            'x-user-uid': user.uid,
-          },
+          headers: await getAuthHeaders(),
         });
 
         if (!response.ok) {

@@ -2,6 +2,7 @@
 // GET /api/expenses - Lista gastos con filtros y paginación
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   getExpensesAdmin,
@@ -12,7 +13,7 @@ import type { ExpenseFilters, ExpenseSortOptions, ExpenseStatus, ExpenseCategory
 export async function GET(request: NextRequest) {
   try {
     // Obtener UID del header
-    const uid = request.headers.get('x-user-uid');
+    const uid = await getAuthenticatedUid(request);
 
     if (!uid) {
       return NextResponse.json(
@@ -85,23 +86,16 @@ export async function GET(request: NextRequest) {
     const limit = limitParam ? Math.min(parseInt(limitParam), 100) : 20;
     const cursor = searchParams.get('cursor') || undefined;
 
-    // Obtener gastos
-    const { expenses, hasMore, lastId } = await getExpensesAdmin(
-      userProfile.companyId,
-      filters,
-      sort,
-      limit,
+    // Obtener gastos y resumen en paralelo (el resumen solo en la primera página)
+    const [{ expenses, hasMore, lastId }, summary] = await Promise.all([
+      getExpensesAdmin(userProfile.companyId, filters, sort, limit, cursor),
       cursor
-    );
-
-    // Obtener resumen (solo si es la primera página)
-    let summary = null;
-    if (!cursor) {
-      summary = await getExpenseSummaryAdmin(
-        userProfile.companyId,
-        userProfile.role !== 'admin' ? uid : filters.userId
-      );
-    }
+        ? Promise.resolve(null)
+        : getExpenseSummaryAdmin(
+            userProfile.companyId,
+            userProfile.role !== 'admin' ? uid : filters.userId
+          ),
+    ]);
 
     return NextResponse.json({
       success: true,

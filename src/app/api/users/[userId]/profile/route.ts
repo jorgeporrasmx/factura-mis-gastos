@@ -2,6 +2,7 @@
 // PATCH /api/users/[userId]/profile - Actualizar campos del perfil (WhatsApp, etc.)
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUid } from '@/lib/api-auth';
 import {
   getUserProfileAdmin,
   updateUserProfileAdmin,
@@ -15,7 +16,7 @@ export async function PATCH(
     const { userId } = await params;
 
     // Verificar que el UID del header coincide (el usuario solo puede editar su propio perfil)
-    const requestUid = request.headers.get('x-user-uid');
+    const requestUid = await getAuthenticatedUid(request);
     if (!requestUid || requestUid !== userId) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },

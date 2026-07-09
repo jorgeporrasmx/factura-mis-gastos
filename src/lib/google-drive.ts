@@ -47,8 +47,14 @@ export interface CompanyFolderStructure {
 // Configuración
 const SCOPES = ['https://www.googleapis.com/auth/drive'];
 
+// Cliente de Drive memoizado: crear GoogleAuth en cada llamada re-negocia el
+// token del service account y encarece cada operación de Drive.
+let _driveClient: drive_v3.Drive | null = null;
+
 // Obtener cliente de Drive autenticado
 function getDriveClient(): drive_v3.Drive {
+  if (_driveClient) return _driveClient;
+
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
@@ -66,7 +72,8 @@ function getDriveClient(): drive_v3.Drive {
     scopes: SCOPES,
   });
 
-  return google.drive({ version: 'v3', auth });
+  _driveClient = google.drive({ version: 'v3', auth });
+  return _driveClient;
 }
 
 // ============================================================================

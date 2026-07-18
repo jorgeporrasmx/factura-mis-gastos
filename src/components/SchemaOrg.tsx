@@ -95,12 +95,6 @@ export function SchemaOrg() {
         },
         "availability": "https://schema.org/InStock"
       },
-      {
-        "@type": "Offer",
-        "name": "Plan Corporativo",
-        "description": "Solución a la medida para grandes operaciones. Usuarios y facturas ilimitadas, API disponible.",
-        "availability": "https://schema.org/InStock"
-      }
     ],
     "aggregateRating": {
       "@type": "AggregateRating",
@@ -209,12 +203,7 @@ export function SchemaOrg() {
     "name": "Factura Mis Gastos",
     "url": "https://facturamisgastos.com",
     "description": "Plataforma de gestión de gastos empresariales en México",
-    "inLanguage": "es-MX",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://facturamisgastos.com/buscar?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
+    "inLanguage": "es-MX"
   };
 
   const breadcrumbSchema = {

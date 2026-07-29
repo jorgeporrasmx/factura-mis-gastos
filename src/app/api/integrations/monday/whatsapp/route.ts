@@ -2,25 +2,19 @@ import { timingSafeEqual } from 'node:crypto';
 import {
   isPermanentWorkflowError,
   sendInvoiceRequest,
+  validateInvoiceRequest,
 } from '@/lib/integrations/fmg-whatsapp';
+import {
+  isMondayWhatsAppTrigger,
+  type MondayWhatsAppEvent,
+} from '@/lib/integrations/fmg-whatsapp-core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type MondayWebhookPayload = {
   challenge?: string;
-  event?: {
-    boardId?: number | string;
-    pulseId?: number | string;
-    columnId?: string;
-    triggerUuid?: string;
-    value?: {
-      label?: {
-        index?: number;
-        text?: string;
-      };
-    };
-  };
+  event?: MondayWhatsAppEvent;
 };
 
 function hasValidSecret(request: Request): boolean {
@@ -65,18 +59,21 @@ export async function POST(request: Request): Promise<Response> {
 
   const event = payload.event;
   const expectedBoardId = process.env.MONDAY_FMG_BOARD_ID || '8964055261';
-  const label = event?.value?.label?.text?.trim().toLowerCase();
 
-  if (
-    !event?.pulseId ||
-    String(event.boardId) !== expectedBoardId ||
-    event.columnId !== 'proyecto' ||
-    label !== 'whatsapp'
-  ) {
+  if (!isMondayWhatsAppTrigger(event, expectedBoardId, 'proyecto')) {
     return Response.json({ accepted: false, reason: 'Evento fuera del disparador FMG' });
   }
 
   try {
+    if (request.headers.get('x-fmg-dry-run') === '1') {
+      const validation = await validateInvoiceRequest(String(event.pulseId));
+      return Response.json({
+        accepted: true,
+        dryRun: true,
+        validation,
+      });
+    }
+
     const result = await sendInvoiceRequest(String(event.pulseId));
     return Response.json({
       accepted: true,

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "test:fmg-whatsapp": "node --experimental-strip-types --test src/lib/integrations/fmg-whatsapp-core.test.ts src/lib/integrations/fmg-whatsapp-workflow.test.ts",
     "start": "next start",
     "lint": "eslint"
   },

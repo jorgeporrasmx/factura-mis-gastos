@@ -79,9 +79,13 @@ class PermanentWorkflowError extends Error {
   readonly permanent = true;
 }
 
+function cleanEnv(value: string | undefined): string | undefined {
+  return value?.trim().replace(/^["']|["']$/g, '');
+}
+
 function requiredEnv(...names: string[]): string {
   for (const name of names) {
-    const value = process.env[name]?.trim();
+    const value = cleanEnv(process.env[name]);
     if (value) return value;
   }
   throw new Error(`${names.join(' o ')} no configurada`);
@@ -89,8 +93,8 @@ function requiredEnv(...names: string[]): string {
 
 function graphApiVersion(): string {
   return (
-    process.env.WHATSAPP_GRAPH_API_VERSION?.trim() ||
-    process.env.WHATSAPP_GRAPH_VERSION?.trim() ||
+    cleanEnv(process.env.WHATSAPP_GRAPH_API_VERSION) ||
+    cleanEnv(process.env.WHATSAPP_GRAPH_VERSION) ||
     DEFAULT_GRAPH_API_VERSION
   );
 }
@@ -412,7 +416,7 @@ async function downloadPublicDriveImage(fileId: string): Promise<DownloadedFile>
 
 async function uploadReceiptToMeta(file: DownloadedFile): Promise<string> {
   const phoneNumberId =
-    process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || DEFAULT_PHONE_NUMBER_ID;
+    cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || DEFAULT_PHONE_NUMBER_ID;
   const form = new FormData();
   form.set('messaging_product', 'whatsapp');
   form.set('type', file.mimeType);
@@ -439,11 +443,11 @@ async function uploadReceiptToMeta(file: DownloadedFile): Promise<string> {
 
 async function sendTemplate(request: InvoiceRequest, mediaId: string): Promise<string> {
   const phoneNumberId =
-    process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || DEFAULT_PHONE_NUMBER_ID;
+    cleanEnv(process.env.WHATSAPP_PHONE_NUMBER_ID) || DEFAULT_PHONE_NUMBER_ID;
   const templateName =
-    process.env.WHATSAPP_TEMPLATE_NAME?.trim() || DEFAULT_TEMPLATE_NAME;
+    cleanEnv(process.env.WHATSAPP_TEMPLATE_NAME) || DEFAULT_TEMPLATE_NAME;
   const language =
-    process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || DEFAULT_TEMPLATE_LANGUAGE;
+    cleanEnv(process.env.WHATSAPP_TEMPLATE_LANGUAGE) || DEFAULT_TEMPLATE_LANGUAGE;
 
   const response = await fetch(
     `https://graph.facebook.com/${graphApiVersion()}/${phoneNumberId}/messages`,

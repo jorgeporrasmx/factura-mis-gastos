@@ -24,13 +24,19 @@ type MondayWebhookPayload = {
 };
 
 function hasValidSecret(request: Request): boolean {
-  const configured =
+  const configuredRaw =
     process.env.MONDAY_WHATSAPP_WEBHOOK_SECRET || process.env.FMG_AUTOMATION_SECRET;
+  const configured = configuredRaw?.trim().replace(/^["']|["']$/g, '');
   if (!configured) return false;
 
   const url = new URL(request.url);
-  const received =
-    request.headers.get('x-fmg-webhook-secret') || url.searchParams.get('secret') || '';
+  const received = (
+    request.headers.get('x-fmg-webhook-secret') ||
+    url.searchParams.get('secret') ||
+    ''
+  )
+    .trim()
+    .replace(/^["']|["']$/g, '');
 
   const expectedBuffer = Buffer.from(configured);
   const receivedBuffer = Buffer.from(received);

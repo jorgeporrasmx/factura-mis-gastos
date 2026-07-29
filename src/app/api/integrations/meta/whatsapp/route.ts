@@ -45,11 +45,15 @@ type MetaWebhookPayload = {
 };
 
 function webhookVerifyToken(): string | undefined {
-  return process.env.WHATSAPP_VERIFY_TOKEN?.trim();
+  return process.env.WHATSAPP_VERIFY_TOKEN
+    ?.trim()
+    .replace(/^["']|["']$/g, '');
 }
 
 function isValidMetaSignature(rawBody: string, signature: string | null): boolean {
-  const appSecret = process.env.WHATSAPP_APP_SECRET?.trim();
+  const appSecret = process.env.WHATSAPP_APP_SECRET
+    ?.trim()
+    .replace(/^["']|["']$/g, '');
   if (!appSecret || !signature?.startsWith('sha256=')) return false;
 
   const received = signature.slice('sha256='.length);

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   buildWhatsAppTemplatePayload,
+  canSendInvoiceRequest,
   extractDriveFileId,
   formatInvoiceTotal,
   getInvoiceRequestIdempotencyKey,
@@ -115,4 +116,12 @@ test('construye la plantilla aprobada con recibo, fecha y total', () => {
       { type: 'text', text: '$100.00' },
     ],
   });
+});
+
+test('el envío real está cerrado salvo modo live o elemento de prueba autorizado', () => {
+  assert.equal(canSendInvoiceRequest(undefined, '123', undefined), false);
+  assert.equal(canSendInvoiceRequest('disabled', '123', '123'), false);
+  assert.equal(canSendInvoiceRequest('test', '123', '999'), false);
+  assert.equal(canSendInvoiceRequest('test', '123', '123'), true);
+  assert.equal(canSendInvoiceRequest('live', '123', undefined), true);
 });

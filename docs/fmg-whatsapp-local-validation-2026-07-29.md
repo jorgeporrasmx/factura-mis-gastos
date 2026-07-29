@@ -17,6 +17,8 @@ Flujo exclusivamente saliente:
 5. Guardar el ID de Meta y el estado mínimo en Firestore y Monday.
 6. Bloquear reintentos automáticos, incluidos eventos concurrentes y
    respuestas inciertas de Meta.
+7. Mantener el envío real deshabilitado por defecto; el modo de prueba solo
+   permite el ID de elemento declarado expresamente.
 
 Quedaron eliminados el webhook receptor de Meta, la descarga de respuestas,
 los subelementos XML/PDF y los estados `Entregado`, `Leído` y `Respondido`.
@@ -46,6 +48,7 @@ Monday, Meta, Drive o Firestore. Comprueba:
 - un duplicado posterior no descarga ni envía;
 - una respuesta incierta queda bloqueada sin reintento automático;
 - validación aislada sin reserva, trazabilidad ni llamadas a Meta.
+- compuerta cerrada, modo de prueba por elemento y modo live.
 
 ### Tipos
 

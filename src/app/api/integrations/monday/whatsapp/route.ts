@@ -5,6 +5,7 @@ import {
   validateInvoiceRequest,
 } from '@/lib/integrations/fmg-whatsapp';
 import {
+  canSendInvoiceRequest,
   isMondayWhatsAppTrigger,
   type MondayWhatsAppEvent,
 } from '@/lib/integrations/fmg-whatsapp-core';
@@ -72,6 +73,22 @@ export async function POST(request: Request): Promise<Response> {
         dryRun: true,
         validation,
       });
+    }
+
+    if (
+      !canSendInvoiceRequest(
+        process.env.FMG_WHATSAPP_SEND_MODE,
+        String(event.pulseId),
+        process.env.FMG_WHATSAPP_TEST_ITEM_ID
+      )
+    ) {
+      return Response.json(
+        {
+          accepted: false,
+          reason: 'Envío real deshabilitado para este elemento',
+        },
+        { status: 503 }
+      );
     }
 
     const result = await sendInvoiceRequest(String(event.pulseId));

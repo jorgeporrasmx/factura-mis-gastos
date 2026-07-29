@@ -120,6 +120,17 @@ export function isMondayWhatsAppTrigger(
   );
 }
 
+export function canSendInvoiceRequest(
+  mode: string | undefined,
+  itemId: string,
+  allowedTestItemId: string | undefined
+): boolean {
+  const normalizedMode = cleanEnv(mode)?.toLowerCase();
+  if (normalizedMode === 'live') return true;
+  if (normalizedMode !== 'test') return false;
+  return Boolean(cleanEnv(allowedTestItemId) === itemId);
+}
+
 export function buildWhatsAppTemplatePayload(
   request: InvoiceRequest,
   mediaId: string,

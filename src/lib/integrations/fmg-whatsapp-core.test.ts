@@ -29,7 +29,7 @@ test('extrae IDs de los formatos habituales de Google Drive', () => {
 });
 
 test('formatea el total en MXN', () => {
-  assert.match(formatInvoiceTotal('1234.5'), /\$1,234\.50/);
+  assert.equal(formatInvoiceTotal('1234.5'), '1,234.50 MXN');
 });
 
 test('la clave idempotente es estable y cambia con el elemento', () => {
@@ -39,7 +39,7 @@ test('la clave idempotente es estable y cambia con el elemento', () => {
     merchant: 'Comercio',
     phone: '526144273301',
     purchaseDate: '2026-07-29',
-    total: '$100.00',
+    total: '100.00 MXN',
     receiptDriveFileId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
   };
   const first = getInvoiceRequestIdempotencyKey(request, 'template');
@@ -92,7 +92,7 @@ test('construye la plantilla aprobada con recibo, fecha y total', () => {
     merchant: 'Comercio',
     phone: '526144273301',
     purchaseDate: '2026-07-29',
-    total: '$100.00',
+    total: '100.00 MXN',
     receiptDriveFileId: 'drive-id',
   };
   const payload = buildWhatsAppTemplatePayload(
@@ -113,7 +113,7 @@ test('construye la plantilla aprobada con recibo, fecha y total', () => {
     type: 'body',
     parameters: [
       { type: 'text', text: '2026-07-29' },
-      { type: 'text', text: '$100.00' },
+      { type: 'text', text: '100.00 MXN' },
     ],
   });
 });

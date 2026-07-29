@@ -42,6 +42,7 @@ Monday, Meta, Drive o Firestore. Comprueba:
 - extracción del archivo de Drive y formato del total;
 - filtro exacto del evento de Monday;
 - estructura del payload de la plantilla, recibo, fecha y total;
+- total sin signo monetario duplicado, porque la plantilla ya contiene `$`;
 - clave idempotente estable aunque cambien columnas del gasto;
 - secuencia de trazabilidad mínima;
 - dos eventos concurrentes producen una sola llamada de mensaje;

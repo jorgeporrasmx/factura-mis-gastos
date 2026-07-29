@@ -13,7 +13,7 @@ const request: InvoiceRequest = {
   merchant: 'Comercio de prueba',
   phone: '526144273301',
   purchaseDate: '2026-07-29',
-  total: '$100.00',
+  total: '100.00 MXN',
   receiptDriveFileId: 'drive-file-1',
 };
 

@@ -85,11 +85,11 @@ export function formatInvoiceTotal(rawTotal: string): string {
     throw new PermanentWorkflowError('El total del recibo no es numérico');
   }
 
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
+  // La plantilla aprobada ya contiene el signo "$" antes de {{2}}.
+  return `${new Intl.NumberFormat('es-MX', {
     minimumFractionDigits: 2,
-  }).format(numeric);
+    maximumFractionDigits: 2,
+  }).format(numeric)} MXN`;
 }
 
 export function getInvoiceRequestIdempotencyKey(

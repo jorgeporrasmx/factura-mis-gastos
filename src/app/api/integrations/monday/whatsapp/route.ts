@@ -92,6 +92,13 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const result = await sendInvoiceRequest(String(event.pulseId));
+    console.info('[FMG WhatsApp] Evento de Monday procesado', {
+      itemId: String(event.pulseId),
+      triggerUuid: event.triggerUuid || null,
+      status: result.status,
+      messageId: result.messageId || null,
+    });
+
     return Response.json({
       accepted: true,
       status: result.status,

@@ -1,6 +1,6 @@
-# Validación local — solicitud de factura por WhatsApp
+# Validación local y operativa — solicitud de factura por WhatsApp
 
-Fecha: 2026-07-29  
+Fecha: 2026-07-29 a 2026-07-30  
 Rama: `feat/fmg-whatsapp-invoice-requests`
 
 ## Alcance validado
@@ -33,7 +33,7 @@ Comando:
 npm run test:fmg-whatsapp
 ```
 
-Resultado: 12 pruebas aprobadas, 0 fallidas.
+Resultado: 13 pruebas aprobadas, 0 fallidas.
 
 La suite usa puertos simulados; no realiza llamadas de red ni escribe en
 Monday, Meta, Drive o Firestore. Comprueba:
@@ -48,7 +48,7 @@ Monday, Meta, Drive o Firestore. Comprueba:
 - dos eventos concurrentes producen una sola llamada de mensaje;
 - un duplicado posterior no descarga ni envía;
 - una respuesta incierta queda bloqueada sin reintento automático;
-- validación aislada sin reserva, trazabilidad ni llamadas a Meta.
+- validación aislada sin reserva, trazabilidad ni llamadas a Meta;
 - compuerta cerrada, modo de prueba por elemento y modo live.
 
 ### Tipos
@@ -95,9 +95,33 @@ Resultado: aprobado con Next.js 16.0.9. La tabla de rutas incluye únicamente:
 
 No incluye `/api/integrations/meta/whatsapp`.
 
-## Límites de esta evidencia
+## Evidencia operativa
 
-No se configuró ni activó el webhook de Monday, no se llamó a Meta, no se
-envió ningún WhatsApp y no se creó ni modificó un despliegue de Vercel.
-La siguiente fase deberá validar credenciales y datos reales en un entorno
-aislado antes de autorizar un único envío.
+- Plantilla de Meta `1033789495709796`:
+  `solicitud_factura_jorge_recibo`, `APPROVED`, `es_MX`, categoría `UTILITY`.
+- La plantilla contiene el RFC, régimen fiscal, código postal, uso de CFDI,
+  correo de recepción y enlace a la constancia fiscal de Jorge.
+- Simulación autenticada del elemento `12660861968`:
+  teléfono `526144273301`, fecha `2026-07-29`, total `1.00 MXN` e imagen JPEG
+  de 3,057,412 bytes.
+- Primer envío real aceptado por Meta con un ID que comienza en
+  `wamid.HBgNNT`.
+- Repetición directa del mismo evento: respuesta `duplicate` con el mismo ID.
+- Monday registró `Enviado`, el ID completo y una actualización con la
+  trazabilidad del envío.
+- Firestore registró una sola reserva en estado `sent`, con fechas de creación
+  y envío.
+- Deployment de producción: `dpl_8Upn8ytCu1msYTjNHShF81jgxVWM`.
+- La protección de Vercel permanece activa; el webhook utiliza un bypass
+  exclusivo de automatización y un segundo secreto propio de la aplicación.
+- Webhook permanente de Monday: `616347342`, tablero `8964055261`, columna
+  `proyecto`, valor estable `index: 6` (`Whatsapp`).
+- Prueba de extremo a extremo desde Monday (`NUEVO → Whatsapp`): producción
+  procesó el evento con `status: duplicate` y el mismo ID, por lo que no hubo
+  un segundo envío.
+
+## Límite funcional
+
+El flujo termina cuando Meta acepta la solicitud saliente. No recibe respuestas
+por WhatsApp y no descarga, almacena ni timbra XML/PDF; ContaLink cubre esa
+etapa separadamente.

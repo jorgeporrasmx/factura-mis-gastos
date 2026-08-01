@@ -133,9 +133,10 @@ async function mondayRequest<T>(
   return payload.data;
 }
 
-async function updateMondayItem(
+export async function updateMondayItem(
   itemId: string,
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  options: { createLabelsIfMissing?: boolean } = {}
 ): Promise<void> {
   await mondayRequest<{ change_multiple_column_values: { id: string } }>(
     `
@@ -143,11 +144,13 @@ async function updateMondayItem(
         $boardId: ID!
         $itemId: ID!
         $columnValues: JSON!
+        $createLabelsIfMissing: Boolean
       ) {
         change_multiple_column_values(
           board_id: $boardId
           item_id: $itemId
           column_values: $columnValues
+          create_labels_if_missing: $createLabelsIfMissing
         ) {
           id
         }
@@ -157,11 +160,12 @@ async function updateMondayItem(
       boardId: process.env.MONDAY_FMG_BOARD_ID || DEFAULT_BOARD_ID,
       itemId,
       columnValues: JSON.stringify(values),
+      createLabelsIfMissing: options.createLabelsIfMissing || false,
     }
   );
 }
 
-async function createMondayUpdate(itemId: string, body: string): Promise<void> {
+export async function createMondayUpdate(itemId: string, body: string): Promise<void> {
   await mondayRequest<{ create_update: { id: string } }>(
     `
       mutation FmgWhatsappUpdate($itemId: ID!, $body: String!) {

@@ -1,13 +1,19 @@
 import { createHash } from 'node:crypto';
+import type {
+  InvoiceRequestFiscalProfile,
+  InvoiceRequestMondayColumns,
+} from '@/types/company';
 
 export const DEFAULT_BOARD_ID = '8964055261';
-export const DEFAULT_TEMPLATE_NAME = 'solicitud_factura_jorge_recibo';
+export const DEFAULT_TEMPLATE_NAME = 'solicitud_factura_fmg_v1';
 export const DEFAULT_TEMPLATE_LANGUAGE = 'es_MX';
 export const DEFAULT_PHONE_NUMBER_ID = '1006728382529440';
 export const DEFAULT_GRAPH_API_VERSION = 'v23.0';
 export const MAX_MEDIA_BYTES = 16 * 1024 * 1024;
 
 export type InvoiceRequest = {
+  companyId: string;
+  companyName: string;
   boardId: string;
   itemId: string;
   merchant: string;
@@ -15,6 +21,8 @@ export type InvoiceRequest = {
   purchaseDate: string;
   total: string;
   receiptDriveFileId: string;
+  fiscalProfile: InvoiceRequestFiscalProfile;
+  mondayColumns: InvoiceRequestMondayColumns;
 };
 
 export type MondayWhatsAppEvent = {
@@ -93,13 +101,13 @@ export function formatInvoiceTotal(rawTotal: string): string {
 }
 
 export function getInvoiceRequestIdempotencyKey(
-  request: InvoiceRequest,
-  templateName: string
+  request: Pick<InvoiceRequest, 'companyId' | 'boardId' | 'itemId'>,
+  _templateName?: string
 ): string {
   return createHash('sha256')
-    // Un elemento solo puede generar una solicitud para esta plantilla, aunque
-    // sus demás columnas cambien después del primer evento.
-    .update([request.boardId, request.itemId, templateName].join(':'))
+    // La solicitud es única por empresa/tablero/elemento. Cambiar datos fiscales
+    // o renombrar la plantilla nunca habilita un segundo envío automático.
+    .update(['invoice_request_v1', request.companyId, request.boardId, request.itemId].join(':'))
     .digest('hex');
 }
 
@@ -155,6 +163,13 @@ export function buildWhatsAppTemplatePayload(
           parameters: [
             { type: 'text', text: request.purchaseDate },
             { type: 'text', text: request.total },
+            { type: 'text', text: request.fiscalProfile.legalName },
+            { type: 'text', text: request.fiscalProfile.rfc },
+            { type: 'text', text: request.fiscalProfile.taxRegime },
+            { type: 'text', text: request.fiscalProfile.postalCode },
+            { type: 'text', text: request.fiscalProfile.cfdiUse },
+            { type: 'text', text: request.fiscalProfile.invoiceEmail },
+            { type: 'text', text: request.fiscalProfile.csfUrl },
           ],
         },
       ],

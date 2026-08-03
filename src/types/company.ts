@@ -14,6 +14,45 @@ export type UserRole = 'admin' | 'user';
 // Estado del usuario
 export type UserStatus = 'active' | 'pending' | 'suspended';
 
+export type InvoiceRequestAutomationStatus =
+  | 'pending_fiscal_profile'
+  | 'pending_board_setup'
+  | 'ready'
+  | 'disabled';
+
+export interface InvoiceRequestFiscalProfile {
+  legalName: string;
+  rfc: string;
+  taxRegime: string;
+  postalCode: string;
+  cfdiUse: string;
+  invoiceEmail: string;
+  csfUrl: string;
+  verifiedAt: string;
+  verifiedBy: string;
+  version: string;
+}
+
+export interface InvoiceRequestMondayColumns {
+  method: string;
+  phone: string;
+  purchaseDate: string;
+  total: string;
+  receiptDriveUrl: string;
+  whatsAppMessageId: string;
+  whatsAppState: string;
+}
+
+export interface InvoiceRequestAutomation {
+  enabled: boolean;
+  status: InvoiceRequestAutomationStatus;
+  fiscalProfile?: InvoiceRequestFiscalProfile;
+  mondayColumns?: InvoiceRequestMondayColumns;
+  mondayWebhookId?: string;
+  configuredAt?: string;
+  configuredBy?: string;
+}
+
 // Empresa/Organización
 export interface Company {
   id: string;
@@ -29,6 +68,9 @@ export interface Company {
 
   // Monday.com
   mondayBoardId?: string;          // Board de facturas de esta empresa
+
+  // Solicitudes de factura por WhatsApp (siempre aisladas por empresa)
+  invoiceRequestAutomation?: InvoiceRequestAutomation;
 
   // Documentos de la empresa
   csfUrl?: string;                 // URL de la Constancia Fiscal en Drive

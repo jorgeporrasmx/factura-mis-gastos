@@ -14,11 +14,21 @@ const message: WhatsAppInboundMessage = {
   content: 'Respuesta del cliente',
 };
 
+const target = {
+  companyId: 'company-1',
+  boardId: 'board-1',
+  itemId: 'item-1',
+  columns: {
+    method: 'method', phone: 'phone', purchaseDate: 'date', total: 'total',
+    receiptDriveUrl: 'receipt', whatsAppMessageId: 'wa_id', whatsAppState: 'wa_state',
+  },
+};
+
 function portsForClaim(claim: Awaited<ReturnType<WhatsAppInboundWorkflowPorts['claim']>>) {
   const calls: string[] = [];
   const ports: WhatsAppInboundWorkflowPorts = {
     async claim() { calls.push('claim'); return claim; },
-    async mirror(itemId) { calls.push(`mirror:${itemId}`); },
+    async mirror(selectedTarget) { calls.push(`mirror:${selectedTarget.itemId}`); },
     async markMirrored(eventKey) { calls.push(`mirrored:${eventKey}`); },
   };
   return { ports, calls };
@@ -26,7 +36,7 @@ function portsForClaim(claim: Awaited<ReturnType<WhatsAppInboundWorkflowPorts['c
 
 test('publica una respuesta correlacionada una sola vez', async () => {
   const { ports, calls } = portsForClaim({
-    matched: true, itemId: 'item-1', eventKey: 'inbound-1', shouldMirror: true,
+    matched: true, target, eventKey: 'inbound-1', shouldMirror: true,
   });
   assert.deepEqual(await runWhatsAppInboundWorkflow(message, ports), {
     status: 'updated', itemId: 'item-1',
@@ -36,7 +46,7 @@ test('publica una respuesta correlacionada una sola vez', async () => {
 
 test('ignora un mensaje entrante ya reflejado', async () => {
   const { ports, calls } = portsForClaim({
-    matched: true, itemId: 'item-1', eventKey: 'inbound-1', shouldMirror: false,
+    matched: true, target, eventKey: 'inbound-1', shouldMirror: false,
   });
   assert.deepEqual(await runWhatsAppInboundWorkflow(message, ports), {
     status: 'ignored', itemId: 'item-1',

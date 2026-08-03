@@ -1,10 +1,13 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase/admin';
 import {
-  FMG_MONDAY_COLUMNS,
   createMondayUpdate,
   updateMondayItem,
 } from './fmg-whatsapp';
+import {
+  validateMondayColumns,
+  type InvoiceRequestMondayTarget,
+} from './fmg-whatsapp-tenant-core';
 import {
   escapeHtml,
   getWhatsAppStatusEventKey,
@@ -22,7 +25,10 @@ import {
 const IDEMPOTENCY_COLLECTION = 'fmg_whatsapp_invoice_requests';
 
 type ReservationData = {
+  companyId?: string;
+  boardId?: string;
   itemId?: string;
+  mondayColumns?: unknown;
   messageId?: string;
   state?: string;
   metaStatus?: WhatsAppDeliveryStatus;
@@ -30,6 +36,20 @@ type ReservationData = {
   metaStatusEventKey?: string;
   metaStatusMirrored?: boolean;
 };
+
+function reservationTarget(data: ReservationData): InvoiceRequestMondayTarget | null {
+  if (!data.companyId || !data.boardId || !data.itemId) return null;
+  try {
+    return {
+      companyId: data.companyId,
+      boardId: data.boardId,
+      itemId: data.itemId,
+      columns: validateMondayColumns(data.mondayColumns),
+    };
+  } catch {
+    return null;
+  }
+}
 
 function getFirestoreOrThrow() {
   const db = getAdminFirestore();
@@ -52,14 +72,15 @@ async function claimStatus(event: WhatsAppStatusEvent): Promise<WhatsAppStatusCl
   return db.runTransaction(async (transaction) => {
     const snapshot = await transaction.get(match.ref);
     const current = (snapshot.data() || {}) as ReservationData;
-    if (!current.itemId || current.messageId !== event.messageId) {
+    const target = reservationTarget(current);
+    if (!target || current.messageId !== event.messageId) {
       return { matched: false };
     }
 
     if (current.metaStatusEventKey === eventKey && current.metaStatusMirrored !== true) {
       return {
         matched: true,
-        itemId: current.itemId,
+        target,
         eventKey,
         shouldMirror: true,
       };
@@ -74,7 +95,7 @@ async function claimStatus(event: WhatsAppStatusEvent): Promise<WhatsAppStatusCl
     ) {
       return {
         matched: true,
-        itemId: current.itemId,
+        target,
         eventKey,
         shouldMirror: false,
       };
@@ -93,7 +114,7 @@ async function claimStatus(event: WhatsAppStatusEvent): Promise<WhatsAppStatusCl
 
     return {
       matched: true,
-      itemId: current.itemId,
+      target,
       eventKey,
       shouldMirror: !sentAlreadyReflected,
     };
@@ -101,19 +122,20 @@ async function claimStatus(event: WhatsAppStatusEvent): Promise<WhatsAppStatusCl
 }
 
 async function mirrorStatusToMonday(
-  itemId: string,
+  target: InvoiceRequestMondayTarget,
   event: WhatsAppStatusEvent
 ): Promise<void> {
   const label = getWhatsAppStatusLabel(event.status);
   await updateMondayItem(
-    itemId,
-    { [FMG_MONDAY_COLUMNS.whatsAppState]: { label } },
+    target.boardId,
+    target.itemId,
+    { [target.columns.whatsAppState]: { label } },
     { createLabelsIfMissing: true }
   );
 
   const safeDetail = event.detail ? `<br>${escapeHtml(event.detail)}` : '';
   await createMondayUpdate(
-    itemId,
+    target.itemId,
     `<b>WhatsApp: ${label}</b><br>ID: ${escapeHtml(event.messageId)}${safeDetail}`
   );
 }

@@ -2,7 +2,6 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase/admin';
 import {
   cleanEnv,
-  DEFAULT_BOARD_ID,
   DEFAULT_GRAPH_API_VERSION,
   DEFAULT_PHONE_NUMBER_ID,
   DEFAULT_TEMPLATE_LANGUAGE,
@@ -21,19 +20,11 @@ import {
   runInvoiceRequestValidation,
   runInvoiceRequestWorkflow,
 } from './fmg-whatsapp-workflow';
+import { resolveInvoiceRequestTenant } from './fmg-whatsapp-tenant';
+import type { InvoiceRequestTenant } from './fmg-whatsapp-tenant-core';
 
 const MONDAY_API_URL = 'https://api.monday.com/v2';
 const IDEMPOTENCY_COLLECTION = 'fmg_whatsapp_invoice_requests';
-
-export const FMG_MONDAY_COLUMNS = {
-  method: 'proyecto',
-  phone: 'phone_mm10z3aw',
-  purchaseDate: 'text_mkthrxct',
-  total: 'n_meros',
-  receiptDriveUrl: 'enlace4',
-  whatsAppMessageId: 'text_mm5q5vg6',
-  whatsAppState: 'color_mm5qc2dz',
-} as const;
 
 type MondayColumnValue = {
   id: string;
@@ -66,6 +57,8 @@ export type SendInvoiceRequestResult =
 
 export type InvoiceRequestDryRun = {
   status: 'validated';
+  companyId: string;
+  companyName: string;
   itemId: string;
   merchant: string;
   phone: string;
@@ -134,6 +127,7 @@ async function mondayRequest<T>(
 }
 
 export async function updateMondayItem(
+  boardId: string,
   itemId: string,
   values: Record<string, unknown>,
   options: { createLabelsIfMissing?: boolean } = {}
@@ -157,7 +151,7 @@ export async function updateMondayItem(
       }
     `,
     {
-      boardId: process.env.MONDAY_FMG_BOARD_ID || DEFAULT_BOARD_ID,
+      boardId,
       itemId,
       columnValues: JSON.stringify(values),
       createLabelsIfMissing: options.createLabelsIfMissing || false,
@@ -178,7 +172,11 @@ export async function createMondayUpdate(itemId: string, body: string): Promise<
   );
 }
 
-async function fetchMondayItem(itemId: string): Promise<MondayItem | null> {
+async function fetchMondayItem(
+  itemId: string,
+  tenant: InvoiceRequestTenant
+): Promise<MondayItem | null> {
+  const columns = tenant.columns;
   const data = await mondayRequest<{ items: MondayItem[] }>(
     `
       query FmgWhatsappItem($itemIds: [ID!]!) {
@@ -187,13 +185,13 @@ async function fetchMondayItem(itemId: string): Promise<MondayItem | null> {
           name
           board { id }
           column_values(ids: [
-            "${FMG_MONDAY_COLUMNS.method}",
-            "${FMG_MONDAY_COLUMNS.phone}",
-            "${FMG_MONDAY_COLUMNS.purchaseDate}",
-            "${FMG_MONDAY_COLUMNS.total}",
-            "${FMG_MONDAY_COLUMNS.receiptDriveUrl}",
-            "${FMG_MONDAY_COLUMNS.whatsAppMessageId}",
-            "${FMG_MONDAY_COLUMNS.whatsAppState}"
+            "${columns.method}",
+            "${columns.phone}",
+            "${columns.purchaseDate}",
+            "${columns.total}",
+            "${columns.receiptDriveUrl}",
+            "${columns.whatsAppMessageId}",
+            "${columns.whatsAppState}"
           ]) {
             id
             text
@@ -210,27 +208,29 @@ async function fetchMondayItem(itemId: string): Promise<MondayItem | null> {
 }
 
 async function loadInvoiceRequest(
+  boardId: string,
   itemId: string
 ): Promise<InvoiceRequest> {
-  const item = await fetchMondayItem(itemId);
+  const tenant = await resolveInvoiceRequestTenant(boardId);
+  const item = await fetchMondayItem(itemId, tenant);
   if (!item) {
     throw new PermanentWorkflowError('El recibo de Monday no existe o no es accesible');
   }
 
-  const expectedBoardId = process.env.MONDAY_FMG_BOARD_ID || DEFAULT_BOARD_ID;
-  if (item.board.id !== expectedBoardId) {
+  if (item.board.id !== tenant.boardId || item.board.id !== boardId) {
     throw new PermanentWorkflowError('El recibo pertenece a un tablero no autorizado');
   }
 
-  const method = getColumn(item, FMG_MONDAY_COLUMNS.method)?.text?.trim().toLowerCase();
+  const columns = tenant.columns;
+  const method = getColumn(item, columns.method)?.text?.trim().toLowerCase();
   if (method !== 'whatsapp') {
     throw new PermanentWorkflowError('El método del recibo ya no es WhatsApp');
   }
 
-  const phone = getColumn(item, FMG_MONDAY_COLUMNS.phone)?.text;
-  const purchaseDate = getColumn(item, FMG_MONDAY_COLUMNS.purchaseDate)?.text;
-  const total = getColumn(item, FMG_MONDAY_COLUMNS.total)?.text;
-  const receiptDriveUrl = getColumn(item, FMG_MONDAY_COLUMNS.receiptDriveUrl)?.text;
+  const phone = getColumn(item, columns.phone)?.text;
+  const purchaseDate = getColumn(item, columns.purchaseDate)?.text;
+  const total = getColumn(item, columns.total)?.text;
+  const receiptDriveUrl = getColumn(item, columns.receiptDriveUrl)?.text;
 
   if (!phone) throw new PermanentWorkflowError('El recibo no tiene teléfono de WhatsApp');
   if (!purchaseDate) throw new PermanentWorkflowError('El recibo no tiene fecha de compra');
@@ -240,6 +240,8 @@ async function loadInvoiceRequest(
   }
 
   return {
+    companyId: tenant.companyId,
+    companyName: tenant.companyName,
     boardId: item.board.id,
     itemId: item.id,
     merchant: item.name,
@@ -247,6 +249,8 @@ async function loadInvoiceRequest(
     purchaseDate,
     total: formatInvoiceTotal(total),
     receiptDriveFileId: extractDriveFileId(receiptDriveUrl),
+    fiscalProfile: tenant.fiscalProfile,
+    mondayColumns: tenant.columns,
   };
 }
 
@@ -328,10 +332,14 @@ async function reserveSend(
 
     transaction.create(ref, {
       state: 'reserved',
+      companyId: request.companyId,
+      companyName: request.companyName,
       boardId: request.boardId,
       itemId: request.itemId,
       phoneHash: hashTraceValue(request.phone),
       templateName: templateName(),
+      fiscalProfileVersion: request.fiscalProfile.version,
+      mondayColumns: request.mondayColumns,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -354,15 +362,15 @@ async function updateReservation(
   );
 }
 
-async function markPreparing(itemId: string, key: string): Promise<void> {
-  await updateMondayItem(itemId, {
-    [FMG_MONDAY_COLUMNS.whatsAppMessageId]: `processing:${key}`,
-    [FMG_MONDAY_COLUMNS.whatsAppState]: { label: 'Preparando' },
+async function markPreparing(request: InvoiceRequest, key: string): Promise<void> {
+  await updateMondayItem(request.boardId, request.itemId, {
+    [request.mondayColumns.whatsAppMessageId]: `processing:${key}`,
+    [request.mondayColumns.whatsAppState]: { label: 'Preparando' },
   });
 }
 
 async function markSendSuccess(
-  itemId: string,
+  request: InvoiceRequest,
   key: string,
   messageId: string
 ): Promise<void> {
@@ -372,38 +380,38 @@ async function markSendSuccess(
   // Una falla de espejo en Monday no debe convertir en error un mensaje que
   // Meta ya aceptó ni habilitar un segundo intento.
   const traceResults = await Promise.allSettled([
-    updateMondayItem(itemId, {
-      [FMG_MONDAY_COLUMNS.whatsAppMessageId]: messageId,
-      [FMG_MONDAY_COLUMNS.whatsAppState]: { label: 'Enviado' },
+    updateMondayItem(request.boardId, request.itemId, {
+      [request.mondayColumns.whatsAppMessageId]: messageId,
+      [request.mondayColumns.whatsAppState]: { label: 'Enviado' },
     }),
     createMondayUpdate(
-      itemId,
-      `<b>Solicitud de factura enviada por WhatsApp</b><br>ID: ${messageId}`
+      request.itemId,
+      `<b>Solicitud de factura enviada por WhatsApp</b><br>Empresa: ${request.companyName}<br>ID: ${messageId}`
     ),
   ]);
 
   if (traceResults.some((result) => result.status === 'rejected')) {
     console.error('[FMG WhatsApp] Meta aceptó el mensaje, pero Monday quedó parcialmente actualizado', {
-      itemId,
+      itemId: request.itemId,
       messageId,
     });
   }
 }
 
 async function markSendFailure(
-  itemId: string,
+  request: InvoiceRequest,
   key: string,
   message: string
 ): Promise<void> {
   const detail = message.slice(0, 500);
   await Promise.allSettled([
     updateReservation(key, { state: 'failed_or_unknown', error: detail }),
-    updateMondayItem(itemId, {
-      [FMG_MONDAY_COLUMNS.whatsAppMessageId]: `blocked:${key}`,
-      [FMG_MONDAY_COLUMNS.whatsAppState]: { label: 'Error' },
+    updateMondayItem(request.boardId, request.itemId, {
+      [request.mondayColumns.whatsAppMessageId]: `blocked:${key}`,
+      [request.mondayColumns.whatsAppState]: { label: 'Error' },
     }),
     createMondayUpdate(
-      itemId,
+      request.itemId,
       `<b>Error enviando solicitud por WhatsApp; reintento automático bloqueado</b><br>${detail}`
     ),
   ]);
@@ -472,15 +480,20 @@ async function sendTemplate(request: InvoiceRequest, mediaId: string): Promise<s
   return messageId;
 }
 
-export async function validateInvoiceRequest(itemId: string): Promise<InvoiceRequestDryRun> {
+export async function validateInvoiceRequest(
+  boardId: string,
+  itemId: string
+): Promise<InvoiceRequestDryRun> {
   const { request, receipt } = await runInvoiceRequestValidation(itemId, {
-    loadRequest: loadInvoiceRequest,
+    loadRequest: (selectedItemId) => loadInvoiceRequest(boardId, selectedItemId),
     downloadReceipt: downloadPublicDriveImage,
   });
   const selectedTemplate = templateName();
 
   return {
     status: 'validated',
+    companyId: request.companyId,
+    companyName: request.companyName,
     itemId: request.itemId,
     merchant: request.merchant,
     phone: request.phone,
@@ -499,10 +512,11 @@ export async function validateInvoiceRequest(itemId: string): Promise<InvoiceReq
 }
 
 export async function sendInvoiceRequest(
+  boardId: string,
   itemId: string
 ): Promise<SendInvoiceRequestResult> {
   return runInvoiceRequestWorkflow(itemId, {
-    loadRequest: loadInvoiceRequest,
+    loadRequest: (selectedItemId) => loadInvoiceRequest(boardId, selectedItemId),
     reserve: reserveSend,
     markPreparing,
     downloadReceipt: downloadPublicDriveImage,

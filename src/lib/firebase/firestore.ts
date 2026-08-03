@@ -72,6 +72,10 @@ export async function createCompany(data: CreateCompanyData): Promise<Company> {
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
     subscriptionStatus: 'none',
+    invoiceRequestAutomation: {
+      enabled: false,
+      status: 'pending_fiscal_profile',
+    },
     createdAt: now,
     updatedAt: now,
     createdBy: data.adminUid,

@@ -11,6 +11,46 @@ import {
   type InvoiceRequest,
 } from './fmg-whatsapp-core.ts';
 
+const fiscalProfile = {
+  legalName: 'EMPRESA DEMO SA DE CV',
+  rfc: 'EDE010101AAA',
+  taxRegime: '601 - General de Ley Personas Morales',
+  postalCode: '31000',
+  cfdiUse: 'G03 - Gastos en general',
+  invoiceEmail: 'facturas@example.com',
+  csfUrl: 'https://drive.google.com/file/d/csf/view',
+  verifiedAt: '2026-08-02T00:00:00.000Z',
+  verifiedBy: 'operaciones@example.com',
+  version: 'profile-v1',
+};
+
+const mondayColumns = {
+  method: 'method',
+  phone: 'phone',
+  purchaseDate: 'purchase_date',
+  total: 'total',
+  receiptDriveUrl: 'receipt',
+  whatsAppMessageId: 'wa_id',
+  whatsAppState: 'wa_state',
+};
+
+function invoiceRequest(overrides: Partial<InvoiceRequest> = {}): InvoiceRequest {
+  return {
+    companyId: 'company-1',
+    companyName: 'Empresa Demo',
+    boardId: '8964055261',
+    itemId: '1',
+    merchant: 'Comercio',
+    phone: '526144273301',
+    purchaseDate: '2026-07-29',
+    total: '100.00 MXN',
+    receiptDriveFileId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
+    fiscalProfile,
+    mondayColumns,
+    ...overrides,
+  };
+}
+
 test('normaliza teléfonos mexicanos sin duplicar el prefijo', () => {
   assert.equal(normalizeWhatsAppPhone('614 427 3301'), '526144273301');
   assert.equal(normalizeWhatsAppPhone('+52 614 427 3301'), '526144273301');
@@ -33,20 +73,16 @@ test('formatea el total en MXN', () => {
 });
 
 test('la clave idempotente es estable y cambia con el elemento', () => {
-  const request: InvoiceRequest = {
-    boardId: '8964055261',
-    itemId: '1',
-    merchant: 'Comercio',
-    phone: '526144273301',
-    purchaseDate: '2026-07-29',
-    total: '100.00 MXN',
-    receiptDriveFileId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
-  };
+  const request = invoiceRequest();
   const first = getInvoiceRequestIdempotencyKey(request, 'template');
   assert.equal(first, getInvoiceRequestIdempotencyKey(request, 'template'));
   assert.notEqual(
     first,
     getInvoiceRequestIdempotencyKey({ ...request, itemId: '2' }, 'template')
+  );
+  assert.notEqual(
+    first,
+    getInvoiceRequestIdempotencyKey({ ...request, companyId: 'company-2' }, 'template')
   );
   assert.equal(
     first,
@@ -58,7 +94,7 @@ test('la clave idempotente es estable y cambia con el elemento', () => {
         purchaseDate: '2026-07-30',
         receiptDriveFileId: 'otro-recibo',
       },
-      'template'
+      'renamed-template'
     )
   );
 });
@@ -86,24 +122,16 @@ test('acepta únicamente el cambio correcto de Monday a WhatsApp', () => {
 });
 
 test('construye la plantilla aprobada con recibo, fecha y total', () => {
-  const request: InvoiceRequest = {
-    boardId: '8964055261',
-    itemId: '1',
-    merchant: 'Comercio',
-    phone: '526144273301',
-    purchaseDate: '2026-07-29',
-    total: '100.00 MXN',
-    receiptDriveFileId: 'drive-id',
-  };
+  const request = invoiceRequest({ receiptDriveFileId: 'drive-id' });
   const payload = buildWhatsAppTemplatePayload(
     request,
     'media-1',
-    'solicitud_factura_jorge_recibo',
+    'solicitud_factura_fmg_v1',
     'es_MX'
   );
 
   assert.equal(payload.to, '526144273301');
-  assert.equal(payload.template.name, 'solicitud_factura_jorge_recibo');
+  assert.equal(payload.template.name, 'solicitud_factura_fmg_v1');
   assert.equal(payload.template.language.code, 'es_MX');
   assert.deepEqual(payload.template.components[0], {
     type: 'header',
@@ -114,6 +142,13 @@ test('construye la plantilla aprobada con recibo, fecha y total', () => {
     parameters: [
       { type: 'text', text: '2026-07-29' },
       { type: 'text', text: '100.00 MXN' },
+      { type: 'text', text: 'EMPRESA DEMO SA DE CV' },
+      { type: 'text', text: 'EDE010101AAA' },
+      { type: 'text', text: '601 - General de Ley Personas Morales' },
+      { type: 'text', text: '31000' },
+      { type: 'text', text: 'G03 - Gastos en general' },
+      { type: 'text', text: 'facturas@example.com' },
+      { type: 'text', text: 'https://drive.google.com/file/d/csf/view' },
     ],
   });
 });

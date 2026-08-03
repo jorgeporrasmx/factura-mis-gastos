@@ -8,6 +8,8 @@ import {
 } from './fmg-whatsapp-workflow.ts';
 
 const request: InvoiceRequest = {
+  companyId: 'company-1',
+  companyName: 'Empresa Demo',
   boardId: '8964055261',
   itemId: 'monday-item-1',
   merchant: 'Comercio de prueba',
@@ -15,6 +17,22 @@ const request: InvoiceRequest = {
   purchaseDate: '2026-07-29',
   total: '100.00 MXN',
   receiptDriveFileId: 'drive-file-1',
+  fiscalProfile: {
+    legalName: 'EMPRESA DEMO SA DE CV',
+    rfc: 'EDE010101AAA',
+    taxRegime: '601',
+    postalCode: '31000',
+    cfdiUse: 'G03',
+    invoiceEmail: 'facturas@example.com',
+    csfUrl: 'https://drive.google.com/csf',
+    verifiedAt: '2026-08-02T00:00:00.000Z',
+    verifiedBy: 'operaciones@example.com',
+    version: 'profile-v1',
+  },
+  mondayColumns: {
+    method: 'method', phone: 'phone', purchaseDate: 'date', total: 'total',
+    receiptDriveUrl: 'receipt', whatsAppMessageId: 'wa_id', whatsAppState: 'wa_state',
+  },
 };
 
 function isolatedPorts() {

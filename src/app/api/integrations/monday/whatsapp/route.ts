@@ -6,9 +6,10 @@ import {
 } from '@/lib/integrations/fmg-whatsapp';
 import {
   canSendInvoiceRequest,
-  isMondayWhatsAppTrigger,
   type MondayWhatsAppEvent,
 } from '@/lib/integrations/fmg-whatsapp-core';
+import { resolveInvoiceRequestTenant } from '@/lib/integrations/fmg-whatsapp-tenant';
+import { isTenantMondayTrigger } from '@/lib/integrations/fmg-whatsapp-tenant-core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -59,15 +60,22 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const event = payload.event;
-  const expectedBoardId = process.env.MONDAY_FMG_BOARD_ID || '8964055261';
+  const boardId = event?.boardId ? String(event.boardId) : '';
+  let tenant;
+  try {
+    tenant = await resolveInvoiceRequestTenant(boardId);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Tablero no autorizado';
+    return Response.json({ accepted: false, reason: message }, { status: 422 });
+  }
 
-  if (!isMondayWhatsAppTrigger(event, expectedBoardId, 'proyecto')) {
+  if (!isTenantMondayTrigger(event, tenant)) {
     return Response.json({ accepted: false, reason: 'Evento fuera del disparador FMG' });
   }
 
   try {
     if (request.headers.get('x-fmg-dry-run') === '1') {
-      const validation = await validateInvoiceRequest(String(event.pulseId));
+      const validation = await validateInvoiceRequest(boardId, String(event.pulseId));
       return Response.json({
         accepted: true,
         dryRun: true,
@@ -91,8 +99,10 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const result = await sendInvoiceRequest(String(event.pulseId));
+    const result = await sendInvoiceRequest(boardId, String(event.pulseId));
     console.info('[FMG WhatsApp] Evento de Monday procesado', {
+      companyId: tenant.companyId,
+      boardId,
       itemId: String(event.pulseId),
       triggerUuid: event.triggerUuid || null,
       status: result.status,

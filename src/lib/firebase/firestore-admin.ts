@@ -194,6 +194,10 @@ export async function createCompanyAdmin(data: CreateCompanyData): Promise<Compa
     driveDocsFolderId: '',
     driveSharedWith: [data.adminEmail],
     subscriptionStatus: 'none', // Sin suscripción hasta que pague o active prueba
+    invoiceRequestAutomation: {
+      enabled: false,
+      status: 'pending_fiscal_profile',
+    },
     createdAt: now,
     updatedAt: now,
     createdBy: data.adminUid,

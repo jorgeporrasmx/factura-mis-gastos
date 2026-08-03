@@ -2,10 +2,13 @@ import { FieldValue, type QueryDocumentSnapshot } from 'firebase-admin/firestore
 import { getAdminFirestore } from '@/lib/firebase/admin';
 import { hashTraceValue } from './fmg-whatsapp-core';
 import {
-  FMG_MONDAY_COLUMNS,
   createMondayUpdate,
   updateMondayItem,
 } from './fmg-whatsapp';
+import {
+  validateMondayColumns,
+  type InvoiceRequestMondayTarget,
+} from './fmg-whatsapp-tenant-core';
 import {
   escapeHtml,
   getWhatsAppInboundEventKey,
@@ -19,20 +22,20 @@ import {
 
 const REQUEST_COLLECTION = 'fmg_whatsapp_invoice_requests';
 const INBOUND_COLLECTION = 'fmg_whatsapp_inbound_messages';
-const MAX_CORRELATION_AGE_MS = 30 * 24 * 60 * 60 * 1000;
-
 type ReservationData = {
+  companyId?: string;
   boardId?: string;
   itemId?: string;
+  mondayColumns?: unknown;
   messageId?: string;
-  phoneHash?: string;
   state?: string;
-  sentAt?: unknown;
-  createdAt?: unknown;
 };
 
 type InboundData = {
+  companyId?: string;
+  boardId?: string;
   itemId?: string;
+  mondayColumns?: unknown;
   mirrored?: boolean;
 };
 
@@ -42,25 +45,25 @@ function getFirestoreOrThrow() {
   return db;
 }
 
-function timestampMillis(value: unknown): number | undefined {
-  if (
-    value &&
-    typeof value === 'object' &&
-    'toMillis' in value &&
-    typeof (value as { toMillis?: unknown }).toMillis === 'function'
-  ) {
-    return (value as { toMillis(): number }).toMillis();
+function targetFromData(data: ReservationData | InboundData): InvoiceRequestMondayTarget | null {
+  if (!data.companyId || !data.boardId || !data.itemId) return null;
+  try {
+    return {
+      companyId: data.companyId,
+      boardId: data.boardId,
+      itemId: data.itemId,
+      columns: validateMondayColumns(data.mondayColumns),
+    };
+  } catch {
+    return null;
   }
-  return undefined;
 }
 
 function isAuthorizedReservation(data: ReservationData): boolean {
-  const expectedBoardId = process.env.MONDAY_FMG_BOARD_ID || '8964055261';
-  return (
-    data.boardId === expectedBoardId &&
-    Boolean(data.itemId) &&
-    data.state === 'sent' &&
-    Boolean(data.messageId?.startsWith('wamid.'))
+  return Boolean(
+    targetFromData(data) &&
+      data.state === 'sent' &&
+      data.messageId?.startsWith('wamid.')
   );
 }
 
@@ -77,44 +80,36 @@ async function findReservationByMessageId(
   return match && isAuthorizedReservation(match.data() as ReservationData) ? match : null;
 }
 
-async function findLatestReservationByPhone(
-  phone: string,
-  incomingTimestamp: number
-): Promise<QueryDocumentSnapshot | null> {
-  const db = getFirestoreOrThrow();
-  const snapshot = await db
-    .collection(REQUEST_COLLECTION)
-    .where('phoneHash', '==', hashTraceValue(phone))
-    .limit(50)
-    .get();
-
-  const incomingMs = incomingTimestamp * 1000;
-  const candidates = snapshot.docs
-    .map((doc) => {
-      const data = doc.data() as ReservationData;
-      const sentMs = timestampMillis(data.sentAt) || timestampMillis(data.createdAt);
-      return { doc, data, sentMs };
-    })
-    .filter(
-      (candidate) =>
-        isAuthorizedReservation(candidate.data) &&
-        candidate.sentMs !== undefined &&
-        candidate.sentMs <= incomingMs + 5 * 60 * 1000 &&
-        incomingMs - candidate.sentMs <= MAX_CORRELATION_AGE_MS
-    )
-    .sort((left, right) => (right.sentMs || 0) - (left.sentMs || 0));
-
-  return candidates[0]?.doc || null;
-}
-
 async function findReservation(
   message: WhatsAppInboundMessage
 ): Promise<QueryDocumentSnapshot | null> {
-  if (message.contextMessageId) {
-    const contextual = await findReservationByMessageId(message.contextMessageId);
-    if (contextual) return contextual;
-  }
-  return findLatestReservationByPhone(message.from, message.timestamp);
+  if (!message.contextMessageId) return null;
+  return findReservationByMessageId(message.contextMessageId);
+}
+
+async function saveForManualReview(
+  eventKey: string,
+  message: WhatsAppInboundMessage
+): Promise<void> {
+  const db = getFirestoreOrThrow();
+  await db.collection(INBOUND_COLLECTION).doc(eventKey).set(
+    {
+      matched: false,
+      reviewState: 'pending',
+      messageIdHash: hashTraceValue(message.messageId),
+      contextMessageIdHash: message.contextMessageId
+        ? hashTraceValue(message.contextMessageId)
+        : null,
+      phoneHash: hashTraceValue(message.from),
+      contactName: message.contactName || null,
+      type: message.type,
+      content: message.content,
+      messageTimestamp: message.timestamp,
+      updatedAt: FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
 }
 
 async function claimInboundMessage(
@@ -126,36 +121,48 @@ async function claimInboundMessage(
   const existing = await inboundRef.get();
   if (existing.exists) {
     const data = existing.data() as InboundData;
-    if (!data.itemId) return { matched: false };
+    const target = targetFromData(data);
+    if (!target) return { matched: false };
     return {
       matched: true,
-      itemId: data.itemId,
+      target,
       eventKey,
       shouldMirror: data.mirrored !== true,
     };
   }
 
   const reservation = await findReservation(message);
-  if (!reservation) return { matched: false };
+  if (!reservation) {
+    await saveForManualReview(eventKey, message);
+    return { matched: false };
+  }
   const reservationData = reservation.data() as ReservationData;
-  if (!reservationData.itemId) return { matched: false };
-  const itemId = reservationData.itemId;
+  const target = targetFromData(reservationData);
+  if (!target) {
+    await saveForManualReview(eventKey, message);
+    return { matched: false };
+  }
 
   return db.runTransaction(async (transaction) => {
     const current = await transaction.get(inboundRef);
     if (current.exists) {
       const data = current.data() as InboundData;
-      if (!data.itemId) return { matched: false };
+      const currentTarget = targetFromData(data);
+      if (!currentTarget) return { matched: false };
       return {
         matched: true,
-        itemId: data.itemId,
+        target: currentTarget,
         eventKey,
         shouldMirror: data.mirrored !== true,
       };
     }
 
     transaction.create(inboundRef, {
-      itemId,
+      matched: true,
+      companyId: target.companyId,
+      boardId: target.boardId,
+      itemId: target.itemId,
+      mondayColumns: target.columns,
       messageIdHash: hashTraceValue(message.messageId),
       contextMessageIdHash: message.contextMessageId
         ? hashTraceValue(message.contextMessageId)
@@ -170,7 +177,7 @@ async function claimInboundMessage(
 
     return {
       matched: true,
-      itemId,
+      target,
       eventKey,
       shouldMirror: true,
     };
@@ -178,7 +185,7 @@ async function claimInboundMessage(
 }
 
 async function mirrorInboundMessage(
-  itemId: string,
+  target: InvoiceRequestMondayTarget,
   message: WhatsAppInboundMessage
 ): Promise<void> {
   const receivedAt = new Intl.DateTimeFormat('es-MX', {
@@ -191,11 +198,11 @@ async function mirrorInboundMessage(
     : '';
 
   await createMondayUpdate(
-    itemId,
+    target.itemId,
     `<b>WhatsApp · mensaje del cliente</b>${contact}<br><b>Hora:</b> ${escapeHtml(receivedAt)}<br>${escapeHtml(message.content)}`
   );
-  await updateMondayItem(itemId, {
-    [FMG_MONDAY_COLUMNS.whatsAppState]: { label: 'Respondido' },
+  await updateMondayItem(target.boardId, target.itemId, {
+    [target.columns.whatsAppState]: { label: 'Respondido' },
   });
 }
 

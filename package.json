@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test:fmg-whatsapp": "node --experimental-strip-types --test src/lib/integrations/fmg-whatsapp-core.test.ts src/lib/integrations/fmg-whatsapp-workflow.test.ts src/lib/integrations/fmg-whatsapp-status-core.test.ts src/lib/integrations/fmg-whatsapp-status-workflow.test.ts src/lib/integrations/fmg-whatsapp-inbound-workflow.test.ts",
+    "test:fmg-whatsapp": "node --experimental-strip-types --test src/lib/integrations/fmg-whatsapp-core.test.ts src/lib/integrations/fmg-whatsapp-tenant-core.test.ts src/lib/integrations/fmg-whatsapp-workflow.test.ts src/lib/integrations/fmg-whatsapp-status-core.test.ts src/lib/integrations/fmg-whatsapp-status-workflow.test.ts src/lib/integrations/fmg-whatsapp-inbound-workflow.test.ts",
     "start": "next start",
     "lint": "eslint"
   },

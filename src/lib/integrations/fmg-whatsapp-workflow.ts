@@ -15,12 +15,12 @@ export type WorkflowReceipt = {
 export type InvoiceRequestWorkflowPorts = {
   loadRequest(itemId: string): Promise<InvoiceRequest>;
   reserve(request: InvoiceRequest): Promise<WorkflowReservation>;
-  markPreparing(itemId: string, key: string): Promise<void>;
+  markPreparing(request: InvoiceRequest, key: string): Promise<void>;
   downloadReceipt(fileId: string): Promise<WorkflowReceipt>;
   uploadReceipt(receipt: WorkflowReceipt): Promise<string>;
   sendTemplate(request: InvoiceRequest, mediaId: string): Promise<string>;
-  markSent(itemId: string, key: string, messageId: string): Promise<void>;
-  markFailure(itemId: string, key: string, message: string): Promise<void>;
+  markSent(request: InvoiceRequest, key: string, messageId: string): Promise<void>;
+  markFailure(request: InvoiceRequest, key: string, message: string): Promise<void>;
 };
 
 export type WorkflowResult =
@@ -43,15 +43,15 @@ export async function runInvoiceRequestWorkflow(
   }
 
   try {
-    await ports.markPreparing(request.itemId, reservation.key);
+    await ports.markPreparing(request, reservation.key);
     const receipt = await ports.downloadReceipt(request.receiptDriveFileId);
     const mediaId = await ports.uploadReceipt(receipt);
     const messageId = await ports.sendTemplate(request, mediaId);
-    await ports.markSent(request.itemId, reservation.key, messageId);
+    await ports.markSent(request, reservation.key, messageId);
     return { status: 'sent', messageId, idempotencyKey: reservation.key };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
-    await ports.markFailure(request.itemId, reservation.key, message);
+    await ports.markFailure(request, reservation.key, message);
     throw error;
   }
 }

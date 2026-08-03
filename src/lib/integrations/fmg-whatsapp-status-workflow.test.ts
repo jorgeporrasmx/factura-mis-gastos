@@ -12,11 +12,21 @@ const event: WhatsAppStatusEvent = {
   timestamp: 1785547383,
 };
 
+const target = {
+  companyId: 'company-1',
+  boardId: 'board-1',
+  itemId: 'item-1',
+  columns: {
+    method: 'method', phone: 'phone', purchaseDate: 'date', total: 'total',
+    receiptDriveUrl: 'receipt', whatsAppMessageId: 'wa_id', whatsAppState: 'wa_state',
+  },
+};
+
 function portsForClaim(claim: Awaited<ReturnType<WhatsAppStatusWorkflowPorts['claim']>>) {
   const calls: string[] = [];
   const ports: WhatsAppStatusWorkflowPorts = {
     async claim() { calls.push('claim'); return claim; },
-    async mirror(itemId, statusEvent) { calls.push(`mirror:${itemId}:${statusEvent.status}`); },
+    async mirror(selectedTarget, statusEvent) { calls.push(`mirror:${selectedTarget.itemId}:${statusEvent.status}`); },
     async markMirrored(eventKey) { calls.push(`mirrored:${eventKey}`); },
   };
   return { ports, calls };
@@ -30,7 +40,7 @@ test('ignora estados que no pertenecen a un mensaje registrado', async () => {
 
 test('refleja una transición nueva en Monday y después confirma el espejo', async () => {
   const { ports, calls } = portsForClaim({
-    matched: true, itemId: 'item-1', eventKey: 'event-1', shouldMirror: true,
+    matched: true, target, eventKey: 'event-1', shouldMirror: true,
   });
   assert.deepEqual(await runWhatsAppStatusWorkflow(event, ports), {
     status: 'updated', itemId: 'item-1',
@@ -40,7 +50,7 @@ test('refleja una transición nueva en Monday y después confirma el espejo', as
 
 test('un evento repetido no vuelve a escribir en Monday', async () => {
   const { ports, calls } = portsForClaim({
-    matched: true, itemId: 'item-1', eventKey: 'event-1', shouldMirror: false,
+    matched: true, target, eventKey: 'event-1', shouldMirror: false,
   });
   assert.deepEqual(await runWhatsAppStatusWorkflow(event, ports), {
     status: 'ignored', itemId: 'item-1',
@@ -50,7 +60,7 @@ test('un evento repetido no vuelve a escribir en Monday', async () => {
 
 test('si Monday falla no marca el evento como reflejado y permite el reintento de Meta', async () => {
   const { ports, calls } = portsForClaim({
-    matched: true, itemId: 'item-1', eventKey: 'event-1', shouldMirror: true,
+    matched: true, target, eventKey: 'event-1', shouldMirror: true,
   });
   ports.mirror = async () => {
     calls.push('mirror:error');

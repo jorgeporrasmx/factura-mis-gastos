@@ -1,12 +1,18 @@
 import type { WhatsAppStatusEvent } from './fmg-whatsapp-status-core';
+import type { InvoiceRequestMondayTarget } from './fmg-whatsapp-tenant-core';
 
 export type WhatsAppStatusClaim =
   | { matched: false }
-  | { matched: true; itemId: string; eventKey: string; shouldMirror: boolean };
+  | {
+      matched: true;
+      target: InvoiceRequestMondayTarget;
+      eventKey: string;
+      shouldMirror: boolean;
+    };
 
 export type WhatsAppStatusWorkflowPorts = {
   claim(event: WhatsAppStatusEvent): Promise<WhatsAppStatusClaim>;
-  mirror(itemId: string, event: WhatsAppStatusEvent): Promise<void>;
+  mirror(target: InvoiceRequestMondayTarget, event: WhatsAppStatusEvent): Promise<void>;
   markMirrored(eventKey: string): Promise<void>;
 };
 
@@ -21,9 +27,9 @@ export async function runWhatsAppStatusWorkflow(
 ): Promise<WhatsAppStatusWorkflowResult> {
   const claim = await ports.claim(event);
   if (!claim.matched) return { status: 'unmatched' };
-  if (!claim.shouldMirror) return { status: 'ignored', itemId: claim.itemId };
+  if (!claim.shouldMirror) return { status: 'ignored', itemId: claim.target.itemId };
 
-  await ports.mirror(claim.itemId, event);
+  await ports.mirror(claim.target, event);
   await ports.markMirrored(claim.eventKey);
-  return { status: 'updated', itemId: claim.itemId };
+  return { status: 'updated', itemId: claim.target.itemId };
 }

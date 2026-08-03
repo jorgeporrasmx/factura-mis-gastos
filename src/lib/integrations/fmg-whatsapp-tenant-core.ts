@@ -120,6 +120,7 @@ export function validateFiscalProfile(
   }
 
   const { version: _version, ...versionInput } = profile;
+  void _version;
   if (getFiscalProfileVersion(versionInput) !== profile.version) {
     throw new Error('La versión del perfil fiscal no coincide con sus datos verificados');
   }

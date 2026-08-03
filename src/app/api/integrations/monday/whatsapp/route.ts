@@ -9,7 +9,10 @@ import {
   type MondayWhatsAppEvent,
 } from '@/lib/integrations/fmg-whatsapp-core';
 import { resolveInvoiceRequestTenant } from '@/lib/integrations/fmg-whatsapp-tenant';
-import { isTenantMondayTrigger } from '@/lib/integrations/fmg-whatsapp-tenant-core';
+import {
+  isTenantMondayTrigger,
+  type InvoiceRequestTenant,
+} from '@/lib/integrations/fmg-whatsapp-tenant-core';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,8 +63,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const event = payload.event;
-  const boardId = event?.boardId ? String(event.boardId) : '';
-  let tenant;
+  if (!event?.pulseId || !event.boardId) {
+    return Response.json({ accepted: false, reason: 'Evento de Monday incompleto' });
+  }
+  const boardId = String(event.boardId);
+  const itemId = String(event.pulseId);
+  const triggerUuid = event.triggerUuid || null;
+  let tenant: InvoiceRequestTenant;
   try {
     tenant = await resolveInvoiceRequestTenant(boardId);
   } catch (error) {
@@ -75,7 +83,7 @@ export async function POST(request: Request): Promise<Response> {
 
   try {
     if (request.headers.get('x-fmg-dry-run') === '1') {
-      const validation = await validateInvoiceRequest(boardId, String(event.pulseId));
+      const validation = await validateInvoiceRequest(boardId, itemId);
       return Response.json({
         accepted: true,
         dryRun: true,
@@ -86,7 +94,7 @@ export async function POST(request: Request): Promise<Response> {
     if (
       !canSendInvoiceRequest(
         process.env.FMG_WHATSAPP_SEND_MODE,
-        String(event.pulseId),
+        itemId,
         process.env.FMG_WHATSAPP_TEST_ITEM_ID
       )
     ) {
@@ -99,12 +107,12 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const result = await sendInvoiceRequest(boardId, String(event.pulseId));
+    const result = await sendInvoiceRequest(boardId, itemId);
     console.info('[FMG WhatsApp] Evento de Monday procesado', {
       companyId: tenant.companyId,
       boardId,
-      itemId: String(event.pulseId),
-      triggerUuid: event.triggerUuid || null,
+      itemId,
+      triggerUuid,
       status: result.status,
       messageId: result.messageId || null,
     });
@@ -117,8 +125,8 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Error desconocido';
     console.error('[FMG WhatsApp] Error enviando solicitud', {
-      itemId: String(event.pulseId),
-      triggerUuid: event.triggerUuid || null,
+      itemId,
+      triggerUuid,
       error: message,
     });
 

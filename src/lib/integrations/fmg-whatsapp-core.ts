@@ -101,9 +101,10 @@ export function formatInvoiceTotal(rawTotal: string): string {
 }
 
 export function getInvoiceRequestIdempotencyKey(
-  request: Pick<InvoiceRequest, 'companyId' | 'boardId' | 'itemId'>,
+  request: InvoiceRequest,
   _templateName?: string
 ): string {
+  void _templateName;
   return createHash('sha256')
     // La solicitud es única por empresa/tablero/elemento. Cambiar datos fiscales
     // o renombrar la plantilla nunca habilita un segundo envío automático.

@@ -28,6 +28,7 @@ export interface InvoiceRequestFiscalProfile {
   cfdiUse: string;
   invoiceEmail: string;
   csfUrl: string;
+  csfIssuedAt: string;
   verifiedAt: string;
   verifiedBy: string;
   version: string;

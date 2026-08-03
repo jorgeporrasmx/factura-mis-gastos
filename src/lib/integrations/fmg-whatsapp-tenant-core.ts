@@ -6,6 +6,7 @@ import type {
 } from '@/types/company';
 
 export const GENERIC_TEMPLATE_NAME = 'solicitud_factura_fmg_v1';
+export const MAX_CSF_AGE_DAYS = 100;
 
 export type InvoiceRequestTenant = {
   companyId: string;
@@ -72,6 +73,7 @@ export function getFiscalProfileVersion(
         profile.cfdiUse,
         profile.invoiceEmail,
         profile.csfUrl,
+        profile.csfIssuedAt,
         profile.verifiedAt,
         profile.verifiedBy,
       ].join('\n')
@@ -95,6 +97,7 @@ export function validateFiscalProfile(
     cfdiUse: requiredText(candidate.cfdiUse, 'uso de CFDI'),
     invoiceEmail: requiredText(candidate.invoiceEmail, 'correo de facturación').toLowerCase(),
     csfUrl: requiredText(candidate.csfUrl, 'enlace de CSF'),
+    csfIssuedAt: requiredText(candidate.csfIssuedAt, 'fecha de emisión de CSF'),
     verifiedAt: requiredText(candidate.verifiedAt, 'fecha de verificación'),
     verifiedBy: requiredText(candidate.verifiedBy, 'responsable de verificación'),
     version: requiredText(candidate.version, 'versión del perfil'),
@@ -117,6 +120,17 @@ export function validateFiscalProfile(
   }
   if (csfUrl.protocol !== 'https:') {
     throw new Error('El enlace de la CSF debe usar HTTPS');
+  }
+  const issuedAt = Date.parse(profile.csfIssuedAt);
+  const verifiedAt = Date.parse(profile.verifiedAt);
+  if (!Number.isFinite(issuedAt) || !Number.isFinite(verifiedAt)) {
+    throw new Error('Las fechas de emisión y verificación de la CSF no son válidas');
+  }
+  if (issuedAt > verifiedAt) {
+    throw new Error('La CSF no puede emitirse después de su verificación');
+  }
+  if (verifiedAt - issuedAt > MAX_CSF_AGE_DAYS * 24 * 60 * 60 * 1000) {
+    throw new Error('La CSF tiene más de tres meses de antigüedad');
   }
 
   const { version: _version, ...versionInput } = profile;

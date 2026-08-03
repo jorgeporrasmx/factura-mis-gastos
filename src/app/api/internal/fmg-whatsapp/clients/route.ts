@@ -30,6 +30,7 @@ export async function POST(request: Request): Promise<Response> {
       cfdiUse?: string;
       invoiceEmail?: string;
       csfUrl?: string;
+      csfIssuedAt?: string;
       verifiedAt?: string;
       verifiedBy?: string;
     };
@@ -50,6 +51,7 @@ export async function POST(request: Request): Promise<Response> {
     !profile.cfdiUse ||
     !profile.invoiceEmail ||
     !profile.csfUrl ||
+    !profile.csfIssuedAt ||
     !profile.verifiedAt ||
     !profile.verifiedBy
   ) {
@@ -70,6 +72,7 @@ export async function POST(request: Request): Promise<Response> {
         cfdiUse: profile.cfdiUse,
         invoiceEmail: profile.invoiceEmail,
         csfUrl: profile.csfUrl,
+        csfIssuedAt: profile.csfIssuedAt,
         verifiedAt: profile.verifiedAt,
         verifiedBy: profile.verifiedBy,
       },

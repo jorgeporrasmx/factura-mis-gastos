@@ -16,6 +16,7 @@ const unversionedProfile = {
   cfdiUse: 'G03 - Gastos en general',
   invoiceEmail: 'facturas@example.com',
   csfUrl: 'https://drive.google.com/file/d/csf/view',
+  csfIssuedAt: '2026-07-01T00:00:00.000Z',
   verifiedAt: '2026-08-02T00:00:00.000Z',
   verifiedBy: 'operaciones@example.com',
 };
@@ -43,6 +44,20 @@ test('bloquea un perfil fiscal alterado después de la verificación', () => {
   assert.throws(
     () => validateFiscalProfile({ ...fiscalProfile, rfc: 'ABC010101AAA' }),
     /versión del perfil fiscal/
+  );
+});
+
+test('bloquea una CSF con más de tres meses al momento de verificarla', () => {
+  const staleInput = {
+    ...unversionedProfile,
+    csfIssuedAt: '2025-01-01T00:00:00.000Z',
+  };
+  assert.throws(
+    () => validateFiscalProfile({
+      ...staleInput,
+      version: getFiscalProfileVersion(staleInput),
+    }),
+    /más de tres meses/
   );
 });
 

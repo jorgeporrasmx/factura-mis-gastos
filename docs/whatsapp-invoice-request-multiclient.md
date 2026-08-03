@@ -32,6 +32,7 @@ Los valores se obtienen exclusivamente del perfil fiscal verificado de la empres
 
 1. El ID del tablero debe resolver exactamente una empresa activa en Firestore.
 2. La empresa debe tener `invoiceRequestAutomation.enabled=true`, estado `ready`, perfil fiscal verificado y mapeo completo de columnas.
+   La fecha de emisión de la CSF no puede exceder 100 días al momento de verificarla.
 3. El alta interna crea las columnas de trazabilidad faltantes, registra el webhook del tablero y guarda el mapeo real de IDs.
 4. El envío se bloquea ante datos faltantes, perfil alterado, tablero duplicado o columna incorrecta.
 5. La idempotencia usa empresa + tablero + elemento y no permite reenviar por cambios posteriores de plantilla o perfil.

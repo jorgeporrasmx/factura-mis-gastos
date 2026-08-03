@@ -25,6 +25,7 @@ const request: InvoiceRequest = {
     cfdiUse: 'G03',
     invoiceEmail: 'facturas@example.com',
     csfUrl: 'https://drive.google.com/csf',
+    csfIssuedAt: '2026-07-01T00:00:00.000Z',
     verifiedAt: '2026-08-02T00:00:00.000Z',
     verifiedBy: 'operaciones@example.com',
     version: 'profile-v1',

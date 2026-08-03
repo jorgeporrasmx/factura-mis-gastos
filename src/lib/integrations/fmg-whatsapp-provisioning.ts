@@ -1,5 +1,6 @@
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase/admin';
+import { duplicateBoardForCompany } from '@/lib/monday-boards';
 import type {
   InvoiceRequestFiscalProfile,
   InvoiceRequestMondayColumns,
@@ -165,15 +166,25 @@ export async function provisionInvoiceRequestClient(input: {
   if (!companySnapshot.exists) throw new Error('La empresa no existe');
   const company = companySnapshot.data() || {};
   if (company.status !== 'active') throw new Error('La empresa no está activa');
-  const boardId = typeof company.mondayBoardId === 'string' ? company.mondayBoardId : '';
-  if (!boardId) throw new Error('La empresa no tiene tablero de Monday');
-
   const fiscalProfile = validateFiscalProfile({
     ...input.fiscalProfile,
     version: getFiscalProfileVersion(input.fiscalProfile),
   });
   if (company.rfc && String(company.rfc).toUpperCase() !== fiscalProfile.rfc) {
     throw new Error('El RFC del perfil no coincide con el RFC registrado de la empresa');
+  }
+
+  let boardId = typeof company.mondayBoardId === 'string' ? company.mondayBoardId : '';
+  if (!boardId) {
+    if (typeof company.name !== 'string' || !company.name.trim()) {
+      throw new Error('La empresa no tiene un nombre válido para crear su tablero');
+    }
+    const board = await duplicateBoardForCompany(company.name.trim());
+    boardId = board.boardId;
+    await companyRef.update({
+      mondayBoardId: boardId,
+      updatedAt: FieldValue.serverTimestamp(),
+    });
   }
 
   const mondayColumns = resolveMondayColumnMap(await ensureTrackingColumns(boardId));

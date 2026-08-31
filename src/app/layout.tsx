@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://facturamisgastos.com"),
+  metadataBase: new URL("https://www.facturamisgastos.com"),
   title: {
     default: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
     template: "%s | Factura Mis Gastos",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "reportes gastos empleados",
     "sistema control viáticos",
   ],
-  authors: [{ name: "Factura Mis Gastos", url: "https://facturamisgastos.com" }],
+  authors: [{ name: "Factura Mis Gastos", url: "https://www.facturamisgastos.com" }],
   creator: "Factura Mis Gastos",
   publisher: "Factura Mis Gastos",
   formatDetection: {
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     siteName: "Factura Mis Gastos",
     title: "Factura Mis Gastos | Gestión de Gastos Empresariales en México",
     description: "Tus empleados envían el recibo por WhatsApp, nosotros gestionamos la factura CFDI. Control total de gastos con verificación humana.",
-    url: "https://facturamisgastos.com",
+    url: "https://www.facturamisgastos.com",
     images: [
       {
         url: "/og-image.png",
@@ -73,10 +73,10 @@ export const metadata: Metadata = {
     creator: "@facturamisgastos",
   },
   alternates: {
-    canonical: "https://facturamisgastos.com",
+    canonical: "https://www.facturamisgastos.com",
     languages: {
-      "es-MX": "https://facturamisgastos.com",
-      "es": "https://facturamisgastos.com",
+      "es-MX": "https://www.facturamisgastos.com",
+      "es": "https://www.facturamisgastos.com",
     },
   },
   category: "business",

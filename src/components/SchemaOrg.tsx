@@ -3,8 +3,8 @@ export function SchemaOrg() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Factura Mis Gastos",
-    "url": "https://facturamisgastos.com",
-    "logo": "https://facturamisgastos.com/logo.png",
+    "url": "https://www.facturamisgastos.com",
+    "logo": "https://www.facturamisgastos.com/og-image.png",
     "description": "Plataforma de gestión de gastos empresariales en México. Tus empleados envían el recibo por WhatsApp y nosotros gestionamos la factura CFDI.",
     "foundingDate": "2024",
     "founders": [
@@ -29,80 +29,6 @@ export function SchemaOrg() {
       "https://twitter.com/facturamisgastos",
       "https://www.facebook.com/facturamisgastos"
     ]
-  };
-
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Factura Mis Gastos",
-    "description": "Servicio de gestión de gastos empresariales y facturación CFDI en México",
-    "url": "https://facturamisgastos.com",
-    "telephone": "",
-    "email": "hola@facturamisgastos.com",
-    "address": {
-      "@type": "PostalAddress",
-      "addressCountry": "MX"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": "19.4326",
-      "longitude": "-99.1332"
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-      "opens": "09:00",
-      "closes": "18:00"
-    },
-    "priceRange": "$$"
-  };
-
-  const productSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "Factura Mis Gastos - Plataforma de Gestión de Gastos",
-    "description": "Sistema de control de gastos empresariales donde tus empleados envían recibos por WhatsApp y nosotros gestionamos la factura CFDI. Incluye reportes por empleado, reglas de aprobación y dashboard de control.",
-    "brand": {
-      "@type": "Brand",
-      "name": "Factura Mis Gastos"
-    },
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Plan Equipos",
-        "description": "Hasta 150 recibos y 3 usuarios. Para empresas con gastos recurrentes.",
-        "price": "1299",
-        "priceCurrency": "MXN",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
-          "price": "1299",
-          "priceCurrency": "MXN",
-          "unitText": "mes"
-        },
-        "availability": "https://schema.org/InStock"
-      },
-      {
-        "@type": "Offer",
-        "name": "Plan Empresa",
-        "description": "Hasta 300 recibos y 8 usuarios. Incluye integración contable y reportes de impuestos.",
-        "price": "2499",
-        "priceCurrency": "MXN",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
-          "price": "2499",
-          "priceCurrency": "MXN",
-          "unitText": "mes"
-        },
-        "availability": "https://schema.org/InStock"
-      },
-    ],
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "reviewCount": "50",
-      "bestRating": "5",
-      "worstRating": "1"
-    }
   };
 
   const faqSchema = {
@@ -201,7 +127,7 @@ export function SchemaOrg() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Factura Mis Gastos",
-    "url": "https://facturamisgastos.com",
+    "url": "https://www.facturamisgastos.com",
     "description": "Plataforma de gestión de gastos empresariales en México",
     "inLanguage": "es-MX"
   };
@@ -214,7 +140,7 @@ export function SchemaOrg() {
         "@type": "ListItem",
         "position": 1,
         "name": "Inicio",
-        "item": "https://facturamisgastos.com"
+        "item": "https://www.facturamisgastos.com"
       }
     ]
   };
@@ -224,14 +150,6 @@ export function SchemaOrg() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
       <script
         type="application/ld+json"

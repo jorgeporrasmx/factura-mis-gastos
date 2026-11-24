@@ -11,6 +11,7 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ plan, showFeatures = true }: OrderSummaryProps) {
+  const amount = plan.isCustom ? plan.priceDisplay : formatAmount(plan.price);
   return (
     <Card className="sticky top-4">
       <CardHeader className="pb-4">
@@ -37,7 +38,7 @@ export function OrderSummary({ plan, showFeatures = true }: OrderSummaryProps) {
               <span className="text-sm text-muted-foreground">Precio</span>
               <div className="text-right">
                 <span className="text-2xl font-bold text-foreground">
-                  {plan.priceDisplay}
+                  {amount}
                 </span>
                 <span className="text-sm text-muted-foreground ml-1">
                   {plan.unit}
@@ -84,25 +85,9 @@ export function OrderSummary({ plan, showFeatures = true }: OrderSummaryProps) {
 
         {/* Total */}
         <div className="pt-4 border-t">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-medium">Subtotal</span>
-            <span>{plan.priceDisplay} {plan.unit}</span>
-          </div>
-          <div className="flex justify-between items-center text-sm text-muted-foreground mb-4">
-            <span>IVA (16%)</span>
-            <span>
-              {plan.price > 0
-                ? formatAmount(Math.round(plan.price * 0.16))
-                : 'Incluido'}
-            </span>
-          </div>
           <div className="flex justify-between items-center text-lg font-bold pt-2 border-t">
             <span>Total a pagar</span>
-            <span className="text-primary">
-              {plan.price > 0
-                ? formatAmount(Math.round(plan.price * 1.16))
-                : plan.priceDisplay}
-            </span>
+            <span className="text-primary">{amount}</span>
           </div>
         </div>
 
@@ -155,9 +140,9 @@ export function OrderSummaryCompact({ plan }: { plan: Plan }) {
       </div>
 
       <div className="flex justify-between items-baseline pt-3 border-t border-slate-200">
-        <span className="text-sm text-muted-foreground">Total mensual</span>
+        <span className="text-sm text-muted-foreground">Precio</span>
         <div>
-          <span className="text-xl font-bold">{plan.priceDisplay}</span>
+          <span className="text-xl font-bold">{plan.isCustom ? plan.priceDisplay : formatAmount(plan.price)}</span>
           <span className="text-sm text-muted-foreground ml-1">{plan.unit}</span>
         </div>
       </div>

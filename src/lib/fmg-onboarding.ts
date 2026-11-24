@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminFirestore } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin';
 import {
   ensureCompanyDriveFolder,
   isDriveConfigured,
@@ -142,7 +142,7 @@ async function findCompany(input: {
   return nameDoc ? { id: nameDoc.id, data: nameDoc.data() } : null;
 }
 
-async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
+async function ensureCompany(input: ActivateSubscriptionInput, mode: 'activate' | 'prepare'): Promise<{
   companyId: string;
   companyName: string;
   companyData: FirebaseFirestore.DocumentData;
@@ -160,6 +160,15 @@ async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
     companyName,
   });
 
+  if (existing && mode === 'prepare') {
+    return {
+      companyId: existing.id,
+      companyName: String(existing.data.name || companyName),
+      companyData: existing.data,
+      created: false,
+    };
+  }
+
   const plan = asPlan(input.planId);
   const onboardingPatch = {
     customerEmail: email,
@@ -175,7 +184,7 @@ async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
   if (existing) {
     await db.collection('companies').doc(existing.id).set({
       subscriptionStatus: 'active',
-      plan,
+      ...(input.planId?.trim() ? { plan } : {}),
       status: 'active',
       ...(input.driveFolderId ? { driveFolderId: input.driveFolderId } : {}),
       ...(input.driveDocsFolderId ? { driveDocsFolderId: input.driveDocsFolderId } : {}),
@@ -204,10 +213,10 @@ async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
     driveFolderId: input.driveFolderId || '',
     driveDocsFolderId: input.driveDocsFolderId || '',
     driveSharedWith: [email],
-    subscriptionStatus: 'active',
+    subscriptionStatus: mode === 'activate' ? 'active' : 'none',
     createdBy: uidOrSeed,
     plan,
-    status: 'active',
+    status: mode === 'activate' ? 'active' : 'pending',
     ...(input.mondayBoardId ? { mondayBoardId: input.mondayBoardId } : {}),
     ...(input.mondayBoardUrl ? { mondayBoardUrl: input.mondayBoardUrl } : {}),
     fmgOnboarding: {
@@ -215,10 +224,12 @@ async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
       customerName: input.customerName,
       customerPhone: input.customerPhone || '',
       accountType: input.accountType || 'empresa',
-      transactionIds: [input.transactionId],
-      lastTransactionId: input.transactionId,
+      ...(mode === 'activate' ? {
+        transactionIds: [input.transactionId],
+        lastTransactionId: input.transactionId,
+        createdFromPayment: true,
+      } : {}),
       source: input.source || 'n8n',
-      createdFromPayment: true,
       updatedAt: FieldValue.serverTimestamp(),
     },
     createdAt: FieldValue.serverTimestamp(),
@@ -243,7 +254,17 @@ async function updateUserOrPending(input: ActivateSubscriptionInput & { companyI
 }> {
   const db = getDb();
   const email = normalizeEmail(input.customerEmail);
-  const uid = input.uid || (await findUserByEmail(email))?.uid;
+  const auth = getAdminAuth();
+  if (!auth) throw new Error('Firebase Auth no está configurado');
+  const account = await auth.getUserByEmail(email).catch((error: unknown) => {
+    if (typeof error === 'object' && error && 'code' in error && error.code === 'auth/user-not-found') {
+      return null;
+    }
+    throw error;
+  });
+  const uid = account?.emailVerified && !account.disabled && (!input.uid || input.uid === account.uid)
+    ? account.uid
+    : undefined;
   const now = FieldValue.serverTimestamp();
 
   const patch = {
@@ -323,7 +344,7 @@ export async function activateSubscription(input: ActivateSubscriptionInput) {
   if (!input.customerEmail?.trim()) throw new Error('customerEmail es obligatorio');
   if (!input.customerName?.trim()) throw new Error('customerName es obligatorio');
 
-  const company = await ensureCompany(input);
+  const company = await ensureCompany(input, 'activate');
   const user = await updateUserOrPending({
     ...input,
     companyId: company.companyId,
@@ -358,8 +379,8 @@ export async function createDriveFolderForOnboarding(input: CreateDriveFolderInp
   if (!isDriveConfigured()) throw new Error('Google Drive no esta configurado');
 
   const email = normalizeEmail(input.customerEmail);
-  const activationSeed: ActivateSubscriptionInput = {
-    transactionId: input.transactionId || `manual-${shortHash(`${email}:${input.companyName || input.customerName || email}`)}`,
+  const companySeed: ActivateSubscriptionInput = {
+    transactionId: input.transactionId || '',
     customerEmail: email,
     customerName: input.customerName || input.companyName || email,
     companyName: input.companyName,
@@ -369,7 +390,7 @@ export async function createDriveFolderForOnboarding(input: CreateDriveFolderInp
     source: 'n8n',
   };
 
-  const company = await ensureCompany(activationSeed);
+  const company = await ensureCompany(companySeed, 'prepare');
   const db = getDb();
   const companyRef = db.collection('companies').doc(company.companyId);
   const current = (await companyRef.get()).data() || {};

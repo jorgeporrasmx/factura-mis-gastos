@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminFirestore } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin';
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -8,26 +8,32 @@ function normalizeEmail(email: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const uid = String(body.uid || '').trim();
-    const email = normalizeEmail(String(body.email || ''));
-    const displayName = body.displayName ? String(body.displayName) : null;
-    const photoURL = body.photoURL ? String(body.photoURL) : null;
-
-    if (!uid || !email) {
-      return NextResponse.json(
-        { success: false, error: 'uid y email son obligatorios' },
-        { status: 400 }
-      );
+    const token = request.headers.get('Authorization')?.match(/^Bearer (\S+)$/i)?.[1];
+    if (!token) {
+      return NextResponse.json({ success: false, error: 'Sesión requerida' }, { status: 401 });
     }
 
     const db = getAdminFirestore();
-    if (!db) {
+    const auth = getAdminAuth();
+    if (!db || !auth) {
       return NextResponse.json(
         { success: false, error: 'Firebase Admin no esta configurado' },
         { status: 500 }
       );
     }
+
+    const identity = await auth.verifyIdToken(token, true).catch(() => null);
+    if (!identity) {
+      return NextResponse.json({ success: false, error: 'Sesión inválida' }, { status: 401 });
+    }
+    if (!identity.email || !identity.email_verified) {
+      return NextResponse.json({ success: true, claimed: false });
+    }
+
+    const { uid } = identity;
+    const email = normalizeEmail(identity.email);
+    const displayName = identity.name || null;
+    const photoURL = identity.picture || null;
 
     const pendingSnapshot = await db
       .collection('pending_users')
@@ -37,7 +43,9 @@ export async function POST(request: NextRequest) {
 
     const now = FieldValue.serverTimestamp();
 
-    if (pendingSnapshot.empty) {
+    const pendingDoc = pendingSnapshot.docs[0];
+    const pending = pendingDoc?.data();
+    if (!pending || pending.subscriptionStatus !== 'active' || !pending.lastPaymentTransactionId) {
       const userRef = db.collection('users').doc(uid);
       const userDoc = await userRef.get();
 
@@ -60,8 +68,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, claimed: false });
     }
 
-    const pendingDoc = pendingSnapshot.docs[0];
-    const pending = pendingDoc.data();
     const companyId = String(pending.companyId || '');
 
     await db.collection('users').doc(uid).set({
@@ -76,7 +82,7 @@ export async function POST(request: NextRequest) {
       onboardingCompleted: true,
       accountType: pending.accountType || 'personal',
       whatsappPhone: pending.whatsappPhone || '',
-      subscriptionStatus: pending.subscriptionStatus || 'active',
+      subscriptionStatus: pending.subscriptionStatus,
       plan: pending.plan || 'personal',
       driveFolderId: pending.driveFolderId || '',
       lastPaymentTransactionId: pending.lastPaymentTransactionId || '',

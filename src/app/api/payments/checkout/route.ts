@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirstDataClient, getErrorMessage } from '@/lib/firstdata';
+import { getAdminFirestore } from '@/lib/firebase/admin';
+import { createHash } from 'node:crypto';
 import { activateSubscription, createDriveFolderForOnboarding } from '@/lib/fmg-onboarding';
 import {
   duplicateBoardForCompany,
@@ -17,6 +19,7 @@ import {
   generateTransactionId,
   generateCustomerId,
   generateSubscriptionId,
+  formatAmount,
 } from '@/types/payments';
 
 type MondaySubscriptionResult = {
@@ -24,6 +27,14 @@ type MondaySubscriptionResult = {
   itemId?: string;
   error?: string;
 };
+
+function pendingPaymentResponse(orderId: string) {
+  const message = `Estamos verificando el resultado del cobro. Conserva la referencia ${orderId}.`;
+  return NextResponse.json(
+    { success: false, transactionId: orderId, message, error: { code: 'PAYMENT_PENDING', message } },
+    { status: 409 }
+  );
+}
 
 /**
  * POST /api/payments/checkout
@@ -75,6 +86,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
       );
     }
 
+    // El checkout de clientes sólo puede cobrar con la pasarela de producción.
+    if (process.env.FIRSTDATA_ENVIRONMENT !== 'production' ||
+        (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production')) {
+      const message = 'El cobro en línea no está disponible en este momento.';
+      return NextResponse.json(
+        { success: false, message, error: { code: 'PAYMENT_UNAVAILABLE', message } },
+        { status: 503 }
+      );
+    }
+
     // Obtener cliente de First Data
     const client = getFirstDataClient();
 
@@ -93,23 +114,54 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
       );
     }
 
-    // Generar IDs únicos
+    const attemptId = request.headers.get('Idempotency-Key');
+    if (!attemptId || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(attemptId)) {
+      const message = 'Actualiza la página para iniciar el intento de pago.';
+      return NextResponse.json(
+        { success: false, message, error: { code: 'INVALID_PAYMENT_ATTEMPT', message } },
+        { status: 400 }
+      );
+    }
+
+    const db = getAdminFirestore();
+    if (!db) throw new Error('Firebase Admin no está configurado para registrar el cobro');
+
     const transactionId = generateTransactionId();
     const customerId = generateCustomerId();
     const subscriptionId = generateSubscriptionId();
+    const key = createHash('sha256')
+      .update(JSON.stringify([body.customer.email.trim().toLowerCase(), body.planId, attemptId]))
+      .digest('hex');
+    const attempt = db.collection('fmg_checkout_attempts').doc(key);
+    try {
+      await attempt.create({ orderId: transactionId, createdAt: new Date() });
+    } catch (error) {
+      if (typeof error !== 'object' || !error || !('code' in error) || error.code !== 6) throw error;
+      const saved = (await attempt.get()).data();
+      if (saved?.response) {
+        return NextResponse.json(saved.response as CheckoutResponse, { status: saved.httpStatus });
+      }
+      return pendingPaymentResponse(saved?.orderId || transactionId);
+    }
 
     // Procesar el pago
-    const result = await client.purchase({
-      amount: plan.price,
-      currency: 'MXN',
-      card: body.card,
-      orderId: transactionId,
-      customerName: body.customer.name,
-      billingAddress: body.billingAddress,
-    });
+    let result: Awaited<ReturnType<typeof client.purchase>>;
+    try {
+      result = await client.purchase({
+        amount: plan.price,
+        currency: 'MXN',
+        card: body.card,
+        orderId: transactionId,
+        customerName: body.customer.name,
+        billingAddress: body.billingAddress,
+      });
+    } catch {
+      return pendingPaymentResponse(transactionId);
+    }
 
     if (result.success) {
       const approvedTransactionId = result.transactionId || transactionId;
+      await attempt.update({ processorTransactionId: approvedTransactionId, paymentApproved: true });
 
       // Enviar notificación a Monday.com (opcional)
       const mondayResult = await notifyMondayNewSubscription({
@@ -118,7 +170,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         customerEmail: body.customer.email,
         customerPhone: body.customer.phone,
         planName: plan.name,
-        amount: plan.priceDisplay,
+        amount: formatAmount(plan.price),
         transactionId: approvedTransactionId,
         subscriptionId,
       });
@@ -152,7 +204,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
           planName: plan.name,
           amount: plan.price,
           currency: 'MXN',
-          paymentEnvironment: process.env.FIRSTDATA_ENVIRONMENT || 'sandbox',
+          paymentEnvironment: 'production',
           mondaySubscriptionItemId: mondayResult.itemId,
           mondayBoardId,
           mondayBoardUrl,
@@ -168,32 +220,36 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         });
       } catch (activationError) {
         console.error('[checkout] Pago aprobado pero no se pudo persistir activación:', activationError);
+        return pendingPaymentResponse(transactionId);
       }
 
-      return NextResponse.json({
+      const response: CheckoutResponse = {
         success: true,
         transactionId: approvedTransactionId,
         subscriptionId,
-        approvalCode: result.approvalCode,
+        ...(result.approvalCode ? { approvalCode: result.approvalCode } : {}),
         message: '¡Pago procesado exitosamente! Bienvenido a Factura Mis Gastos.',
-      });
+      };
+      await attempt.update({ response, httpStatus: 200 });
+      return NextResponse.json(response);
     } else {
+      if (result.status !== 'declined') return pendingPaymentResponse(transactionId);
+
       // Pago rechazado
       const errorMessage = result.errorCode
         ? getErrorMessage(result.errorCode)
         : result.errorMessage || 'Error procesando el pago';
 
-      return NextResponse.json(
-        {
-          success: false,
+      const response: CheckoutResponse = {
+        success: false,
+        message: errorMessage,
+        error: {
+          code: 'PAYMENT_DECLINED',
           message: errorMessage,
-          error: {
-            code: result.errorCode || 'PAYMENT_FAILED',
-            message: errorMessage,
-          },
         },
-        { status: 400 }
-      );
+      };
+      await attempt.update({ response, httpStatus: 400 });
+      return NextResponse.json(response, { status: 400 });
     }
   } catch (error) {
     console.error('Error en checkout:', error);

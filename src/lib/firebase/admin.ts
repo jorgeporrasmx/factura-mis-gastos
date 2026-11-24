@@ -2,6 +2,7 @@
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { getStorage, type Storage } from 'firebase-admin/storage';
+import { getAuth } from 'firebase-admin/auth';
 
 let _adminApp: App | null = null;
 let _adminDb: Firestore | null = null;
@@ -104,6 +105,11 @@ function getAdminApp(): App | null {
   }
 
   return _adminApp;
+}
+
+export function getAdminAuth() {
+  const app = getAdminApp();
+  return app ? getAuth(app) : null;
 }
 
 // Get Firestore instance for admin operations

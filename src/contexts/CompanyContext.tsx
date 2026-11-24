@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import type { Company, UserProfile, CompanyUser } from '@/types/company';
 // Imports estáticos - el 'use client' garantiza que solo se ejecutan en el navegador
 import { getUserProfile, getCompanyById, createUserProfile, getCompanyUsers } from '@/lib/firebase/firestore';
+import { getFirebaseAuth } from '@/lib/firebase/config';
 
 interface CompanyContextType {
   // Estado
@@ -48,19 +49,17 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Si el usuario pagó antes de crear cuenta, liga su perfil al pago pendiente.
-      if (user.email) {
-        await fetch('/api/users/claim-pending-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-          }),
-        }).catch((claimError) => {
+      const authUser = getFirebaseAuth()?.currentUser;
+      if (authUser?.uid === user.uid && authUser.emailVerified) {
+        try {
+          const token = await authUser.getIdToken();
+          await fetch('/api/users/claim-pending-payment', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          });
+        } catch (claimError) {
           console.warn('No se pudo reclamar pago pendiente:', claimError);
-        });
+        }
       }
 
       // Obtener perfil del usuario

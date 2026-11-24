@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PaymentForm, PaymentFormData } from '@/components/PaymentForm';
 import { OrderSummary } from '@/components/OrderSummary';
-import { PLANS, PlanId, CheckoutRequest, CheckoutResponse } from '@/types/payments';
+import { PLANS, PlanId, CheckoutRequest, CheckoutResponse, formatAmount } from '@/types/payments';
 import { ArrowLeft, Shield } from 'lucide-react';
 
 interface CheckoutPageProps {
@@ -70,6 +70,13 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
     setError(undefined);
 
     try {
+      const attemptScope = new TextEncoder().encode(JSON.stringify([data.customer.email.trim().toLowerCase(), planId]));
+      const digest = await crypto.subtle.digest('SHA-256', attemptScope);
+      const scopeKey = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+      const storageKey = `fmg-checkout-attempt:${scopeKey}`;
+      const attemptId = sessionStorage.getItem(storageKey) || crypto.randomUUID();
+      sessionStorage.setItem(storageKey, attemptId);
+
       const request: CheckoutRequest = {
         planId,
         customer: {
@@ -85,11 +92,15 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Idempotency-Key': attemptId,
         },
         body: JSON.stringify(request),
       });
 
       const result: CheckoutResponse = await response.json();
+      if (result.error?.code === 'PAYMENT_DECLINED') {
+        sessionStorage.removeItem(storageKey);
+      }
 
       if (result.success) {
         // Redirigir a la pagina de exito
@@ -151,7 +162,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               onSubmit={handleSubmit}
               isLoading={isLoading}
               error={error}
-              submitButtonText={`Pagar ${plan.priceDisplay} ${plan.unit}`}
+              submitButtonText={`Pagar ${formatAmount(plan.price)} ${plan.unit}`}
             />
           </div>
 

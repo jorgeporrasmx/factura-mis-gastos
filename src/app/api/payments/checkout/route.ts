@@ -75,6 +75,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
       );
     }
 
+    // El checkout de clientes sólo puede cobrar con la pasarela de producción.
+    if (process.env.FIRSTDATA_ENVIRONMENT !== 'production' ||
+        (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production')) {
+      const message = 'El cobro en línea no está disponible en este momento.';
+      return NextResponse.json(
+        { success: false, message, error: { code: 'PAYMENT_UNAVAILABLE', message } },
+        { status: 503 }
+      );
+    }
+
     // Obtener cliente de First Data
     const client = getFirstDataClient();
 
@@ -152,7 +162,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
           planName: plan.name,
           amount: plan.price,
           currency: 'MXN',
-          paymentEnvironment: process.env.FIRSTDATA_ENVIRONMENT || 'sandbox',
+          paymentEnvironment: 'production',
           mondaySubscriptionItemId: mondayResult.itemId,
           mondayBoardId,
           mondayBoardUrl,

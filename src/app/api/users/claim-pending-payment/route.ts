@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
 
     const now = FieldValue.serverTimestamp();
 
-    if (pendingSnapshot.empty) {
+    const pendingDoc = pendingSnapshot.docs[0];
+    const pending = pendingDoc?.data();
+    if (!pending || pending.subscriptionStatus !== 'active' || !pending.lastPaymentTransactionId) {
       const userRef = db.collection('users').doc(uid);
       const userDoc = await userRef.get();
 
@@ -60,8 +62,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, claimed: false });
     }
 
-    const pendingDoc = pendingSnapshot.docs[0];
-    const pending = pendingDoc.data();
     const companyId = String(pending.companyId || '');
 
     await db.collection('users').doc(uid).set({
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       onboardingCompleted: true,
       accountType: pending.accountType || 'personal',
       whatsappPhone: pending.whatsappPhone || '',
-      subscriptionStatus: pending.subscriptionStatus || 'active',
+      subscriptionStatus: pending.subscriptionStatus,
       plan: pending.plan || 'personal',
       driveFolderId: pending.driveFolderId || '',
       lastPaymentTransactionId: pending.lastPaymentTransactionId || '',

@@ -4,7 +4,7 @@
 export type CompanyPlan = 'personal' | 'equipos' | 'empresa' | 'corporativo';
 
 // Estado de la empresa
-export type CompanyStatus = 'active' | 'suspended' | 'cancelled';
+export type CompanyStatus = 'pending' | 'active' | 'suspended' | 'cancelled';
 
 export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'expired' | 'cancelled';
 

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminFirestore } from '@/lib/firebase/admin';
+import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin';
 import {
   ensureCompanyDriveFolder,
   isDriveConfigured,
@@ -254,7 +254,17 @@ async function updateUserOrPending(input: ActivateSubscriptionInput & { companyI
 }> {
   const db = getDb();
   const email = normalizeEmail(input.customerEmail);
-  const uid = input.uid || (await findUserByEmail(email))?.uid;
+  const auth = getAdminAuth();
+  if (!auth) throw new Error('Firebase Auth no está configurado');
+  const account = await auth.getUserByEmail(email).catch((error: unknown) => {
+    if (typeof error === 'object' && error && 'code' in error && error.code === 'auth/user-not-found') {
+      return null;
+    }
+    throw error;
+  });
+  const uid = account?.emailVerified && !account.disabled && (!input.uid || input.uid === account.uid)
+    ? account.uid
+    : undefined;
   const now = FieldValue.serverTimestamp();
 
   const patch = {

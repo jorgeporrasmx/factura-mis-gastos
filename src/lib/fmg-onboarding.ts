@@ -175,7 +175,7 @@ async function ensureCompany(input: ActivateSubscriptionInput): Promise<{
   if (existing) {
     await db.collection('companies').doc(existing.id).set({
       subscriptionStatus: 'active',
-      plan,
+      ...(input.planId?.trim() ? { plan } : {}),
       status: 'active',
       ...(input.driveFolderId ? { driveFolderId: input.driveFolderId } : {}),
       ...(input.driveDocsFolderId ? { driveDocsFolderId: input.driveDocsFolderId } : {}),

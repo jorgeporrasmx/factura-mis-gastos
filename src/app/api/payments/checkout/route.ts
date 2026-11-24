@@ -19,6 +19,7 @@ import {
   generateTransactionId,
   generateCustomerId,
   generateSubscriptionId,
+  formatAmount,
 } from '@/types/payments';
 
 type MondaySubscriptionResult = {
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CheckoutR
         customerEmail: body.customer.email,
         customerPhone: body.customer.phone,
         planName: plan.name,
-        amount: plan.priceDisplay,
+        amount: formatAmount(plan.price),
         transactionId: approvedTransactionId,
         subscriptionId,
       });

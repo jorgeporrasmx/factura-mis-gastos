@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PaymentForm, PaymentFormData } from '@/components/PaymentForm';
 import { OrderSummary } from '@/components/OrderSummary';
-import { PLANS, PlanId, CheckoutRequest, CheckoutResponse } from '@/types/payments';
+import { PLANS, PlanId, CheckoutRequest, CheckoutResponse, formatAmount } from '@/types/payments';
 import { ArrowLeft, Shield } from 'lucide-react';
 
 interface CheckoutPageProps {
@@ -162,7 +162,7 @@ export default function CheckoutPage({ params }: CheckoutPageProps) {
               onSubmit={handleSubmit}
               isLoading={isLoading}
               error={error}
-              submitButtonText={`Pagar ${plan.priceDisplay} ${plan.unit}`}
+              submitButtonText={`Pagar ${formatAmount(plan.price)} ${plan.unit}`}
             />
           </div>
 
